@@ -54,12 +54,14 @@ naukri_update/
 ## Requirements
 
 ### Linux
+
 - **Node.js**: 18 or higher.
 - **Google Chrome**: Stable version installed.
 - **cron**: Standard task scheduler.
 - **bash**: Default shell.
 
 ### Windows
+
 - **Node.js**: 18 or higher.
 - **Google Chrome**: Stable version installed.
 - **Task Scheduler**: Standard administrative tool.
@@ -70,7 +72,7 @@ naukri_update/
 Clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/your-github-username/naukri_update.git
+git clone https://github.com/anwarbuilds1/naukri_update.git
 cd naukri_update
 npm install
 ```
@@ -98,6 +100,7 @@ REFRESH_INTERVAL_HOURS=1
 > [!IMPORTANT]
 > The `.env` file is excluded from version control (listed in `.gitignore`). Never commit your `.env` file containing credentials to Git.
 > On Linux, restrict access permissions for the `.env` file:
+>
 > ```bash
 > chmod 600 .env
 > ```
@@ -135,17 +138,17 @@ We provide an installer script `install-cron.sh` that reads the `REFRESH_INTERVA
 To configure and install the scheduling:
 
 1. Open `.env` and configure `REFRESH_INTERVAL_HOURS` to one of the supported values:
-   
-   | `REFRESH_INTERVAL_HOURS` | Cron Interval | Cron Syntax Generated |
-   |:---|:---|:---|
-   | **1** | Every hour | `0 * * * *` |
-   | **2** | Every 2 hours | `0 */2 * * *` |
-   | **3** | Every 3 hours | `0 */3 * * *` |
-   | **4** | Every 4 hours | `0 */4 * * *` |
-   | **6** | Every 6 hours | `0 */6 * * *` |
-   | **8** | Every 8 hours | `0 */8 * * *` |
-   | **12** | Every 12 hours | `0 */12 * * *` |
-   | **24** | Once per day (at midnight) | `0 0 * * *` |
+
+   | `REFRESH_INTERVAL_HOURS` | Cron Interval              | Cron Syntax Generated |
+   | :----------------------- | :------------------------- | :-------------------- |
+   | **1**                    | Every hour                 | `0 * * * *`           |
+   | **2**                    | Every 2 hours              | `0 */2 * * *`         |
+   | **3**                    | Every 3 hours              | `0 */3 * * *`         |
+   | **4**                    | Every 4 hours              | `0 */4 * * *`         |
+   | **6**                    | Every 6 hours              | `0 */6 * * *`         |
+   | **8**                    | Every 8 hours              | `0 */8 * * *`         |
+   | **12**                   | Every 12 hours             | `0 */12 * * *`        |
+   | **24**                   | Once per day (at midnight) | `0 0 * * *`           |
 
 2. Run the cron installer from the repository root:
    ```bash
@@ -171,7 +174,7 @@ To run the script automatically on Windows:
    ```powershell
    -NoProfile -WindowStyle Hidden -Command "& { Set-Location 'C:\path\to\your\naukri_update'; .\scripts\start-naukri-chrome.ps1; Start-Sleep -Seconds 10; node naukri-profile-refresh.js }"
    ```
-   *(Be sure to replace `C:\path\to\your\naukri_update` with your actual cloned repository path.)*
+   _(Be sure to replace `C:\path\to\your\naukri_update` with your actual cloned repository path.)_
 
 ## Security & Isolation
 
