@@ -55,14 +55,14 @@ naukri_update/
 
 ### Linux
 
-- **Node.js**: 18 or higher.
+- **Node.js**: 20 or higher.
 - **Google Chrome**: Stable version installed.
 - **cron**: Standard task scheduler.
 - **bash**: Default shell.
 
 ### Windows
 
-- **Node.js**: 18 or higher.
+- **Node.js**: 20 or higher.
 - **Google Chrome**: Stable version installed.
 - **Task Scheduler**: Standard administrative tool.
 - **PowerShell**: 5.1 or Core.
@@ -85,16 +85,29 @@ Copy the environment template:
 cp .env.example .env
 ```
 
-Open `.env` and fill in your Naukri credentials:
+Open `.env` and fill in your configuration:
 
 ```dotenv
 NAUKRI_PROFILE_URL=https://www.naukri.com/mnjuser/profile
 NAUKRI_EMAIL=your-email@example.com
 NAUKRI_PASSWORD=your-naukri-password
 
-# Refresh Interval (in hours) for scheduling.
-# Supported values: 1, 2, 3, 4, 6, 8, 12, 24
+# --- Headline Refresh Scheduling ---
+# Mode can be "interval" or "fixed_time"
+REFRESH_MODE=interval
 REFRESH_INTERVAL_HOURS=1
+REFRESH_INTERVAL_MINUTES=0
+REFRESH_TIME=06:11
+
+# --- Active Time Window (Optional) ---
+# When enabled, the script will only execute refreshes inside this window
+REFRESH_WINDOW_ENABLED=false
+REFRESH_WINDOW_START=07:00
+REFRESH_WINDOW_END=19:00
+
+RESUME_UPDATE_ENABLED=false
+RESUME_UPDATE_TIME=07:00
+RESUME_FILE=resume/Anwar_Rizwan_Resume.pdf
 ```
 
 > [!IMPORTANT]
@@ -133,23 +146,11 @@ To run the full automated check manually (which automatically starts Chrome in t
 
 ### Linux (cron)
 
-We provide an installer script `install-cron.sh` that reads the `REFRESH_INTERVAL_HOURS` variable from your `.env` file, validates it, and generates/updates the cron entry dynamically without creating duplicate tasks.
+We provide an installer script `install-cron.sh` that validates the scheduling settings in your `.env` and configures a cron job that checks the schedule every minute. The runner script then dynamically decides whether a headline refresh or a resume upload is due based on the precise scheduling settings.
 
 To configure and install the scheduling:
 
-1. Open `.env` and configure `REFRESH_INTERVAL_HOURS` to one of the supported values:
-
-   | `REFRESH_INTERVAL_HOURS` | Cron Interval              | Cron Syntax Generated |
-   | :----------------------- | :------------------------- | :-------------------- |
-   | **1**                    | Every hour                 | `0 * * * *`           |
-   | **2**                    | Every 2 hours              | `0 */2 * * *`         |
-   | **3**                    | Every 3 hours              | `0 */3 * * *`         |
-   | **4**                    | Every 4 hours              | `0 */4 * * *`         |
-   | **6**                    | Every 6 hours              | `0 */6 * * *`         |
-   | **8**                    | Every 8 hours              | `0 */8 * * *`         |
-   | **12**                   | Every 12 hours             | `0 */12 * * *`        |
-   | **24**                   | Once per day (at midnight) | `0 0 * * *`           |
-
+1. Open `.env` and configure the scheduling variables under the `# Scheduling Configuration` section.
 2. Run the cron installer from the repository root:
    ```bash
    ./scripts/install-cron.sh

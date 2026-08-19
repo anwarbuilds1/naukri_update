@@ -26,8 +26,13 @@ if [[ -z "$chrome" ]]; then
 fi
 
 if [[ -e "$profile_dir/SingletonLock" || -L "$profile_dir/SingletonLock" ]]; then
-  echo "The dedicated Naukri Chrome profile is already in use. Close that Chrome window, then run ./start-naukri-chrome.sh again." >&2
-  exit 1
+  if pgrep -f "$profile_dir" >/dev/null 2>&1; then
+    echo "The dedicated Naukri Chrome profile is already in use. Close that Chrome window, then run ./start-naukri-chrome.sh again." >&2
+    exit 1
+  else
+    echo "Stale SingletonLock file detected; removing it to allow Chrome startup." >&2
+    rm -f "$profile_dir/SingletonLock"
+  fi
 fi
 
 mkdir -p "$profile_dir"
