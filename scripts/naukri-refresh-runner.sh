@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+repo_dir="$(cd -- "$script_dir/.." && pwd -P)"
 cdp_endpoint="http://127.0.0.1:9222"
 hourly_log="$repo_dir/naukri-hourly-refresh.log"
 lock_file="$repo_dir/.naukri-hourly-refresh.lock"
@@ -46,7 +47,7 @@ if ! command -v flock >/dev/null 2>&1; then
 fi
 exec 9>"$lock_file"
 if ! flock -n 9; then
-  log 'A previous hourly refresh is still running; skipping this run.'
+  log 'A previous refresh is still running; skipping this run.'
   exit 0
 fi
 
@@ -58,7 +59,7 @@ cd "$repo_dir"
 
 if ! cdp_ready; then
   log 'Dedicated Naukri Chrome CDP is unavailable; starting the dedicated Chrome profile.'
-  nohup "$repo_dir/start-naukri-chrome.sh" >> "$hourly_log" 2>&1 < /dev/null &
+  nohup "$repo_dir/scripts/start-naukri-chrome.sh" >> "$hourly_log" 2>&1 < /dev/null &
 
   for ((attempt = 1; attempt <= 30; attempt++)); do
     if cdp_ready; then
