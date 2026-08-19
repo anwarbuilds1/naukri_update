@@ -207,6 +207,16 @@ To run the script automatically on Windows:
 - **Local Credentials**: All passwords and configurations remain in `.env` locally.
 - **No Exfiltration**: No telemetry, external webhooks, or remote servers are contacted. All traffic is bound to localhost (`127.0.0.1:9222`).
 
+## Optimization & Resource Safety
+
+This automation is designed to run 24/7 without consuming unnecessary resources, leaking handles, or cluttering your system:
+
+- **Lightweight Check Intervals**: Although the cron job triggers every minute, it performs a lightweight Node.js check (taking less than 100ms with virtually 0% CPU/RAM) and exits immediately if no task is due. Heavy browser processes are only launched when necessary.
+- **Concurrency Protection**: The runner uses Linux's native `flock` utility. If a previous run is still active (e.g. during a network slowdown), subsequent minute-checks exit immediately, preventing process stacking.
+- **Automatic Log Rotation**: To prevent disk bloat, both log files (`naukri-hourly-refresh.log` and `naukri-refresh.log`) are automatically rotated and trimmed to keep only the **last 5 runs**.
+- **Process Detachment & Handle Safety**: When starting Chrome in the background, the runner closes inherited file descriptors (`9>&-`) to ensure clean execution and prevent leaked file locks.
+- **Self-Healing Lock Cleanup**: The browser launcher automatically detects and cleans up stale `SingletonLock` files if Chrome was killed unexpectedly, avoiding startup lockups.
+
 ## Troubleshooting
 
 - **CDP unavailable**: Make sure Google Chrome is running and listening on `127.0.0.1:9222`. Run `curl http://127.0.0.1:9222/json/version` to check.
