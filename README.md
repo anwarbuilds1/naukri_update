@@ -110,6 +110,30 @@ RESUME_UPDATE_TIME=07:00
 RESUME_FILE=resume/Anwar_Rizwan_Resume.pdf
 ```
 
+### Detailed Configuration Reference
+
+#### 1. Headline Refresh Scheduling
+* **`REFRESH_MODE`**: The scheduling strategy for profile refreshes. 
+  * `interval`: Refreshes the profile periodically at regular intervals.
+  * `fixed_time`: Refreshes the profile exactly once per day at a specific time.
+* **`REFRESH_INTERVAL_HOURS`**: (Used when `REFRESH_MODE=interval`) The hour component of the refresh frequency.
+* **`REFRESH_INTERVAL_MINUTES`**: (Used when `REFRESH_MODE=interval`) The minute component of the refresh frequency.
+  * *Example:* Setting hours to `1` and minutes to `30` will trigger a refresh every 1 hour and 30 minutes.
+* **`REFRESH_TIME`**: (Used when `REFRESH_MODE=fixed_time`) The exact time of day (24-hour format, `HH:MM`, e.g., `06:11`) to execute the daily refresh.
+
+#### 2. Active Time Window (Optional)
+* **`REFRESH_WINDOW_ENABLED`**: If set to `true`, limits interval refreshes to occur only within the specified start and end times. If `false`, refreshes will happen 24/7.
+* **`REFRESH_WINDOW_START`**: (Used when `REFRESH_WINDOW_ENABLED=true`) The start time of the active window (24-hour format, `HH:MM`, e.g., `07:00`).
+* **`REFRESH_WINDOW_END`**: (Used when `REFRESH_WINDOW_ENABLED=true`) The end time of the active window (24-hour format, `HH:MM`, e.g., `19:00`). 
+  * *Note:* Supports midnight-crossing windows (e.g., start at `22:00` and end at `06:00`).
+
+#### 3. Resume PDF Updates (Optional)
+* **`RESUME_UPDATE_ENABLED`**: Toggles daily resume updates. Set to `true` to enable daily uploads, or `false` to disable.
+* **`RESUME_UPDATE_TIME`**: (Used when `RESUME_UPDATE_ENABLED=true`) The exact daily time (24-hour format, `HH:MM`, e.g., `07:00`) when the resume should be uploaded.
+* **`RESUME_FILE`**: Path to your local resume PDF file (e.g., `resume/Anwar_Rizwan_Resume.pdf`). The automation automatically matches and uploads it, dynamically appending the current date on Naukri (e.g., `Anwar_Rizwan_Resume_DD-MM-YYYY.pdf`) to trigger an update.
+
+
+
 > [!IMPORTANT]
 > The `.env` file is excluded from version control (listed in `.gitignore`). Never commit your `.env` file containing credentials to Git.
 > On Linux, restrict access permissions for the `.env` file:
