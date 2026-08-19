@@ -53,29 +53,129 @@ function assertNaukriProfileUrl(url) {
 }
 
 async function updateAndVerifyHeadline(page) {
-  const editIcon = page.locator('#lazyResumeHead span.edit.icon, [data-ga-track*="resumeHeadline"] .edit').first();
-
-  await editIcon.waitFor({ timeout: 30000 });
-  await editIcon.click();
-  let { modal, editor } = await getHeadlineEditor(page);
-
-  const current = (await editor.inputValue()).trimEnd();
-  if (!current) throw new Error('Resume headline is empty; nothing was changed.');
-  const updated = current.endsWith('.') ? current.slice(0, -1) : `${current}.`;
-
-  await editor.fill(updated);
-  await modal.getByRole('button', { name: /^save$/i }).click();
-  await modal.waitFor({ state: 'hidden', timeout: 15000 });
-
-  // Reload to verify the value returned by Naukri's server, not local page state.
+  log('Step 1: Navigate to Naukri profile...');
   await page.goto(PROFILE_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await editIcon.waitFor({ timeout: 30000 });
-  await editIcon.click();
-  ({ modal, editor } = await getHeadlineEditor(page));
-  const saved = (await editor.inputValue()).trimEnd();
-  if (saved !== updated) throw new Error('Headline save could not be verified against the reloaded profile.');
 
-  log(`OK: headline ${current.endsWith('.') ? 'dot removed' : 'dot added'} and verified from Naukri.`);
+  log('Step 2: Confirm authenticated profile page...');
+  if (!await hasAuthenticatedProfile(page)) {
+    throw new Error('Not on authenticated profile page.');
+  }
+
+  log('Step 3: Locate Resume Headline section and Edit icon...');
+  const editIcon = page.locator('#lazyResumeHead span.edit.icon, [data-ga-track*="resumeHeadline"] .edit').first();
+  await editIcon.waitFor({ state: 'visible', timeout: 30000 });
+
+  log('Step 4: Click Edit (or skip if modal is already open)...');
+  const modal = page.locator('form[name="resumeHeadlineForm"]');
+  if (await modal.isVisible()) {
+    log('Headline modal is already visible; skipping Edit icon click.');
+  } else {
+    log('Clicking the Edit icon...');
+    try {
+      await editIcon.click({ timeout: 10000 });
+    } catch (e) {
+      log(`Normal click failed or was intercepted: ${e.message}. Trying forced click...`);
+      await editIcon.click({ force: true });
+    }
+  }
+
+  log('Step 5: Confirm the headline editor/modal is visible...');
+  await modal.waitFor({ state: 'visible', timeout: 15000 });
+
+  log('Step 6: Locate the actual headline input...');
+  let editor = modal.locator('textarea#resumeHeadline:visible');
+  if (await editor.count() === 0) {
+    editor = modal.getByPlaceholder('Enter your resume headline...');
+  }
+  await editor.waitFor({ state: 'visible', timeout: 15000 });
+
+  log('Step 7: Read its current value...');
+  const currentHeadline = (await editor.inputValue()).trimEnd();
+  log(`Current headline: "${currentHeadline}"`);
+  if (!currentHeadline) {
+    throw new Error('Resume headline is empty; nothing was changed.');
+  }
+
+  log('Step 8: Calculate expected headline...');
+  let expectedHeadline;
+  if (currentHeadline.endsWith(".")) {
+    expectedHeadline = currentHeadline.slice(0, -1);
+  } else {
+    expectedHeadline = `${currentHeadline}.`;
+  }
+  log(`Expected headline: "${expectedHeadline}"`);
+
+  log('Step 9: Fill the input...');
+  await editor.fill(expectedHeadline);
+
+  log('Step 10: Read the input again immediately after filling...');
+  const afterFill = (await editor.inputValue()).trimEnd();
+  log(`After fill: "${afterFill}"`);
+
+  log('Step 11: Verify the input actually changed...');
+  if (afterFill !== expectedHeadline) {
+    log('ERROR: The input value after fill does not match the expected headline.');
+    await page.screenshot({ path: ERROR_SHOT }).catch(() => {});
+    await printHeadlineEditorDiagnostics(page).catch(() => {});
+    throw new Error('The headline field could not be updated.');
+  }
+
+  log('Step 12: Locate and click Save...');
+  const saveButton = modal.getByRole('button', { name: /^save$/i });
+  await saveButton.waitFor({ state: 'visible', timeout: 10000 });
+  await saveButton.click();
+
+  log('Step 13: Wait for save/network/UI completion...');
+  await modal.waitFor({ state: 'hidden', timeout: 15000 });
+  await page.waitForLoadState('networkidle').catch(() => {});
+
+  log('Step 14: Reload the profile...');
+  await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+
+  log('Step 15: Confirm authenticated profile page after reload...');
+  if (!await hasAuthenticatedProfile(page)) {
+    throw new Error('Not on authenticated profile page after reload.');
+  }
+
+  log('Step 16: Open the headline editor again for verification...');
+  const editIconVerify = page.locator('#lazyResumeHead span.edit.icon, [data-ga-track*="resumeHeadline"] .edit').first();
+  await editIconVerify.waitFor({ state: 'visible', timeout: 30000 });
+  
+  const modalVerify = page.locator('form[name="resumeHeadlineForm"]');
+  if (await modalVerify.isVisible()) {
+    log('Headline modal is already visible on verification; skipping click.');
+  } else {
+    try {
+      await editIconVerify.click({ timeout: 10000 });
+    } catch (e) {
+      log(`Normal click on verification failed/intercepted: ${e.message}. Trying forced click...`);
+      await editIconVerify.click({ force: true });
+    }
+  }
+  await modalVerify.waitFor({ state: 'visible', timeout: 15000 });
+
+  log('Step 17: Read the saved headline...');
+  let editorVerify = modalVerify.locator('textarea#resumeHeadline:visible');
+  if (await editorVerify.count() === 0) {
+    editorVerify = modalVerify.getByPlaceholder('Enter your resume headline...');
+  }
+  await editorVerify.waitFor({ state: 'visible', timeout: 15000 });
+  const saved = (await editorVerify.inputValue()).trimEnd();
+  log(`Saved headline: "${saved}"`);
+
+  log('Step 18: Close the verification modal...');
+  const cancelBtn = modalVerify.locator('a.cancel-btn, button:has-text("Cancel"), a:has-text("Cancel")').first();
+  if (await cancelBtn.count() > 0) {
+    await cancelBtn.click();
+  }
+  await modalVerify.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+
+  log('Step 19: Compare saved value with expected value...');
+  if (saved !== expectedHeadline) {
+    throw new Error('ERROR: headline was not changed/verified.');
+  }
+
+  log(`OK: headline ${currentHeadline.endsWith('.') ? 'dot removed' : 'dot added'} and verified from Naukri.`);
 }
 
 async function printHeadlineEditorDiagnostics(page) {
