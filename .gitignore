@@ -1,0 +1,24 @@
+# secrets & personal data
+.env
+.naukri-chrome-profile/
+.naukri-brave-profile/
+naukri-refresh.log
+naukri-hourly-refresh.log
+.naukri-hourly-refresh.lock
+naukri-refresh-error*.png
+
+# runtime output
+*.log
+applications*.csv
+apply-state-*.json
+*.png
+
+# saved browser sessions (contain logged-in cookies)
+.*-chrome-profile/
+.*-apply-profile/
+
+# resume / personal docs
+*.pdf
+
+# deps
+node_modules/
