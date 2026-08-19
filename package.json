@@ -1,0 +1,14 @@
+{
+  "name": "naukri-update",
+  "version": "1.0.0",
+  "description": "Keeps a Naukri profile fresh by toggling a trailing dot on the resume headline",
+  "main": "naukri-profile-refresh.js",
+  "scripts": {
+    "refresh": "node naukri-profile-refresh.js"
+  },
+  "author": "Ankit Baghel",
+  "license": "ISC",
+  "dependencies": {
+    "playwright-core": "^1.61.1"
+  }
+}
