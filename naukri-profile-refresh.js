@@ -1,19 +1,41 @@
+// Node.js version validation
+const nodeVersion = process.versions.node;
+const majorVersion = parseInt(nodeVersion.split('.')[0], 10);
+if (majorVersion < 20) {
+  console.error(`ERROR: Node.js 20 or higher is required. You are running Node.js ${nodeVersion}.`);
+  process.exit(1);
+}
+
 /**
- * Refreshes only the Naukri resume headline through a manually started,
- * localhost-only Chrome DevTools endpoint. This script never starts Chrome,
- * never uses Google authentication, and uses native Naukri login only when its
- * dedicated session has expired.
+ * Refreshes Naukri profile details (resume headline and resume PDF file) through
+ * a manually started, localhost-only Chrome DevTools endpoint.
  */
 const { chromium } = require('playwright-core');
 const path = require('path');
 const fs = require('fs');
-const { naukriProfileUrl, naukriCredentials } = require('./config');
+const { naukriProfileUrl, naukriCredentials, resumeFile } = require('./config');
 
 const PROFILE_URL = naukriProfileUrl;
 const CDP_ENDPOINT = 'http://127.0.0.1:9222';
 const NATIVE_LOGIN_URL = `https://www.naukri.com/nlogin/login?URL=${encodeURIComponent(PROFILE_URL)}`;
 const LOG_FILE = path.join(__dirname, 'naukri-refresh.log');
 const ERROR_SHOT = path.join(__dirname, 'naukri-refresh-error.png');
+
+function initializeLog() {
+  fs.appendFileSync(LOG_FILE, `=== RUN START ===\n`);
+  try {
+    const content = fs.readFileSync(LOG_FILE, 'utf8');
+    const runs = content.split(/^=== RUN START ===/m);
+    if (runs.length > 6) {
+      const keptRuns = runs.slice(runs.length - 5);
+      const newContent = keptRuns.map(run => '=== RUN START ===' + run).join('');
+      fs.writeFileSync(LOG_FILE, newContent, 'utf8');
+    }
+  } catch (err) {
+    console.error(`Failed to rotate log file: ${err.message}`);
+  }
+}
+initializeLog();
 
 function log(message) {
   const line = `[${new Date().toLocaleString()}] ${message}`;
@@ -296,8 +318,99 @@ async function loginWithNaukriCredentials(page) {
   }
 }
 
+async function uploadAndVerifyResume(page) {
+  log('Step 1: Locate resume upload section...');
+  const absoluteResumePath = path.isAbsolute(resumeFile)
+    ? resumeFile
+    : path.resolve(__dirname, resumeFile);
+
+  const dir = path.dirname(absoluteResumePath);
+  const ext = path.extname(absoluteResumePath);
+  const base = path.basename(absoluteResumePath, ext);
+
+  // Generate today's dated filename
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  const todayStr = `${dd}-${mm}-${yyyy}`;
+  const datedFilename = `${base}_${todayStr}${ext}`;
+  const datedFilePath = path.join(dir, datedFilename);
+
+  log(`Target resume filename: "${datedFilename}"`);
+
+  // Check if today's resume is already uploaded
+  const resumeNameEl = page.locator('#lazyAttachCV .resume-name-inline, .attachCV .resume-name-inline').first();
+  if (await resumeNameEl.count() > 0) {
+    const currentName = (await resumeNameEl.innerText()).trim();
+    log(`Current resume name on Naukri: "${currentName}"`);
+    if (currentName === datedFilename) {
+      log(`Today's resume "${datedFilename}" is already uploaded. Skipping upload.`);
+      return;
+    }
+  }
+
+  log('Step 2: Check master resume file exists...');
+  if (!fs.existsSync(absoluteResumePath)) {
+    throw new Error(`Master resume not found at: ${absoluteResumePath}`);
+  }
+
+  log('Step 3: Creating temporary dated resume copy...');
+  fs.copyFileSync(absoluteResumePath, datedFilePath);
+
+  try {
+    log('Step 4: Locating and setting the file input...');
+    const fileInput = page.locator('input#attachCV');
+    await fileInput.waitFor({ state: 'attached', timeout: 15000 });
+
+    // Handle any potential dialogs
+    page.on('dialog', async dialog => {
+      log(`Dialog appeared: "${dialog.message()}". Accepting.`);
+      await dialog.accept().catch(() => {});
+    });
+
+    await fileInput.setInputFiles(datedFilePath);
+    log('Step 5: File input filled. Waiting for upload verification...');
+
+    // Wait for the name to be updated on page (up to 30 seconds)
+    let verified = false;
+    for (let attempt = 1; attempt <= 30; attempt++) {
+      if (await resumeNameEl.count() > 0) {
+        const name = (await resumeNameEl.innerText()).trim();
+        if (name === datedFilename) {
+          verified = true;
+          break;
+        }
+      }
+      await page.waitForTimeout(1000);
+    }
+
+    if (!verified) {
+      throw new Error(`Resume filename verification failed. Name did not update to: ${datedFilename}`);
+    }
+
+    log(`OK: Resume uploaded and verified from Naukri. New filename: "${datedFilename}"`);
+    
+    log('Step 6: Deleting temporary dated resume copy...');
+    fs.unlinkSync(datedFilePath);
+    log('Temporary file deleted successfully.');
+  } catch (error) {
+    log(`ERROR: Resume upload failed. Temporary file kept at: ${datedFilePath} for debugging.`);
+    throw error;
+  }
+}
+
 (async () => {
   assertNaukriProfileUrl(PROFILE_URL);
+
+  const args = process.argv.slice(2);
+  const runHeadline = args.includes('--refresh-headline') || args.length === 0;
+  const runResume = args.includes('--upload-resume');
+
+  if (!runHeadline && !runResume) {
+    console.error('No tasks specified. Use --refresh-headline and/or --upload-resume.');
+    process.exit(1);
+  }
 
   let browser;
   try {
@@ -322,7 +435,12 @@ async function loginWithNaukriCredentials(page) {
       nativeLoginInProgress = false;
     }
 
-    await updateAndVerifyHeadline(page);
+    if (runHeadline) {
+      await updateAndVerifyHeadline(page);
+    }
+    if (runResume) {
+      await uploadAndVerifyResume(page);
+    }
   } catch (error) {
     if (page && !nativeLoginInProgress && !isNaukriLoginUrl(page.url())) {
       await page.screenshot({ path: ERROR_SHOT }).catch(() => {});

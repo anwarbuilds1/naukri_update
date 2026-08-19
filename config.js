@@ -63,5 +63,6 @@ const naukriCredentials = {
 };
 const geminiKey = g('GEMINI_KEY');
 const naukriProfileUrl = g('NAUKRI_PROFILE_URL', 'https://www.naukri.com/mnjuser/profile');
+const resumeFile = g('RESUME_FILE', 'resume/Anwar_Rizwan_Resume.pdf');
 
-module.exports = { CV, naukriCredentials, geminiKey, naukriProfileUrl };
+module.exports = { CV, naukriCredentials, geminiKey, naukriProfileUrl, resumeFile };
