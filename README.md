@@ -187,6 +187,20 @@ To configure and install the scheduling:
   crontab -l | grep -v "naukri-refresh-runner.sh" | crontab -
   ```
 
+### Monitor Runs
+
+Watch the combined runner status and task output in real time:
+
+```bash
+tail -f naukri-monitor.log
+```
+
+Useful status searches:
+
+```bash
+grep -E 'RUN STATUS|ERROR|completed|skipping' naukri-monitor.log
+```
+
 ### Windows (Task Scheduler)
 
 To run the script automatically on Windows:
@@ -214,6 +228,7 @@ This automation is designed to run 24/7 without consuming unnecessary resources,
 - **Lightweight Check Intervals**: Although the cron job triggers every minute, it performs a lightweight Node.js check (taking less than 100ms with virtually 0% CPU/RAM) and exits immediately if no task is due. Heavy browser processes are only launched when necessary.
 - **Concurrency Protection**: The runner uses Linux's native `flock` utility. If a previous run is still active (e.g. during a network slowdown), subsequent minute-checks exit immediately, preventing process stacking.
 - **Automatic Log Rotation**: To prevent disk bloat, both log files (`naukri-hourly-refresh.log` and `naukri-refresh.log`) are automatically rotated and trimmed to keep only the **last 5 runs**.
+- **Monitoring Log**: `naukri-monitor.log` records runner starts, skipped checks, configuration errors, Chrome startup failures, task results, and final success/failure status. It is also rotated to keep the last 5 task runs.
 - **Process Detachment & Handle Safety**: When starting Chrome in the background, the runner closes inherited file descriptors (`9>&-`) to ensure clean execution and prevent leaked file locks.
 - **Self-Healing Lock Cleanup**: The browser launcher automatically detects and cleans up stale `SingletonLock` files if Chrome was killed unexpectedly, avoiding startup lockups.
 
@@ -230,7 +245,7 @@ Before committing changes, check that your local credentials and profile directo
 
 ```bash
 git status
-git check-ignore -v .env .naukri-chrome-profile naukri-refresh.log naukri-hourly-refresh.log
+git check-ignore -v .env .naukri-chrome-profile naukri-refresh.log naukri-hourly-refresh.log naukri-monitor.log
 ```
 
 ## Disclaimer

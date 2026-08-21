@@ -5,6 +5,7 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 repo_dir="$(cd -- "$script_dir/.." && pwd -P)"
 cdp_endpoint="http://127.0.0.1:9222"
 hourly_log="$repo_dir/naukri-hourly-refresh.log"
+monitor_log="$repo_dir/naukri-monitor.log"
 lock_file="$repo_dir/.naukri-hourly-refresh.lock"
 user_id="$(id -u)"
 
@@ -18,8 +19,27 @@ if [[ -z "${XAUTHORITY:-}" && -r "$XDG_RUNTIME_DIR/gdm/Xauthority" ]]; then
 fi
 
 log() {
-  printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')" "$*" >> "$hourly_log"
+  local message
+  message="[$(date '+%Y-%m-%d %H:%M:%S %Z')] $*"
+  printf '%s\n' "$message" >> "$hourly_log"
+  printf '%s\n' "$message" >> "$monitor_log"
 }
+
+run_logged() {
+  "$@" 2>&1 | tee -a "$hourly_log" "$monitor_log"
+}
+
+on_exit() {
+  local exit_code="$?"
+  if [[ "$exit_code" -eq 0 ]]; then
+    log 'RUN STATUS: SUCCESS'
+  else
+    log "RUN STATUS: FAILED (exit code $exit_code)"
+  fi
+}
+trap on_exit EXIT
+
+log "RUN START: runner launched (repo=$repo_dir, display=${DISPLAY:-unset})"
 
 curl_bin="$(command -v curl || true)"
 if [[ -z "$curl_bin" ]]; then
@@ -80,6 +100,7 @@ if ! "$node_bin" "$repo_dir/scripts/scheduler.js" --validate >/dev/null 2>&1; th
   log 'ERROR: Scheduling configuration validation failed.'
   exit 1
 fi
+log 'Configuration validation succeeded.'
 
 # Check tasks
 run_headline=false
@@ -93,9 +114,11 @@ if "$node_bin" "$repo_dir/scripts/scheduler.js" --should-upload-resume >/dev/nul
 fi
 
 if [[ "$run_headline" == "false" && "$run_resume" == "false" ]]; then
-  # Neither task is due, exit quietly without starting Chrome CDP
+  log 'No task is due; skipping Chrome startup.'
   exit 0
 fi
+
+log "Tasks due: headline=$run_headline, resume=$run_resume"
 
 # Print run start marker and rotate logs to keep only last 5 runs
 echo "=== RUN START ===" >> "$hourly_log"
@@ -103,6 +126,9 @@ echo "=== RUN START ===" >> "$hourly_log"
 
 echo "=== RUN START ===" >> "$repo_dir/naukri-refresh.log"
 "$node_bin" "$repo_dir/scripts/scheduler.js" --rotate-logs "$repo_dir/naukri-refresh.log" >> "$hourly_log" 2>&1 || true
+
+echo "=== RUN START ===" >> "$monitor_log"
+"$node_bin" "$repo_dir/scripts/scheduler.js" --rotate-logs "$monitor_log" >> "$monitor_log" 2>&1 || true
 
 # Log active configuration and state context at the start of this execution
 "$node_bin" "$repo_dir/scripts/scheduler.js" --validate >> "$hourly_log" 2>&1 || true
@@ -135,9 +161,9 @@ fi
 
 if [[ "$run_headline" == "true" ]]; then
   log 'Starting Naukri headline refresh.'
-  if "$node_bin" "$repo_dir/naukri-profile-refresh.js" --refresh-headline >> "$hourly_log" 2>&1; then
+  if run_logged "$node_bin" "$repo_dir/naukri-profile-refresh.js" --refresh-headline; then
     log 'Naukri headline refresh completed.'
-    "$node_bin" "$repo_dir/scripts/scheduler.js" --update-refresh-time >> "$hourly_log" 2>&1
+    run_logged "$node_bin" "$repo_dir/scripts/scheduler.js" --update-refresh-time
   else
     log 'ERROR: Naukri headline refresh failed.'
     exit 1
@@ -146,9 +172,9 @@ fi
 
 if [[ "$run_resume" == "true" ]]; then
   log 'Starting Naukri resume upload.'
-  if "$node_bin" "$repo_dir/naukri-profile-refresh.js" --upload-resume >> "$hourly_log" 2>&1; then
+  if run_logged "$node_bin" "$repo_dir/naukri-profile-refresh.js" --upload-resume; then
     log 'Naukri resume upload completed.'
-    "$node_bin" "$repo_dir/scripts/scheduler.js" --update-resume-time >> "$hourly_log" 2>&1
+    run_logged "$node_bin" "$repo_dir/scripts/scheduler.js" --update-resume-time
   else
     log 'ERROR: Naukri resume upload failed.'
     exit 1
