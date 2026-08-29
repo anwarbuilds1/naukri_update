@@ -38,6 +38,7 @@ Designed for **completely non-technical users**, this app manages all scheduling
 
 ## 🛠 Developer & CLI Guide (Technical Setup)
 
+If you are a developer or contributor wanting to build, test, extend, or package the application from source code, please refer to the comprehensive [Developer Onboarding Roadmap & Walkthrough](DEVELOPER_ROADMAP.md).
 
 ## Features
 
