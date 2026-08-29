@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "electron": "^41.7.1",
-    "electron-builder": "^27.0.0"
+    "electron-builder": "^26.15.3"
   },
   "build": {
     "appId": "com.naukri.update",
