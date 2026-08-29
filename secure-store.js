@@ -10,20 +10,23 @@ const path = require('path');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
 
-let electronSafeStorage = null;
-try {
-  const electron = require('electron');
-  if (electron && electron.safeStorage) {
-    electronSafeStorage = electron.safeStorage;
-  }
-} catch (e) {
-  // Not in Electron main process
-}
-
 class SecureStoreService {
   constructor(configDir) {
     this.configDir = configDir;
     this.credentialsPath = path.join(configDir, '.credentials.enc');
+  }
+
+  /**
+   * Helper to safely check if Electron safeStorage is available AND app is ready.
+   */
+  isSafeStorageAvailable() {
+    try {
+      const electron = require('electron');
+      if (electron && electron.app && typeof electron.app.isReady === 'function' && electron.app.isReady()) {
+        return electron.safeStorage && typeof electron.safeStorage.isEncryptionAvailable === 'function' && electron.safeStorage.isEncryptionAvailable();
+      }
+    } catch (e) {}
+    return false;
   }
 
   /**
@@ -74,10 +77,11 @@ class SecureStoreService {
       return true;
     }
 
-    // Try Electron safeStorage first
-    if (electronSafeStorage && electronSafeStorage.isEncryptionAvailable()) {
+    // Try Electron safeStorage first if app is ready and available
+    if (this.isSafeStorageAvailable()) {
       try {
-        const encryptedBuffer = electronSafeStorage.encryptString(password);
+        const electron = require('electron');
+        const encryptedBuffer = electron.safeStorage.encryptString(password);
         const data = JSON.stringify({
           type: 'electron_safestorage',
           data: encryptedBuffer.toString('base64')
@@ -124,9 +128,10 @@ class SecureStoreService {
       const content = fs.readFileSync(this.credentialsPath, 'utf8');
       const parsed = JSON.parse(content);
 
-      if (parsed.type === 'electron_safestorage' && electronSafeStorage && electronSafeStorage.isEncryptionAvailable()) {
+      if (parsed.type === 'electron_safestorage' && this.isSafeStorageAvailable()) {
+        const electron = require('electron');
         const buffer = Buffer.from(parsed.data, 'base64');
-        return electronSafeStorage.decryptString(buffer);
+        return electron.safeStorage.decryptString(buffer);
       }
 
       if (parsed.type === 'machine_aes_gcm') {

@@ -1,6 +1,6 @@
 {
   "name": "naukri-update",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
   "main": "main.js",
   "scripts": {
@@ -33,6 +33,7 @@
       "preload.js",
       "config.js",
       "config-service.js",
+      "secure-store.js",
       "naukri-profile-refresh.js",
       "renderer/**/*",
       "scripts/**/*",
