@@ -25,7 +25,7 @@ class SecureStoreService {
       if (electron && electron.app && typeof electron.app.isReady === 'function' && electron.app.isReady()) {
         return electron.safeStorage && typeof electron.safeStorage.isEncryptionAvailable === 'function' && electron.safeStorage.isEncryptionAvailable();
       }
-    } catch (e) {}
+    } catch (e) { }
     return false;
   }
 
@@ -50,8 +50,8 @@ class SecureStoreService {
         const lines = out.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
         if (lines.length > 1) return lines[1];
       }
-    } catch (e) {}
-    
+    } catch (e) { }
+
     // Default deterministic fallback seed based on OS user & homedir
     const userInfo = process.env.USER || process.env.USERNAME || 'default_user';
     const homeDir = process.env.HOME || process.env.USERPROFILE || 'default_home';
@@ -72,7 +72,7 @@ class SecureStoreService {
   setPassword(password) {
     if (!password) {
       if (fs.existsSync(this.credentialsPath)) {
-        try { fs.unlinkSync(this.credentialsPath); } catch (e) {}
+        try { fs.unlinkSync(this.credentialsPath); } catch (e) { }
       }
       return true;
     }
@@ -175,15 +175,15 @@ class SecureStoreService {
     }
     const tempPath = `${this.credentialsPath}.tmp`;
     fs.writeFileSync(tempPath, content, 'utf8');
-    
+
     // Restrict permissions to owner only (chmod 0600 on Unix)
     if (process.platform !== 'win32') {
-      try { fs.chmodSync(tempPath, 0o600); } catch (e) {}
+      try { fs.chmodSync(tempPath, 0o600); } catch (e) { }
     }
-    
+
     fs.renameSync(tempPath, this.credentialsPath);
     if (process.platform !== 'win32') {
-      try { fs.chmodSync(this.credentialsPath, 0o600); } catch (e) {}
+      try { fs.chmodSync(this.credentialsPath, 0o600); } catch (e) { }
     }
   }
 }

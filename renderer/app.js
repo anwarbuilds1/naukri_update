@@ -92,13 +92,13 @@ navItems.forEach(item => {
 function switchTab(tabName) {
   navItems.forEach(item => item.classList.remove('active'));
   document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
-  
+
   tabContents.forEach(content => content.classList.remove('active'));
   document.getElementById(`tab-${tabName}`).classList.add('active');
-  
+
   currentTab = tabName;
   tabTitle.textContent = tabName.charAt(0).toUpperCase() + tabName.slice(1);
-  
+
   if (tabName === 'logs') {
     loadLogs();
   } else if (tabName === 'dashboard') {
@@ -139,16 +139,16 @@ windowEnabled.addEventListener('change', () => {
 async function loadSettings() {
   try {
     const env = await window.api.getSettings();
-    
+
     // Account details
     document.getElementById('naukri-profile-url').value = env.NAUKRI_PROFILE_URL || 'https://www.naukri.com/mnjuser/profile';
     document.getElementById('naukri-email').value = env.NAUKRI_EMAIL || '';
     document.getElementById('naukri-password').value = env.NAUKRI_PASSWORD || '';
-    
+
     // Headline Settings
     headlineEnabled.checked = env.REFRESH_MODE === 'interval' || env.REFRESH_MODE === 'fixed_time';
     headlineSettingsBox.style.display = headlineEnabled.checked ? 'block' : 'none';
-    
+
     refreshMode.value = env.REFRESH_MODE === 'fixed_time' ? 'fixed_time' : 'interval';
     if (refreshMode.value === 'interval') {
       intervalInputs.style.display = 'grid';
@@ -157,22 +157,22 @@ async function loadSettings() {
       intervalInputs.style.display = 'none';
       fixedTimeInputs.style.display = 'block';
     }
-    
+
     document.getElementById('interval-hours').value = env.REFRESH_INTERVAL_HOURS !== undefined ? env.REFRESH_INTERVAL_HOURS : 1;
     document.getElementById('interval-minutes').value = env.REFRESH_INTERVAL_MINUTES !== undefined ? env.REFRESH_INTERVAL_MINUTES : 0;
     document.getElementById('refresh-time').value = env.REFRESH_TIME || '06:11';
-    
+
     // Resume Settings
     resumeEnabled.checked = env.RESUME_UPDATE_ENABLED === 'true';
     resumeSettingsBox.style.display = resumeEnabled.checked ? 'block' : 'none';
     document.getElementById('resume-time').value = env.RESUME_UPDATE_TIME || '07:00';
-    
+
     // Window Settings
     windowEnabled.checked = env.REFRESH_WINDOW_ENABLED === 'true';
     windowSettingsBox.style.display = windowEnabled.checked ? 'block' : 'none';
     document.getElementById('window-start').value = env.REFRESH_WINDOW_START || '07:00';
     document.getElementById('window-end').value = env.REFRESH_WINDOW_END || '19:00';
-    
+
     // First Run Check
     if (!env.NAUKRI_EMAIL || !env.NAUKRI_PASSWORD) {
       isFirstRun = true;
@@ -187,7 +187,7 @@ settingsForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   saveStatus.textContent = 'Saving configuration...';
   saveStatus.className = 'save-status';
-  
+
   // Validation
   if (headlineEnabled.checked && refreshMode.value === 'interval') {
     const hours = parseInt(document.getElementById('interval-hours').value, 10);
@@ -198,7 +198,7 @@ settingsForm.addEventListener('submit', async (e) => {
       return;
     }
   }
-  
+
   const settings = {
     NAUKRI_PROFILE_URL: document.getElementById('naukri-profile-url').value.trim(),
     NAUKRI_EMAIL: document.getElementById('naukri-email').value.trim(),
@@ -213,7 +213,7 @@ settingsForm.addEventListener('submit', async (e) => {
     REFRESH_WINDOW_START: document.getElementById('window-start').value,
     REFRESH_WINDOW_END: document.getElementById('window-end').value
   };
-  
+
   try {
     const result = await window.api.saveSettings(settings);
     if (result.success) {
@@ -240,21 +240,21 @@ async function updateResumeDisplay() {
   try {
     const info = await window.api.getResumeInfo();
     currentResume = info.exists ? info : null;
-    
+
     if (info.exists) {
       // Dashboard display
       resumeStatusBadge.textContent = 'Valid PDF';
       resumeStatusBadge.className = 'badge badge-success';
       resumeFileName.textContent = info.name;
-      
+
       const sizeKB = (info.sizeBytes / 1024).toFixed(1);
       const dateStr = new Date(info.mtime).toLocaleString();
       resumeFileMeta.textContent = `${sizeKB} KB · Modified: ${dateStr}`;
-      
+
       // Settings display
       settingsResumeName.textContent = info.name;
       settingsResumeMeta.textContent = `${sizeKB} KB · Active authoritative copy in AppData.`;
-      
+
       // Wizard display
       wizResumeName.textContent = info.name;
       wizResumeMeta.textContent = `${sizeKB} KB · Valid PDF. Ready for upload.`;
@@ -263,10 +263,10 @@ async function updateResumeDisplay() {
       resumeStatusBadge.className = 'badge badge-danger';
       resumeFileName.textContent = info.name ? `${info.name} (Missing)` : 'Resume file missing';
       resumeFileMeta.textContent = 'The saved resume file is missing from disk. Click below to select a new PDF.';
-      
+
       settingsResumeName.textContent = 'Resume File Missing';
       settingsResumeMeta.textContent = 'The previously saved resume file could not be found. Please select a valid PDF file.';
-      
+
       wizResumeName.textContent = 'Resume File Missing';
       wizResumeMeta.textContent = 'The configured resume file is missing. Click below to choose another resume.';
     } else {
@@ -274,10 +274,10 @@ async function updateResumeDisplay() {
       resumeStatusBadge.className = 'badge';
       resumeFileName.textContent = 'No resume selected';
       resumeFileMeta.textContent = 'Upload a resume PDF to enable daily re-upload updates.';
-      
+
       settingsResumeName.textContent = 'No Authoritative Resume Loaded';
       settingsResumeMeta.textContent = 'Please select a valid PDF resume file. This file will be managed inside application data.';
-      
+
       wizResumeName.textContent = 'No Resume Selected';
       wizResumeMeta.textContent = 'Click below to upload a PDF resume. Only PDF format is accepted.';
     }
@@ -319,15 +319,15 @@ async function loadLogs() {
   try {
     const logs = await window.api.getLogs();
     const activeLogText = currentLogType === 'refresh' ? logs.refresh : logs.runner;
-    
+
     if (!activeLogText || activeLogText.trim() === '') {
       logContent.textContent = 'No logs recorded yet. Execution logs will populate here once automation runs.';
       return;
     }
-    
+
     // Render logs
     logContent.textContent = activeLogText;
-    
+
     // Auto scroll to bottom
     setTimeout(() => {
       logConsoleBox.scrollTop = logConsoleBox.scrollHeight;
@@ -391,7 +391,7 @@ function updateConnectionStateUI(state) {
   let displayStatus = state.status.charAt(0).toUpperCase() + state.status.slice(1);
   naukriConnectionBadge.textContent = displayStatus;
   naukriStatusMessage.textContent = state.message || 'Ready to connect.';
-  
+
   if (state.status === 'connected') {
     naukriConnectionBadge.className = 'badge badge-success';
     dashConnectChrome.disabled = false;
@@ -442,7 +442,7 @@ dashConnectChrome.addEventListener('click', async () => {
   naukriConnectionBadge.textContent = 'Connecting';
   naukriConnectionBadge.className = 'badge connecting';
   naukriStatusMessage.textContent = 'Initializing Chrome session...';
-  
+
   await window.api.connectNaukri();
 });
 
@@ -459,7 +459,7 @@ async function updateAutomationDashboard() {
     const data = await window.api.getAutomationStatus();
     const config = data.config;
     const state = data.state;
-    
+
     // Headline Status Card
     const headlineActive = config.refreshMode === 'interval' || config.refreshMode === 'fixed_time';
     if (headlineActive) {
@@ -470,7 +470,7 @@ async function updateAutomationDashboard() {
         headlineStatusBadge.textContent = 'Active';
         headlineStatusBadge.className = 'badge badge-success';
       }
-      
+
       if (config.refreshMode === 'interval') {
         headlineScheduleDesc.textContent = `Toggling dot every ${config.refreshIntervalHours}h ${config.refreshIntervalMinutes}m.`;
       } else {
@@ -481,7 +481,7 @@ async function updateAutomationDashboard() {
       headlineStatusBadge.className = 'badge';
       headlineScheduleDesc.textContent = 'Toggle is turned OFF in Settings.';
     }
-    
+
     // Resume Upload Status Card
     if (config.resumeUpdateEnabled) {
       if (state.paused) {
@@ -513,7 +513,7 @@ async function updateAutomationDashboard() {
       lastRunStatus.textContent = 'Pending';
       lastRunStatus.className = 'status-value badge';
     }
-    
+
     lastHeadlineTime.textContent = state.lastRefreshTime ? new Date(state.lastRefreshTime).toLocaleString() : 'Never';
     lastResumeTime.textContent = state.lastResumeUploadTime ? new Date(state.lastResumeUploadTime).toLocaleString() : 'Never';
   } catch (err) {
@@ -561,24 +561,24 @@ if (wizConnectChromeBtn) {
     const email = document.getElementById('wiz-email').value.trim();
     const password = document.getElementById('wiz-password').value;
     const url = document.getElementById('wiz-url').value.trim();
-    
+
     if (!email || !password || !url) {
       wizError.textContent = 'Please fill out email, password, and URL before connecting Chrome.';
       return;
     }
-    
+
     // Save settings temporarily so the connection process has access to credentials
     await window.api.saveSettings({
       NAUKRI_PROFILE_URL: url,
       NAUKRI_EMAIL: email,
       NAUKRI_PASSWORD: password
     });
-    
+
     wizConnectionStatus.innerHTML = `
       <span class="dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--accent-yellow); display: inline-block;"></span>
       <span>Connecting...</span>
     `;
-    
+
     const state = await window.api.connectNaukri();
     updateWizConnectionStatus(state);
   });
@@ -630,20 +630,20 @@ async function populateWizardFields() {
       document.getElementById('wiz-url').value = settings.NAUKRI_PROFILE_URL || 'https://www.naukri.com/mnjuser/profile';
       document.getElementById('wiz-email').value = settings.NAUKRI_EMAIL || '';
       document.getElementById('wiz-password').value = settings.NAUKRI_PASSWORD || '';
-      
+
       document.getElementById('wiz-resume-enabled').checked = settings.RESUME_UPDATE_ENABLED === 'true';
       document.getElementById('wiz-resume-time').value = settings.RESUME_UPDATE_TIME || '07:00';
-      
+
       document.getElementById('wiz-headline-enabled').checked = settings.REFRESH_MODE !== '';
       document.getElementById('wiz-refresh-mode').value = settings.REFRESH_MODE === 'fixed_time' ? 'fixed_time' : 'interval';
       document.getElementById('wiz-interval-hours').value = settings.REFRESH_INTERVAL_HOURS || '1';
       document.getElementById('wiz-interval-minutes').value = settings.REFRESH_INTERVAL_MINUTES || '0';
       document.getElementById('wiz-refresh-time').value = settings.REFRESH_TIME || '06:11';
-      
+
       toggleWizResumeTimeGroup();
       toggleWizHeadlineSettingsGroup();
     }
-  } catch (e) {}
+  } catch (e) { }
 
   try {
     const resumeInfo = await window.api.getResumeInfo();
@@ -660,7 +660,7 @@ async function populateWizardFields() {
       wizResumeBox.style.borderColor = 'var(--border-color)';
       wizResumeBox.style.backgroundColor = 'var(--bg-tertiary)';
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function toggleWizResumeTimeGroup() {
@@ -672,7 +672,7 @@ function toggleWizHeadlineSettingsGroup() {
   const enabled = document.getElementById('wiz-headline-enabled').checked;
   const group = document.getElementById('wiz-headline-settings-group');
   group.style.display = enabled ? 'block' : 'none';
-  
+
   if (enabled) {
     const mode = document.getElementById('wiz-refresh-mode').value;
     document.getElementById('wiz-headline-interval').style.display = mode === 'interval' ? 'grid' : 'none';
@@ -698,10 +698,10 @@ function updateWizardUI() {
       activePanel.classList.add('active');
     }, 50);
   }
-  
+
   const progressFill = document.getElementById('wizard-progress-fill');
   const stepsText = document.getElementById('wizard-steps-text');
-  
+
   const pct = Math.round((wizardStep / 9) * 100);
   if (progressFill) progressFill.style.width = `${pct}%`;
   if (stepsText) {
@@ -711,7 +711,7 @@ function updateWizardUI() {
       stepsText.textContent = `Step ${wizardStep} of 9`;
     }
   }
-  
+
   // Footer buttons state
   wizPrevBtn.style.visibility = wizardStep > 0 ? 'visible' : 'hidden';
   wizNextBtn.textContent = wizardStep === 9 ? 'Finish Setup' : (wizardStep === 0 ? 'Get Started' : 'Next');
@@ -720,7 +720,7 @@ function updateWizardUI() {
 
 wizNextBtn.addEventListener('click', async () => {
   wizError.textContent = '';
-  
+
   if (wizardStep === 0) {
     wizardStep = 1;
     updateWizardUI();
@@ -775,11 +775,11 @@ wizNextBtn.addEventListener('click', async () => {
   } else if (wizardStep === 5) {
     const resOn = document.getElementById('wiz-resume-enabled').checked;
     const resTime = document.getElementById('wiz-resume-time').value;
-    
+
     resumeEnabled.checked = resOn;
     document.getElementById('resume-time').value = resTime;
     resumeSettingsBox.style.display = resOn ? 'block' : 'none';
-    
+
     wizardStep = 6;
     updateWizardUI();
   } else if (wizardStep === 6) {
@@ -788,13 +788,13 @@ wizNextBtn.addEventListener('click', async () => {
     const hours = document.getElementById('wiz-interval-hours').value;
     const minutes = document.getElementById('wiz-interval-minutes').value;
     const fixedTime = document.getElementById('wiz-refresh-time').value;
-    
+
     headlineEnabled.checked = headOn;
     refreshMode.value = strat;
     document.getElementById('interval-hours').value = hours;
     document.getElementById('interval-minutes').value = minutes;
     document.getElementById('refresh-time').value = fixedTime;
-    
+
     headlineSettingsBox.style.display = headOn ? 'block' : 'none';
     if (strat === 'interval') {
       intervalInputs.style.display = 'grid';
@@ -803,7 +803,7 @@ wizNextBtn.addEventListener('click', async () => {
       intervalInputs.style.display = 'none';
       fixedTimeInputs.style.display = 'block';
     }
-    
+
     wizardStep = 7;
     updateWizardUI();
   } else if (wizardStep === 7) {
@@ -817,7 +817,7 @@ wizNextBtn.addEventListener('click', async () => {
     const headOn = headlineEnabled.checked;
     const resOn = resumeEnabled.checked;
     const bgOn = document.getElementById('wiz-background-enabled').checked;
-    
+
     const settings = {
       NAUKRI_PROFILE_URL: document.getElementById('naukri-profile-url').value.trim(),
       NAUKRI_EMAIL: document.getElementById('naukri-email').value.trim(),
@@ -832,10 +832,10 @@ wizNextBtn.addEventListener('click', async () => {
       REFRESH_WINDOW_START: document.getElementById('window-start').value,
       REFRESH_WINDOW_END: document.getElementById('window-end').value
     };
-    
+
     wizNextBtn.textContent = 'Saving...';
     wizNextBtn.disabled = true;
-    
+
     try {
       const result = await window.api.saveSettings(settings);
       if (result.success) {
@@ -885,7 +885,7 @@ async function runWizardDiagnostics() {
     btn.disabled = true;
     btn.textContent = 'Checking...';
   }
-  
+
   const indicators = ['config', 'creds', 'resume', 'chrome', 'profile', 'scheduler'];
   indicators.forEach(ind => {
     const el = document.getElementById(`diag-${ind}`);
@@ -894,10 +894,10 @@ async function runWizardDiagnostics() {
       el.textContent = 'Checking...';
     }
   });
-  
+
   try {
     const res = await window.api.runDiagnostics();
-    
+
     const setStatus = (id, success, message) => {
       const el = document.getElementById(`diag-${id}`);
       if (el) {
@@ -910,14 +910,14 @@ async function runWizardDiagnostics() {
         }
       }
     };
-    
+
     setStatus('config', res.schemaValid, 'Schema Invalid');
     setStatus('creds', res.credentialsProvided, 'Missing Credentials');
     setStatus('resume', res.resumeFileValid, res.resumeError || 'Invalid PDF');
     setStatus('chrome', res.chromeExecutableAvailable, 'Chrome not found');
     setStatus('profile', res.browserProfileDirectoryReady, 'Directory error');
     setStatus('scheduler', res.backgroundSchedulerExecutableReady, 'Script error');
-    
+
   } catch (err) {
     wizError.textContent = `Diagnostics failed: ${err.message}`;
   } finally {
@@ -965,7 +965,7 @@ guideNavItems.forEach(item => {
   item.addEventListener('click', () => {
     guideNavItems.forEach(el => el.classList.remove('active'));
     item.classList.add('active');
-    
+
     const secId = item.getAttribute('data-section');
     const secEl = document.getElementById(secId);
     if (secEl) {
@@ -976,7 +976,7 @@ guideNavItems.forEach(item => {
 
 guideSearchInput.addEventListener('input', () => {
   const query = guideSearchInput.value.toLowerCase().trim();
-  
+
   if (!query) {
     guideNavItems.forEach(el => el.style.display = 'block');
     guideSections.forEach(el => {
@@ -985,12 +985,12 @@ guideSearchInput.addEventListener('input', () => {
     });
     return;
   }
-  
+
   guideSections.forEach(section => {
     const text = section.innerText.toLowerCase();
     const secId = section.getAttribute('id');
     const navItem = document.querySelector(`#guide-nav-list li[data-section="${secId}"]`);
-    
+
     if (text.includes(query)) {
       section.style.display = 'block';
       if (navItem) navItem.style.display = 'block';
@@ -1015,7 +1015,7 @@ function highlightText(element, query) {
   nodesToReplace.forEach(node => {
     const parent = node.parentNode;
     if (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE' || parent.tagName === 'MARK') return;
-    
+
     const text = node.nodeValue;
     const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
     const span = document.createElement('span');
@@ -1146,7 +1146,7 @@ function showCustomConfirm({ title, message, requireText, buttonText, buttonClas
 
     titleEl.textContent = title || "Confirm Action";
     bodyEl.innerHTML = message || "";
-    
+
     // Reset inputs
     inputField.value = "";
     if (requireText) {
@@ -1154,7 +1154,7 @@ function showCustomConfirm({ title, message, requireText, buttonText, buttonClas
       inputLabel.textContent = `Type "${requireText}" to confirm:`;
       inputField.placeholder = requireText;
       actionBtn.disabled = true;
-      
+
       // Real-time input checking
       inputField.oninput = () => {
         actionBtn.disabled = inputField.value.trim() !== requireText;
@@ -1180,7 +1180,7 @@ function showCustomConfirm({ title, message, requireText, buttonText, buttonClas
     }
 
     modal.classList.add('active');
-    
+
     if (requireText) {
       inputField.focus();
     } else {
@@ -1210,7 +1210,7 @@ function showCustomConfirm({ title, message, requireText, buttonText, buttonClas
         onCancel();
       }
     }
-    
+
     function onKeyDown(e) {
       if (e.key === 'Escape' && !hideCancel) {
         onCancel();
@@ -1393,7 +1393,7 @@ async function init() {
   await updateChromeStatus();
   await updateAutomationDashboard();
   setupAutoUpdater();
-  
+
   // Status check loop every 3 seconds
   setInterval(updateChromeStatus, 3000);
 }

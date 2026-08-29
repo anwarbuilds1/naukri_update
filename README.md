@@ -687,7 +687,8 @@ Use the solutions below if you encounter issues.
 
 - **100% Local Execution:** Everything runs locally on your machine.
 - **No External Servers:** Your credentials, resume files, and activity logs are **never** uploaded to any developer or third-party server.
-- **Scrubbed Logs:** Confidential information is excluded from all log outputs.
+- **Secure Password Storage:** Sensitive passwords are **never** stored in plain text. Passwords are encrypted using machine-bound AES-256-GCM encryption with PBKDF2 derivation (100,000 rounds) stored in `.credentials.enc` with owner-only access permissions (`0600`).
+- **Scrubbed Logs:** Confidential information is excluded from all log outputs (passwords are masked as `••••••••`).
 - **Isolated Browser Environment:** The app runs inside a dedicated Chrome profile (`.naukri-chrome-profile`), leaving your main browser data untouched.
 
 ---
@@ -703,7 +704,9 @@ All configuration, resume copies, logs, and browser profiles are stored in your 
 | **Linux** | `~/.config/NaukriUpdate/` |
 
 ### Contents:
-- `.env` ➔ Configuration settings & credentials
+- `config.json` ➔ Non-sensitive application preferences (versioned schema)
+- `.credentials.enc` ➔ Encrypted password store (machine-derived key, `0600` permissions)
+- `.env` ➔ Non-sensitive environment variables for CLI compatibility
 - `resume/` ➔ Authoritative local copy of your resume PDF
 - `.naukri-chrome-profile/` ➔ Isolated Chrome cookies & session
 - `naukri-refresh.log` ➔ Execution activity log (rotated, max 5 runs kept)

@@ -94,7 +94,7 @@ class ConfigService {
         console.error('[ConfigService] Corrupted config.json detected. Backing up:', err.message);
         try {
           fs.renameSync(jsonPath, `${jsonPath}.bak.${Date.now()}`);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -170,7 +170,7 @@ class ConfigService {
             };
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // 2. Check explicit path
@@ -240,7 +240,7 @@ class ConfigService {
 
     if (settings.REFRESH_WINDOW_ENABLED === 'true') {
       if (!settings.REFRESH_WINDOW_START || !settings.REFRESH_WINDOW_START.match(/^([0-9]{2}):([0-9]{2})$/) ||
-          !settings.REFRESH_WINDOW_END || !settings.REFRESH_WINDOW_END.match(/^([0-9]{2}):([0-9]{2})$/)) {
+        !settings.REFRESH_WINDOW_END || !settings.REFRESH_WINDOW_END.match(/^([0-9]{2}):([0-9]{2})$/)) {
         return { success: false, error: 'Active window constraints must be in HH:MM format.' };
       }
     }
@@ -291,17 +291,17 @@ class ConfigService {
     const jsonTmp = `${jsonPath}.tmp`;
     fs.writeFileSync(jsonTmp, JSON.stringify(jsonPayload, null, 2), 'utf8');
     if (process.platform !== 'win32') {
-      try { fs.chmodSync(jsonTmp, 0o600); } catch (e) {}
+      try { fs.chmodSync(jsonTmp, 0o600); } catch (e) { }
     }
     fs.renameSync(jsonTmp, jsonPath);
     if (process.platform !== 'win32') {
-      try { fs.chmodSync(jsonPath, 0o600); } catch (e) {}
+      try { fs.chmodSync(jsonPath, 0o600); } catch (e) { }
     }
 
     // 3. Synchronize non-sensitive settings to .env for CLI compatibility
     const envPath = this.getEnvPath();
     const envData = { ...jsonPayload, NAUKRI_PASSWORD: '[SECURE_STORE]' };
-    
+
     let existingContent = '';
     if (fs.existsSync(envPath)) {
       existingContent = fs.readFileSync(envPath, 'utf8');
@@ -333,11 +333,11 @@ class ConfigService {
     const envTmp = `${envPath}.tmp`;
     fs.writeFileSync(envTmp, cleanLines.join('\n'), 'utf8');
     if (process.platform !== 'win32') {
-      try { fs.chmodSync(envTmp, 0o600); } catch (e) {}
+      try { fs.chmodSync(envTmp, 0o600); } catch (e) { }
     }
     fs.renameSync(envTmp, envPath);
     if (process.platform !== 'win32') {
-      try { fs.chmodSync(envPath, 0o600); } catch (e) {}
+      try { fs.chmodSync(envPath, 0o600); } catch (e) { }
     }
 
     return { success: true };
@@ -374,7 +374,7 @@ class ConfigService {
           }
           console.log('[ConfigService] Migrated resume files to AppData.');
         }
-        
+
         // Convert to config.json & SecureStore
         this.save(this.load());
         return true;
@@ -391,7 +391,7 @@ class ConfigService {
   clearCredentials() {
     const secureStore = this.getSecureStore();
     secureStore.clearPassword();
-    
+
     const config = this.load();
     config.NAUKRI_EMAIL = '';
     config.NAUKRI_PASSWORD = '';
@@ -410,10 +410,10 @@ class ConfigService {
         for (const file of files) {
           try {
             fs.unlinkSync(path.join(resumeDir, file));
-          } catch (e) {}
+          } catch (e) { }
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const config = this.load();
     config.RESUME_FILE = '';
@@ -444,7 +444,7 @@ class ConfigService {
       try {
         const p = path.join(configDir, f);
         if (fs.existsSync(p)) fs.unlinkSync(p);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     const resumeDir = path.join(configDir, 'resume');
@@ -452,17 +452,17 @@ class ConfigService {
       if (fs.existsSync(resumeDir)) {
         const files = fs.readdirSync(resumeDir);
         for (const f of files) {
-          try { fs.unlinkSync(path.join(resumeDir, f)); } catch (e) {}
+          try { fs.unlinkSync(path.join(resumeDir, f)); } catch (e) { }
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const profileDir = path.join(configDir, '.naukri-chrome-profile');
     try {
       if (fs.existsSync(profileDir)) {
         fs.rmSync(profileDir, { recursive: true, force: true });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const secureStore = this.getSecureStore();
     secureStore.clearPassword();
@@ -507,7 +507,7 @@ class ConfigService {
         try {
           const p = execSync(`which ${c}`, { stdio: 'pipe' }).toString().trim();
           if (p && fs.existsSync(p)) return p;
-        } catch (e) {}
+        } catch (e) { }
       }
     }
     return null;

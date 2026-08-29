@@ -23,7 +23,7 @@ function logAppInfo(message, details = '') {
       fs.mkdirSync(configDir, { recursive: true });
     }
     fs.appendFileSync(appLogPath, `${line}\n`, 'utf8');
-  } catch (e) {}
+  } catch (e) { }
 }
 
 process.on('uncaughtException', (err) => {
@@ -75,15 +75,15 @@ function saveEnvFile(envData) {
 function configureOSSchedule(envData) {
   const isEnabled = envData.REFRESH_MODE || envData.RESUME_UPDATE_ENABLED === 'true';
   const appPath = app.getPath('exe');
-  
+
   if (process.platform === 'win32') {
     const taskName = "NaukriUpdateTask";
     try {
       // Always clean up existing task
       try {
         execSync(`schtasks /delete /tn "${taskName}" /f`, { stdio: 'ignore' });
-      } catch (e) {}
-      
+      } catch (e) { }
+
       if (isEnabled) {
         // Run every 15 minutes
         execSync(`schtasks /create /tn "${taskName}" /tr "\\"${appPath}\\" --run-automation" /sc minute /mo 15 /f`, { stdio: 'ignore' });
@@ -99,7 +99,7 @@ function configureOSSchedule(envData) {
         execSync(`launchctl unload "${plistPath}"`, { stdio: 'ignore' });
         fs.unlinkSync(plistPath);
       }
-      
+
       if (isEnabled) {
         const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -131,13 +131,13 @@ function configureOSSchedule(envData) {
       let cronContent = '';
       try {
         cronContent = execSync('crontab -l', { stdio: 'pipe' }).toString();
-      } catch (e) {}
-      
+      } catch (e) { }
+
       const lines = cronContent.split('\n').filter(line => !line.includes('NaukriUpdate') && line.trim() !== '');
       if (isEnabled) {
         lines.push(`*/15 * * * * DISPLAY=:1 XDG_RUNTIME_DIR=/run/user/${process.getuid()} "${appPath}" --run-automation > /dev/null 2>&1`);
       }
-      
+
       const newCron = lines.join('\n') + '\n';
       const tempCronFile = path.join(configDir, 'temp_cron');
       fs.writeFileSync(tempCronFile, newCron, 'utf8');
@@ -167,7 +167,7 @@ function checkCDPAvailable() {
 // Find Google Chrome Executable
 function findChromeExecutable() {
   const platform = process.platform;
-  
+
   if (platform === 'win32') {
     const paths = [
       path.join(process.env.PROGRAMFILES || 'C:\\Program Files', 'Google\\Chrome\\Application\\chrome.exe'),
@@ -187,7 +187,7 @@ function findChromeExecutable() {
       try {
         const p = execSync(`which ${c}`, { stdio: 'pipe' }).toString().trim();
         if (p && fs.existsSync(p)) return p;
-      } catch (e) {}
+      } catch (e) { }
     }
   }
   return null;
@@ -197,37 +197,37 @@ function findChromeExecutable() {
 function ensureChromeRunning() {
   return checkCDPAvailable().then((available) => {
     if (available) return true;
-    
+
     const chromePath = findChromeExecutable();
     if (!chromePath) {
       console.error('Chrome executable not found on this system.');
       return false;
     }
-    
+
     const profileDir = path.join(configDir, '.naukri-chrome-profile');
-    
+
     // Clean SingletonLock on Linux/macOS
     const lockFile = path.join(profileDir, 'SingletonLock');
     if (fs.existsSync(lockFile)) {
       try {
         fs.unlinkSync(lockFile);
-      } catch (e) {}
+      } catch (e) { }
     }
-    
+
     const chromeArgs = [
       '--remote-debugging-port=9222',
       '--remote-debugging-address=127.0.0.1',
       `--user-data-dir=${profileDir}`,
       'https://www.naukri.com/mnjuser/profile'
     ];
-    
+
     console.log(`Launching Chrome: ${chromePath} ${chromeArgs.join(' ')}`);
     chromeProcess = spawn(chromePath, chromeArgs, {
       detached: true,
       stdio: 'ignore'
     });
     chromeProcess.unref();
-    
+
     // Poll for CDP
     return new Promise((resolve) => {
       let attempts = 0;
@@ -277,11 +277,11 @@ function runAutomationTask(flag) {
     const child = spawn(process.execPath, [scriptPath, flag], {
       env: { ...process.env, NAUKRI_ENV_PATH: ACTIVE_ENV_PATH, ELECTRON_RUN_AS_NODE: '1' }
     });
-    
+
     let output = '';
     child.stdout.on('data', (data) => output += data.toString());
     child.stderr.on('data', (data) => output += data.toString());
-    
+
     child.on('close', (code) => {
       if (code === 0) {
         resolve(output);
@@ -296,17 +296,17 @@ function runAutomationTask(flag) {
 function executeDueTasks() {
   const shouldRefresh = checkTaskDue('--should-refresh');
   const shouldUpload = checkTaskDue('--should-upload-resume');
-  
+
   if (!shouldRefresh && !shouldUpload) return;
-  
+
   ensureChromeRunning().then((chromeReady) => {
     if (!chromeReady) {
       showNotification('Automation Failed', 'Could not open dedicated Chrome profile for automation.');
       return;
     }
-    
+
     let chain = Promise.resolve();
-    
+
     if (shouldRefresh) {
       chain = chain.then(() => {
         return runAutomationTask('--refresh-headline')
@@ -319,7 +319,7 @@ function executeDueTasks() {
           });
       });
     }
-    
+
     if (shouldUpload) {
       chain = chain.then(() => {
         return runAutomationTask('--upload-resume')
@@ -346,18 +346,18 @@ if (isHeadlessRun) {
   app.whenReady().then(() => {
     const shouldRefresh = checkTaskDue('--should-refresh');
     const shouldUpload = checkTaskDue('--should-upload-resume');
-    
+
     if (!shouldRefresh && !shouldUpload) {
       app.quit();
       return;
     }
-    
+
     ensureChromeRunning().then((chromeReady) => {
       if (!chromeReady) {
         app.quit();
         return;
       }
-      
+
       let chain = Promise.resolve();
       if (shouldRefresh) {
         chain = chain.then(() => runAutomationTask('--refresh-headline').then(() => updateLastRunTime('--update-refresh-time')));
@@ -365,7 +365,7 @@ if (isHeadlessRun) {
       if (shouldUpload) {
         chain = chain.then(() => runAutomationTask('--upload-resume').then(() => updateLastRunTime('--update-resume-time')));
       }
-      
+
       chain.then(() => app.quit()).catch(() => app.quit());
     });
   });
@@ -375,7 +375,7 @@ if (isHeadlessRun) {
     loadPausedState();
     createWindow();
     createTray();
-    
+
     // Initialize Auto-Updater Service
     try {
       const AutoUpdaterService = require('./auto-updater-service');
@@ -389,7 +389,7 @@ if (isHeadlessRun) {
 
     // Run task scheduler check every 60 seconds
     checkIntervalTimer = setInterval(executeDueTasks, 60000);
-    
+
     // Enable auto launch on boot
     app.setLoginItemSettings({
       openAtLogin: true,
@@ -408,7 +408,7 @@ if (isHeadlessRun) {
       clearInterval(healthCheckTimer);
     }
     if (activeBrowser) {
-      activeBrowser.close().catch(() => {});
+      activeBrowser.close().catch(() => { });
     }
   });
 }
@@ -470,7 +470,7 @@ function loadPausedState() {
     try {
       const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
       isAutomationPaused = !!state.paused;
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -481,15 +481,15 @@ function setPausedState(paused) {
   if (fs.existsSync(stateFile)) {
     try {
       state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
-    } catch (e) {}
+    } catch (e) { }
   }
   state.paused = paused;
   try {
     fs.writeFileSync(stateFile, JSON.stringify(state, null, 2), 'utf8');
-  } catch (e) {}
-  
+  } catch (e) { }
+
   updateTrayMenu();
-  
+
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('status-update');
   }
@@ -497,7 +497,7 @@ function setPausedState(paused) {
 
 function updateTrayMenu() {
   if (!tray) return;
-  
+
   const connectionStatus = naukriConnectionState.status;
   let connectionLabel = 'Disconnected';
   if (connectionStatus === 'connected') {
@@ -509,7 +509,7 @@ function updateTrayMenu() {
   } else if (connectionStatus === 'failed') {
     connectionLabel = 'Connection Failed';
   }
-  
+
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Open Dashboard', click: () => { if (mainWindow) mainWindow.show(); } },
     { type: 'separator' },
@@ -530,17 +530,17 @@ function updateTrayMenu() {
     { type: 'separator' },
     { label: 'Quit Application', click: () => { isQuitting = true; app.quit(); } }
   ]);
-  
+
   tray.setContextMenu(contextMenu);
 }
 
 function createTray() {
   const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png')).resize({ width: 16, height: 16 });
   tray = new Tray(icon);
-  
+
   tray.setToolTip('Naukri Update');
   updateTrayMenu();
-  
+
   tray.on('click', () => {
     if (mainWindow) mainWindow.show();
   });
@@ -622,10 +622,10 @@ ipcMain.handle('delete-resume', () => {
       for (const file of files) {
         try {
           fs.unlinkSync(path.join(resumeDir, file));
-        } catch (e) {}
+        } catch (e) { }
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   saveEnvFile({ RESUME_FILE: '' });
   return { success: true };
 });
@@ -645,11 +645,11 @@ ipcMain.handle('reset-browser-profile', async () => {
 
 ipcMain.handle('reset-application', async () => {
   await disconnectChrome();
-  
+
   // Stop schedule
   try {
     configureOSSchedule({ REFRESH_MODE: '', RESUME_UPDATE_ENABLED: 'false' });
-  } catch (e) {}
+  } catch (e) { }
 
   return ConfigService.resetAll();
 });
@@ -686,7 +686,7 @@ ipcMain.handle('get-resume-info', () => {
         sizeBytes: stat.size,
         mtime: stat.mtime
       };
-    } catch (e) {}
+    } catch (e) { }
   }
 
   return {
@@ -701,13 +701,13 @@ ipcMain.handle('select-resume', async () => {
     properties: ['openFile'],
     filters: [{ name: 'PDF Files', extensions: ['pdf'] }]
   });
-  
+
   if (result.canceled || result.filePaths.length === 0) {
     return { success: false, canceled: true };
   }
-  
+
   const selectedPath = result.filePaths[0];
-  
+
   // Reuse core validation logic from naukri-profile-refresh.js dynamically
   try {
     const { validateFile } = require('./naukri-profile-refresh');
@@ -715,25 +715,25 @@ ipcMain.handle('select-resume', async () => {
   } catch (err) {
     return { success: false, error: `Invalid PDF: ${err.message}` };
   }
-  
+
   const resumeDir = path.join(configDir, 'resume');
   const targetPath = path.join(resumeDir, path.basename(selectedPath));
-  
+
   try {
     // Delete any old files to satisfy Single-File Rule
     const files = fs.readdirSync(resumeDir);
     for (const f of files) {
       try {
         fs.unlinkSync(path.join(resumeDir, f));
-      } catch (e) {}
+      } catch (e) { }
     }
-    
+
     fs.copyFileSync(selectedPath, targetPath);
-    
+
     // Update env
     const relativePath = `resume/${path.basename(selectedPath)}`;
     saveEnvFile({ RESUME_FILE: relativePath });
-    
+
     const stat = fs.statSync(targetPath);
     return {
       success: true,
@@ -748,10 +748,10 @@ ipcMain.handle('select-resume', async () => {
 
 ipcMain.handle('get-logs', () => {
   const logs = { refresh: '', runner: '' };
-  
+
   const refreshLogFile = path.join(configDir, 'naukri-refresh.log');
   const hourlyLogFile = path.join(configDir, 'naukri-hourly-refresh.log');
-  
+
   // Helper to read last 50 lines safely, removing sensitive stuff
   const readLogLines = (filePath) => {
     if (!fs.existsSync(filePath)) return '';
@@ -769,7 +769,7 @@ ipcMain.handle('get-logs', () => {
       return `Failed to read logs: ${e.message}`;
     }
   };
-  
+
   logs.refresh = readLogLines(refreshLogFile);
   logs.runner = readLogLines(hourlyLogFile);
   return logs;
@@ -781,9 +781,9 @@ ipcMain.handle('get-automation-status', () => {
   if (fs.existsSync(stateFile)) {
     try {
       state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
-    } catch (e) {}
+    } catch (e) { }
   }
-  
+
   const envData = loadEnvFile();
   return {
     state,
@@ -825,8 +825,8 @@ async function handleBrowserClosed() {
   if (activeBrowser) {
     try {
       activeBrowser.removeAllListeners('disconnected');
-      await activeBrowser.close().catch(() => {});
-    } catch (e) {}
+      await activeBrowser.close().catch(() => { });
+    } catch (e) { }
     activeBrowser = null;
   }
   updateState('disconnected', 'Chrome was closed.');
@@ -853,7 +853,7 @@ async function verifyInitialConnectionState() {
     updateState('disconnected', 'Chrome is not connected.');
     return;
   }
-  
+
   updateState('connecting', 'Verifying Naukri session...');
   let tempBrowser = null;
   try {
@@ -865,8 +865,8 @@ async function verifyInitialConnectionState() {
       if (!page) {
         page = await context.newPage();
       }
-      await page.goto('https://www.naukri.com/mnjuser/profile', { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
-      
+      await page.goto('https://www.naukri.com/mnjuser/profile', { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => { });
+
       const isAuthenticated = async () => {
         if (!page.url().includes('naukri.com/mnjuser/profile')) return false;
         try {
@@ -892,9 +892,9 @@ async function verifyInitialConnectionState() {
   } catch (err) {
     console.error('Failed to verify initial connection:', err);
   }
-  
+
   if (tempBrowser) {
-    await tempBrowser.close().catch(() => {});
+    await tempBrowser.close().catch(() => { });
   }
   updateState('disconnected', 'Authentication required. Please connect Chrome.');
 }
@@ -913,13 +913,13 @@ async function startNaukriConnection(webContents) {
   if (activeBrowser) {
     try {
       activeBrowser.removeAllListeners('disconnected');
-      await activeBrowser.close().catch(() => {});
-    } catch (e) {}
+      await activeBrowser.close().catch(() => { });
+    } catch (e) { }
     activeBrowser = null;
   }
 
   updateStateLocal('connecting', 'Opening dedicated Chrome...');
-  
+
   const env = loadEnvFile();
   const email = env.NAUKRI_EMAIL;
   const password = env.NAUKRI_PASSWORD;
@@ -936,7 +936,7 @@ async function startNaukriConnection(webContents) {
   }
 
   updateStateLocal('connecting', 'Connecting over CDP...');
-  
+
   let browser = null;
   try {
     const { chromium } = require('playwright-core');
@@ -950,7 +950,7 @@ async function startNaukriConnection(webContents) {
     const context = browser.contexts()[0];
     if (!context) {
       updateStateLocal('failed', 'No Chrome browser context found.');
-      if (browser) await browser.close().catch(() => {});
+      if (browser) await browser.close().catch(() => { });
       return;
     }
 
@@ -960,7 +960,7 @@ async function startNaukriConnection(webContents) {
     }
 
     updateStateLocal('connecting', 'Checking active session...');
-    await page.goto('https://www.naukri.com/mnjuser/profile', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
+    await page.goto('https://www.naukri.com/mnjuser/profile', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => { });
 
     const isAuthenticated = async () => {
       if (!page.url().includes('naukri.com/mnjuser/profile')) return false;
@@ -993,7 +993,7 @@ async function startNaukriConnection(webContents) {
 
     try {
       await page.waitForSelector(emailSelector, { timeout: 10000 });
-    } catch (e) {}
+    } catch (e) { }
 
     if (page.url().includes('naukri.com/mnjuser/profile') && await isAuthenticated()) {
       updateStateLocal('connected', 'Chrome and Naukri session are active.');
@@ -1011,7 +1011,7 @@ async function startNaukriConnection(webContents) {
     await page.click(submitSelector);
 
     updateStateLocal('connecting', 'Authenticating...');
-    
+
     let authenticated = false;
     let loginFailed = false;
     let failReason = '';
@@ -1067,7 +1067,7 @@ async function startNaukriConnection(webContents) {
     updateStateLocal('failed', `Error: ${err.message}`);
   } finally {
     if (browser) {
-      await browser.close().catch(() => {});
+      await browser.close().catch(() => { });
     }
   }
 }
@@ -1076,11 +1076,11 @@ async function disconnectChrome() {
   if (activeBrowser) {
     try {
       activeBrowser.removeAllListeners('disconnected');
-      await activeBrowser.close().catch(() => {});
-    } catch (e) {}
+      await activeBrowser.close().catch(() => { });
+    } catch (e) { }
     activeBrowser = null;
   }
-  
+
   if (chromeProcess) {
     try {
       if (process.platform === 'win32') {
@@ -1091,7 +1091,7 @@ async function disconnectChrome() {
     } catch (e) {
       try {
         chromeProcess.kill('SIGKILL');
-      } catch (err) {}
+      } catch (err) { }
     }
     chromeProcess = null;
   } else {
@@ -1101,9 +1101,9 @@ async function disconnectChrome() {
       } else {
         exec('pkill -f "remote-debugging-port=9222"');
       }
-    } catch (e) {}
+    } catch (e) { }
   }
-  
+
   updateState('disconnected', 'Chrome was disconnected.');
 }
 

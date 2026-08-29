@@ -138,8 +138,8 @@ async function updateAndVerifyHeadline(page) {
   log('Step 11: Verify the input actually changed...');
   if (afterFill !== expectedHeadline) {
     log('ERROR: The input value after fill does not match the expected headline.');
-    await page.screenshot({ path: ERROR_SHOT }).catch(() => {});
-    await printHeadlineEditorDiagnostics(page).catch(() => {});
+    await page.screenshot({ path: ERROR_SHOT }).catch(() => { });
+    await printHeadlineEditorDiagnostics(page).catch(() => { });
     throw new Error('The headline field could not be updated.');
   }
 
@@ -150,7 +150,7 @@ async function updateAndVerifyHeadline(page) {
 
   log('Step 13: Wait for save/network/UI completion...');
   await modal.waitFor({ state: 'hidden', timeout: 15000 });
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle').catch(() => { });
 
   log('Step 14: Reload the profile...');
   await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
@@ -163,7 +163,7 @@ async function updateAndVerifyHeadline(page) {
   log('Step 16: Open the headline editor again for verification...');
   const editIconVerify = page.locator('#lazyResumeHead span.edit.icon, [data-ga-track*="resumeHeadline"] .edit').first();
   await editIconVerify.waitFor({ state: 'visible', timeout: 30000 });
-  
+
   const modalVerify = page.locator('form[name="resumeHeadlineForm"]');
   if (await modalVerify.isVisible()) {
     log('Headline modal is already visible on verification; skipping click.');
@@ -191,7 +191,7 @@ async function updateAndVerifyHeadline(page) {
   if (await cancelBtn.count() > 0) {
     await cancelBtn.click();
   }
-  await modalVerify.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+  await modalVerify.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => { });
 
   log('Step 19: Compare saved value with expected value...');
   if (saved !== expectedHeadline) {
@@ -248,7 +248,7 @@ async function getHeadlineEditor(page) {
     await editor.waitFor({ state: 'visible', timeout: 15000 });
     return { modal, editor };
   } catch (error) {
-    await printHeadlineEditorDiagnostics(page).catch(() => {});
+    await printHeadlineEditorDiagnostics(page).catch(() => { });
     throw error;
   }
 }
@@ -310,7 +310,7 @@ async function loginWithNaukriCredentials(page) {
   await passwordField.fill(naukriCredentials.password);
   await submitButton.click();
 
-  await page.waitForURL((url) => isAuthenticatedProfile(url.toString()), { timeout: 60000 }).catch(() => {});
+  await page.waitForURL((url) => isAuthenticatedProfile(url.toString()), { timeout: 60000 }).catch(() => { });
   if (!isAuthenticatedProfile(page.url())) {
     await page.goto(PROFILE_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
   }
@@ -322,7 +322,7 @@ async function loginWithNaukriCredentials(page) {
 function findAuthoritativeResume(resumeDir) {
   const resolvedDir = path.resolve(resumeDir);
   const hasRawConfig = rawResumeFile && rawResumeFile.trim() !== '';
-  
+
   if (hasRawConfig) {
     const configuredPath = rawResumeFile.trim();
     const absolutePath = path.isAbsolute(configuredPath)
@@ -347,14 +347,14 @@ function findAuthoritativeResume(resumeDir) {
   if (!fs.existsSync(resolvedDir)) {
     throw new Error(`Resume directory does not exist: ${resolvedDir}`);
   }
-  
+
   const files = fs.readdirSync(resolvedDir);
   const candidates = [];
 
   for (const file of files) {
     const filePath = path.join(resolvedDir, file);
     const stat = fs.statSync(filePath);
-    
+
     if (!stat.isFile()) continue;
     if (file.startsWith('.')) continue;
 
@@ -388,7 +388,7 @@ async function validateFile(filePath) {
   if (!stat1.isFile()) {
     throw new Error(`Not a regular file: ${filePath}`);
   }
-  
+
   const ext = path.extname(filePath).toLowerCase();
   if (ext !== '.pdf') {
     throw new Error('The configured resume file exists but is not a valid/readable PDF.');
@@ -494,7 +494,7 @@ function cleanupStaleResumes(resumeDir, sourceFilePath, datedFilename) {
 async function uploadAndVerifyResume(page) {
   log('Step 1: Locate resume upload section...');
   const resumeDir = path.resolve(configDir, 'resume');
-  
+
   // Find authoritative source resume
   const sourceFilePath = findAuthoritativeResume(resumeDir);
   log(`Found authoritative source resume: "${path.basename(sourceFilePath)}"`);
@@ -537,7 +537,7 @@ async function uploadAndVerifyResume(page) {
     // Handle any potential dialogs
     page.on('dialog', async dialog => {
       log(`Dialog appeared: "${dialog.message()}". Accepting.`);
-      await dialog.accept().catch(() => {});
+      await dialog.accept().catch(() => { });
     });
 
     await fileInput.setInputFiles(datedFilePath);
@@ -621,7 +621,7 @@ async function uploadAndVerifyResume(page) {
       const successHTML = await successMsg.count() > 0 ? await successMsg.first().evaluate(el => el.outerHTML).catch(() => '') : 'none';
       const currentNameText = await resumeNameEl.count() > 0 ? await resumeNameEl.innerText().catch(() => '') : 'none';
       log(`[diagnostics] Upload timeout reached. Progress HTML: ${progressHTML}, Success HTML: ${successHTML}, Current Name: "${currentNameText}"`);
-      
+
       throw new Error(`Resume upload failed to complete/verify within ${uploadTimeout / 1000} seconds.`);
     }
 
@@ -630,7 +630,7 @@ async function uploadAndVerifyResume(page) {
     if (await saveBtn.count() > 0 && await saveBtn.isVisible()) {
       log('Found a Save button in the resume section. Clicking Save...');
       await saveBtn.click();
-      await page.waitForLoadState('networkidle').catch(() => {});
+      await page.waitForLoadState('networkidle').catch(() => { });
     } else {
       log('No Save button found; Naukri auto-saved the upload.');
     }
@@ -650,7 +650,7 @@ async function uploadAndVerifyResume(page) {
     }
 
     log(`OK: Resume uploaded, saved, and verified from Naukri. New filename: "${datedFilename}"`);
-    
+
     log('Step 9: Cleaning up temporary copies and stale duplicate files...');
     if (isTempCopy && fs.existsSync(datedFilePath)) {
       fs.unlinkSync(datedFilePath);
@@ -710,13 +710,13 @@ if (require.main === module) {
       }
     } catch (error) {
       if (page && !nativeLoginInProgress && !isNaukriLoginUrl(page.url())) {
-        await page.screenshot({ path: ERROR_SHOT }).catch(() => {});
+        await page.screenshot({ path: ERROR_SHOT }).catch(() => { });
       }
       log(`ERROR: ${error.message.split('\n')[0]} (screenshot: naukri-refresh-error.png)`);
       process.exitCode = 1;
     } finally {
       // For a CDP connection, close() disconnects Playwright; Chrome stays open.
-      await browser.close().catch(() => {});
+      await browser.close().catch(() => { });
     }
   })();
 } else {
