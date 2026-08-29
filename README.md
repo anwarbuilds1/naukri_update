@@ -33,10 +33,10 @@ Use this table to choose the correct file from the Releases page:
 
 | Operating System / Distribution | Download File Pattern | Example Filename | Recommended Choice |
 | :--- | :--- | :--- | :--- |
-| **Windows** (64-bit) | `NaukriUpdate-Setup-<version>.exe` | `NaukriUpdate-Setup-1.0.5.exe` | `.exe` |
-| **macOS** (Intel / Apple Silicon) | `NaukriUpdate-<version>.dmg` | `NaukriUpdate-1.0.5.dmg` | `.dmg` |
-| **Ubuntu / Debian / Linux Mint / Pop!_OS** | `naukri-update_<version>_amd64.deb` | `naukri-update_1.0.5_amd64.deb` | `.deb` |
-| **Fedora / Arch / openSUSE / Other Linux** | `NaukriUpdate-<version>.AppImage` | `NaukriUpdate-1.0.5.AppImage` | `.AppImage` |
+| **Windows** (64-bit) | `NaukriUpdate-Setup-<version>.exe` | `NaukriUpdate-Setup-1.0.6.exe` | `.exe` |
+| **macOS** (Intel / Apple Silicon) | `NaukriUpdate-<version>.dmg` | `NaukriUpdate-1.0.6.dmg` | `.dmg` |
+| **Ubuntu / Debian / Linux Mint / Pop!_OS** | `naukri-update_<version>_amd64.deb` | `naukri-update_1.0.6_amd64.deb` | `.deb` |
+| **Fedora / Arch / openSUSE / Other Linux** | `NaukriUpdate-<version>.AppImage` | `NaukriUpdate-1.0.6.AppImage` | `.AppImage` |
 
 ### Architecture Notes:
 - **Windows x64:** `NaukriUpdate-Setup-<version>.exe` supports 64-bit Windows 10 and Windows 11.
@@ -195,10 +195,10 @@ If your Linux desktop environment does not have a default GUI package installer 
    ```
 3. Run the installation command:
    ```bash
-   sudo dpkg -i ./naukri-update_1.0.5_amd64.deb
+   sudo dpkg -i ./naukri-update_1.0.6_amd64.deb
    ```
-   *(Or if using APT, run `sudo apt install --reinstall ./naukri-update_1.0.5_amd64.deb` to force overwriting existing files.)*
-   *(Replace `naukri-update_1.0.5_amd64.deb` with the actual filename if different.)*
+   *(Or if using APT, run `sudo apt install --reinstall ./naukri-update_1.0.6_amd64.deb` to force overwriting existing files.)*
+   *(Replace `naukri-update_1.0.6_amd64.deb` with the actual filename if different.)*
 4. Enter your computer user password when prompted. Note that no characters or asterisks will display while typing your password—this is normal Linux behavior; type your password and press `Enter`.
 5. Once installation finishes, launch the app from your Applications menu or run:
    ```bash
@@ -211,9 +211,9 @@ If your Linux desktop environment does not have a default GUI package installer 
 
 1. Open the latest release page: **https://github.com/anwarbuilds1/naukri_update/releases/latest**
 2. Expand the **Assets** section.
-3. Download `naukri-update_1.0.5_amd64.deb`.
+3. Download `naukri-update_1.0.6_amd64.deb`.
 4. Open your **Downloads** folder.
-5. Double-click `naukri-update_1.0.5_amd64.deb`.
+5. Double-click `naukri-update_1.0.6_amd64.deb`.
 6. Click **Install**.
 7. Enter your computer password if requested.
 8. Open your **Applications** menu.

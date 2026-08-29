@@ -142,10 +142,10 @@ jobs:
         run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
       - name: Create or Update GitHub Release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
-          artifacts: "release-assets/*"
-          tag: ${{ github.ref_name }}
+          files: "release-assets/*"
+          tag_name: ${{ github.ref_name }}
           name: "Naukri Update ${{ steps.version.outputs.VERSION }}"
           body: |
             ## Naukri Update ${{ steps.version.outputs.VERSION }}
@@ -171,6 +171,6 @@ jobs:
             > **Running from source?** See [README](https://github.com/${{ github.repository }}#readme) → `npm run setup`
           draft: false
           prerelease: false
-          allowUpdates: true
-          makeLatest: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
