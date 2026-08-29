@@ -195,8 +195,9 @@ If your Linux desktop environment does not have a default GUI package installer 
    ```
 3. Run the installation command:
    ```bash
-   sudo apt install ./naukri-update_1.0.0_amd64.deb
+   sudo dpkg -i ./naukri-update_1.0.0_amd64.deb
    ```
+   *(Or if using APT, run `sudo apt install --reinstall ./naukri-update_1.0.0_amd64.deb` to force overwriting existing files.)*
    *(Replace `naukri-update_1.0.0_amd64.deb` with the actual filename if different.)*
 4. Enter your computer user password when prompted. Note that no characters or asterisks will display while typing your password—this is normal Linux behavior; type your password and press `Enter`.
 5. Once installation finishes, launch the app from your Applications menu or run:
