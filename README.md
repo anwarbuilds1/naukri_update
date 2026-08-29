@@ -14,6 +14,8 @@ There are two ways to install Naukri Update — choose the one that fits you:
 
 ### Option A — Download the Installer *(Recommended — no Node.js required)*
 
+> **Note:** The first release build is triggered by pushing a version tag. If the links below show an empty releases page, use **Option B** below while the first release is being prepared.
+
 Download the latest release for your operating system:
 
 | Platform | Download | Notes |
