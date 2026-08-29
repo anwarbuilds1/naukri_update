@@ -1,6 +1,6 @@
 {
   "name": "naukri-update",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
   "main": "main.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "dist": "electron-builder"
   },
   "author": {
-    "name": "Ankit Baghel",
+    "name": "anwar",
     "email": "anwarbuilds1@gmail.com"
   },
   "license": "ISC",

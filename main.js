@@ -12,10 +12,43 @@ ConfigService.migrate(__dirname);
 
 const configDir = ConfigService.getAppConfigDir();
 const ACTIVE_ENV_PATH = ConfigService.getEnvPath();
+const appLogPath = path.join(configDir, 'naukri-app.log');
+
+function logAppInfo(message, details = '') {
+  const timestamp = new Date().toISOString();
+  const line = `[${timestamp}] ${message} ${details}`.trim();
+  console.log(line);
+  try {
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    fs.appendFileSync(appLogPath, `${line}\n`, 'utf8');
+  } catch (e) {}
+}
+
+process.on('uncaughtException', (err) => {
+  logAppInfo('UNCAUGHT EXCEPTION:', err && err.stack ? err.stack : String(err));
+});
+
+process.on('unhandledRejection', (reason) => {
+  logAppInfo('UNHANDLED REJECTION:', reason && reason.stack ? reason.stack : String(reason));
+});
 
 // CLI Arguments parsing
 const args = process.argv;
 const isHeadlessRun = args.includes('--run-automation');
+
+logAppInfo('=== APPLICATION STARTUP ===');
+logAppInfo(`App Name: ${app.name}`);
+logAppInfo(`Platform: ${process.platform} (${process.arch})`);
+logAppInfo(`Node Version: ${process.versions.node}`);
+logAppInfo(`Electron Version: ${process.versions.electron}`);
+logAppInfo(`Executable Path: ${process.execPath}`);
+logAppInfo(`Resources Path: ${process.resourcesPath || 'N/A'}`);
+logAppInfo(`App Path (__dirname): ${__dirname}`);
+logAppInfo(`Config Directory: ${configDir}`);
+logAppInfo(`Active Env Path: ${ACTIVE_ENV_PATH}`);
+logAppInfo(`Is Headless Run: ${isHeadlessRun}`);
 
 let mainWindow = null;
 let tray = null;
@@ -154,22 +187,8 @@ function findChromeExecutable() {
     if (fs.existsSync(p)) return p;
   } else {
     // Linux
-    const candidates = [
-      '/usr/bin/google-chrome',
-      '/usr/bin/google-chrome-stable',
-      '/usr/bin/chromium-browser',
-      '/usr/bin/chromium',
-      '/snap/bin/chromium',
-      '/snap/bin/google-chrome',
-      'google-chrome',
-      'google-chrome-stable',
-      'chromium-browser',
-      'chromium'
-    ];
+    const candidates = ['google-chrome', 'google-chrome-stable', 'chromium-browser', 'chromium'];
     for (const c of candidates) {
-      if (c.startsWith('/') && fs.existsSync(c)) {
-        return c;
-      }
       try {
         const p = execSync(`which ${c}`, { stdio: 'pipe' }).toString().trim();
         if (p && fs.existsSync(p)) return p;
@@ -389,26 +408,50 @@ if (isHeadlessRun) {
 }
 
 function createWindow() {
+  logAppInfo('Creating BrowserWindow...');
+  const iconPath = path.join(__dirname, 'assets', 'icon.png');
+  const preloadPath = path.join(__dirname, 'preload.js');
+  const indexPath = path.join(__dirname, 'renderer', 'index.html');
+
+  logAppInfo(`Resource path check - Icon: ${iconPath} (exists: ${fs.existsSync(iconPath)})`);
+  logAppInfo(`Resource path check - Preload: ${preloadPath} (exists: ${fs.existsSync(preloadPath)})`);
+  logAppInfo(`Resource path check - Index HTML: ${indexPath} (exists: ${fs.existsSync(indexPath)})`);
+
   mainWindow = new BrowserWindow({
     width: 950,
     height: 720,
     minWidth: 800,
     minHeight: 600,
-    icon: nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png')),
+    icon: nativeImage.createFromPath(iconPath),
     title: 'Naukri Update',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  mainWindow.webContents.on('did-start-loading', () => {
+    logAppInfo('Renderer started loading index.html');
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    logAppInfo('Renderer successfully loaded index.html');
+  });
+
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    logAppInfo(`Renderer failed loading index.html: ${errorCode} - ${errorDescription} (${validatedURL})`);
+  });
+
+  mainWindow.loadFile(indexPath);
 
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault();
       mainWindow.hide();
+      logAppInfo('Window closed -> hiding to tray');
+    } else {
+      logAppInfo('Window closing -> app exiting');
     }
   });
 }
