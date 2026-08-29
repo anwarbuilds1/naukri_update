@@ -141,7 +141,6 @@ async function loadSettings() {
     const env = await window.api.getSettings();
 
     // Account details
-    document.getElementById('naukri-profile-url').value = env.NAUKRI_PROFILE_URL || 'https://www.naukri.com/mnjuser/profile';
     document.getElementById('naukri-email').value = env.NAUKRI_EMAIL || '';
     document.getElementById('naukri-password').value = env.NAUKRI_PASSWORD || '';
 
@@ -200,7 +199,7 @@ settingsForm.addEventListener('submit', async (e) => {
   }
 
   const settings = {
-    NAUKRI_PROFILE_URL: document.getElementById('naukri-profile-url').value.trim(),
+    NAUKRI_PROFILE_URL: 'https://www.naukri.com/mnjuser/profile',
     NAUKRI_EMAIL: document.getElementById('naukri-email').value.trim(),
     NAUKRI_PASSWORD: document.getElementById('naukri-password').value,
     REFRESH_MODE: headlineEnabled.checked ? refreshMode.value : '',
@@ -560,10 +559,10 @@ if (wizConnectChromeBtn) {
   wizConnectChromeBtn.addEventListener('click', async () => {
     const email = document.getElementById('wiz-email').value.trim();
     const password = document.getElementById('wiz-password').value;
-    const url = document.getElementById('wiz-url').value.trim();
+    const url = 'https://www.naukri.com/mnjuser/profile';
 
-    if (!email || !password || !url) {
-      wizError.textContent = 'Please fill out email, password, and URL before connecting Chrome.';
+    if (!email || !password) {
+      wizError.textContent = 'Please fill out email and password before connecting Chrome.';
       return;
     }
 
@@ -627,7 +626,6 @@ async function populateWizardFields() {
   try {
     const settings = await window.api.getSettings();
     if (settings) {
-      document.getElementById('wiz-url').value = settings.NAUKRI_PROFILE_URL || 'https://www.naukri.com/mnjuser/profile';
       document.getElementById('wiz-email').value = settings.NAUKRI_EMAIL || '';
       document.getElementById('wiz-password').value = settings.NAUKRI_PASSWORD || '';
 
@@ -725,19 +723,6 @@ wizNextBtn.addEventListener('click', async () => {
     wizardStep = 1;
     updateWizardUI();
   } else if (wizardStep === 1) {
-    const url = document.getElementById('wiz-url').value.trim();
-    if (!url) {
-      wizError.textContent = 'Please enter your Naukri Profile URL.';
-      return;
-    }
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      wizError.textContent = 'Please enter a valid URL (starting with http:// or https://).';
-      return;
-    }
-    document.getElementById('naukri-profile-url').value = url;
-    wizardStep = 2;
-    updateWizardUI();
-  } else if (wizardStep === 2) {
     const email = document.getElementById('wiz-email').value.trim();
     const password = document.getElementById('wiz-password').value;
     if (!email || !password) {

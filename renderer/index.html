@@ -158,11 +158,6 @@
             <div class="form-section">
               <h2>1. Naukri Account Credentials</h2>
               <div class="form-grid">
-                <div class="form-group full-width">
-                  <label for="naukri-profile-url">Naukri Profile URL <button type="button" class="why-btn" data-why="profileUrl">ⓘ Why do we need this?</button></label>
-                  <input type="url" id="naukri-profile-url" placeholder="https://www.naukri.com/mnjuser/profile" required>
-                  <span class="help-text">Direct URL to your Naukri profile editor.</span>
-                </div>
                 <div class="form-group">
                   <label for="naukri-email">Naukri Email <button type="button" class="why-btn" data-why="email">ⓘ Why do we need this?</button></label>
                   <input type="email" id="naukri-email" placeholder="email@example.com" required>
@@ -173,7 +168,7 @@
                     <input type="password" id="naukri-password" placeholder="••••••••••••" required>
                     <button type="button" id="settings-toggle-pass-btn" class="btn-toggle-pass" title="Show/Hide Password">👁</button>
                   </div>
-                  <span class="help-text">Stored locally in your configuration.</span>
+                  <span class="help-text">Stored securely in your OS application configuration.</span>
                 </div>
               </div>
             </div>
@@ -682,21 +677,8 @@
           </p>
         </div>
 
-        <!-- Step 1: Naukri Account (Profile URL) -->
+        <!-- Step 1: Credentials & Privacy -->
         <div class="wizard-step-panel" id="wizard-step-1" style="display: none;">
-          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Naukri Profile Link</h3>
-          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
-            Provide the URL of your Naukri edit profile page. The automation uses this page to modify headline and upload resume.
-          </p>
-          <div class="form-group">
-            <label for="wiz-url" style="font-weight: 600;">Naukri Profile URL</label>
-            <input type="url" id="wiz-url" value="https://www.naukri.com/mnjuser/profile" style="width: 100%;" placeholder="https://www.naukri.com/mnjuser/profile">
-            <span class="help-text">Usually: <code>https://www.naukri.com/mnjuser/profile</code></span>
-          </div>
-        </div>
-
-        <!-- Step 2: Credentials & Privacy -->
-        <div class="wizard-step-panel" id="wizard-step-2" style="display: none;">
           <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Credentials Configuration</h3>
           <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 15px;">
             Enter your Naukri credentials. They are used to sign in to Naukri.com automatically when the session expires.
@@ -710,7 +692,7 @@
             <input type="password" id="wiz-password" placeholder="••••••••" style="width: 100%;">
           </div>
           <div style="background-color: rgba(99, 102, 241, 0.05); border-left: 3px solid var(--accent-indigo); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary);">
-            <strong>Privacy Note:</strong> Credentials are saved locally in plain text inside your AppData directory. They never leave your computer except to authenticate directly on Naukri.com.
+            <strong>Privacy Note:</strong> Credentials are encrypted and stored locally in your AppData directory. They never leave your computer except to authenticate directly on Naukri.com.
           </div>
         </div>
 
