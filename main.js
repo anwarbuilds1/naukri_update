@@ -72,20 +72,40 @@ function saveEnvFile(envData) {
 }
 
 // OS level scheduler operations
-function configureOSSchedule(envData) {
-  const isEnabled = envData.REFRESH_MODE || envData.RESUME_UPDATE_ENABLED === 'true';
+function isNaukriCronLine(line) {
+  if (!line || line.trim() === '') return false;
+  const l = line.toLowerCase();
+  return l.includes('naukri') || l.includes('--run-automation') || l.includes('naukri-refresh-runner') || l.includes('hourly-naukri-refresh');
+}
+
+function getProductionAppPath() {
   const appPath = app.getPath('exe');
+  // If running in dev mode via node_modules/electron/dist/electron
+  if (!app.isPackaged) {
+    const candidates = [
+      '/opt/Naukri Update/naukri-update',
+      '/usr/bin/naukri-update',
+      '/usr/local/bin/naukri-update'
+    ];
+    for (const c of candidates) {
+      if (fs.existsSync(c)) return c;
+    }
+  }
+  return appPath;
+}
+
+function configureOSSchedule(envData) {
+  const isEnabled = envData.REFRESH_MODE === 'interval' || envData.REFRESH_MODE === 'fixed_time' || envData.RESUME_UPDATE_ENABLED === 'true';
+  const appPath = getProductionAppPath();
 
   if (process.platform === 'win32') {
     const taskName = "NaukriUpdateTask";
     try {
-      // Always clean up existing task
       try {
         execSync(`schtasks /delete /tn "${taskName}" /f`, { stdio: 'ignore' });
-      } catch (e) { }
+      } catch (e) {}
 
       if (isEnabled) {
-        // Run every 15 minutes
         execSync(`schtasks /create /tn "${taskName}" /tr "\\"${appPath}\\" --run-automation" /sc minute /mo 15 /f`, { stdio: 'ignore' });
         console.log('Windows scheduled task updated.');
       }
@@ -93,7 +113,8 @@ function configureOSSchedule(envData) {
       console.error('Failed to configure Windows Task Scheduler:', err);
     }
   } else if (process.platform === 'darwin') {
-    const plistPath = path.join(homeDir, 'Library', 'LaunchAgents', 'com.naukri.update.plist');
+    const home = process.env.HOME || '';
+    const plistPath = path.join(home, 'Library', 'LaunchAgents', 'com.naukri.update.plist');
     try {
       if (fs.existsSync(plistPath)) {
         execSync(`launchctl unload "${plistPath}"`, { stdio: 'ignore' });
@@ -131,19 +152,21 @@ function configureOSSchedule(envData) {
       let cronContent = '';
       try {
         cronContent = execSync('crontab -l', { stdio: 'pipe' }).toString();
-      } catch (e) { }
+      } catch (e) {}
 
-      const lines = cronContent.split('\n').filter(line => !line.includes('NaukriUpdate') && line.trim() !== '');
+      // Idempotently strip all existing Naukri entries (dev, prod, scripts, duplicates)
+      const lines = cronContent.split('\n').filter(line => !isNaukriCronLine(line) && line.trim() !== '');
+
       if (isEnabled) {
         lines.push(`*/15 * * * * DISPLAY=:1 XDG_RUNTIME_DIR=/run/user/${process.getuid()} "${appPath}" --run-automation > /dev/null 2>&1`);
       }
 
-      const newCron = lines.join('\n') + '\n';
+      const newCron = lines.length > 0 ? lines.join('\n') + '\n' : '';
       const tempCronFile = path.join(configDir, 'temp_cron');
       fs.writeFileSync(tempCronFile, newCron, 'utf8');
       execSync(`crontab "${tempCronFile}"`, { stdio: 'ignore' });
-      fs.unlinkSync(tempCronFile);
-      console.log('Linux crontab updated.');
+      if (fs.existsSync(tempCronFile)) fs.unlinkSync(tempCronFile);
+      console.log(`Linux crontab updated cleanly. Retained ${lines.length} lines. Naukri job active: ${isEnabled}`);
     } catch (err) {
       console.error('Failed to configure Linux crontab:', err);
     }
@@ -341,19 +364,68 @@ function showNotification(title, body) {
   }
 }
 
+const lockFilePath = path.join(configDir, '.naukri-automation.lock');
+
+function acquireAutomationLock() {
+  if (fs.existsSync(lockFilePath)) {
+    try {
+      const lockData = JSON.parse(fs.readFileSync(lockFilePath, 'utf8'));
+      const ageMs = Date.now() - (lockData.timestamp || 0);
+      const isStale = ageMs > 30 * 60 * 1000; // 30 mins timeout
+      
+      let processActive = false;
+      if (lockData.pid) {
+        try {
+          process.kill(lockData.pid, 0);
+          processActive = true;
+        } catch (e) {
+          processActive = false;
+        }
+      }
+
+      if (processActive && !isStale) {
+        console.log(`[AutomationLock] Skipping execution: another automation run (PID ${lockData.pid}) is active.`);
+        return false;
+      }
+    } catch (e) {}
+  }
+
+  try {
+    fs.writeFileSync(lockFilePath, JSON.stringify({ pid: process.pid, timestamp: Date.now() }), 'utf8');
+    return true;
+  } catch (e) {
+    return true;
+  }
+}
+
+function releaseAutomationLock() {
+  try {
+    if (fs.existsSync(lockFilePath)) {
+      fs.unlinkSync(lockFilePath);
+    }
+  } catch (e) {}
+}
+
 // Headless Entry Point
 if (isHeadlessRun) {
   app.whenReady().then(() => {
+    if (!acquireAutomationLock()) {
+      app.quit();
+      return;
+    }
+
     const shouldRefresh = checkTaskDue('--should-refresh');
     const shouldUpload = checkTaskDue('--should-upload-resume');
 
     if (!shouldRefresh && !shouldUpload) {
+      releaseAutomationLock();
       app.quit();
       return;
     }
 
     ensureChromeRunning().then((chromeReady) => {
       if (!chromeReady) {
+        releaseAutomationLock();
         app.quit();
         return;
       }
@@ -366,12 +438,18 @@ if (isHeadlessRun) {
         chain = chain.then(() => runAutomationTask('--upload-resume').then(() => updateLastRunTime('--update-resume-time')));
       }
 
-      chain.then(() => app.quit()).catch(() => app.quit());
+      chain.then(() => { releaseAutomationLock(); app.quit(); }).catch(() => { releaseAutomationLock(); app.quit(); });
     });
   });
 } else {
   // GUI Entry Point
   app.whenReady().then(() => {
+    // Idempotently clean stale cron jobs and sync OS schedule on app boot
+    try {
+      const currentConfig = ConfigService.load();
+      configureOSSchedule(currentConfig);
+    } catch (e) {}
+
     loadPausedState();
     createWindow();
     createTray();
