@@ -10,7 +10,10 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
-  "author": "Ankit Baghel",
+  "author": {
+    "name": "Ankit Baghel",
+    "email": "anwarbuilds1@gmail.com"
+  },
   "license": "ISC",
   "dependencies": {
     "playwright-core": "^1.61.1"
@@ -48,7 +51,10 @@
         "AppImage",
         "deb"
       ],
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "category": "Utility",
+      "desktopName": "naukri-update",
+      "maintainer": "Ankit Baghel <anwarbuilds1@gmail.com>"
     },
     "publish": {
       "provider": "github",
