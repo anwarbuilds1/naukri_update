@@ -1327,43 +1327,166 @@ function setupAutoUpdater() {
   const updateSubtitle = document.getElementById('update-banner-subtitle');
   const updateBtn = document.getElementById('btn-update-action');
 
-  if (!updateBanner || !window.api) return;
+  const appVersionDisplay = document.getElementById('app-current-version-display');
+  const btnCheckUpdates = document.getElementById('btn-check-updates');
+  const statusContainer = document.getElementById('update-status-container');
+  const statusMessage = document.getElementById('update-status-message');
+  const notesBox = document.getElementById('update-notes-box');
+  const progressWrapper = document.getElementById('update-progress-wrapper');
+  const progressPercent = document.getElementById('update-progress-percent');
+  const progressBar = document.getElementById('update-progress-bar');
 
+  const btnDownload = document.getElementById('btn-download-update');
+  const btnRestart = document.getElementById('btn-restart-update');
+  const btnLater = document.getElementById('btn-later-update');
+
+  if (!window.api) return;
+
+  // Set initial app version in About section
+  if (typeof window.api.getAppInfo === 'function') {
+    window.api.getAppInfo().then((info) => {
+      if (info && info.version && appVersionDisplay) {
+        appVersionDisplay.textContent = `Installed Version: v${info.version}`;
+      }
+    }).catch(() => {
+      if (appVersionDisplay) appVersionDisplay.textContent = `Installed Version: v1.0.6`;
+    });
+  }
+
+  // Handle manual "Check for Updates" click
+  if (btnCheckUpdates) {
+    btnCheckUpdates.addEventListener('click', async () => {
+      btnCheckUpdates.disabled = true;
+      btnCheckUpdates.textContent = 'Checking...';
+      if (statusContainer) statusContainer.style.display = 'block';
+      if (statusMessage) statusMessage.textContent = 'Checking GitHub Releases for updates...';
+      if (notesBox) notesBox.style.display = 'none';
+      if (progressWrapper) progressWrapper.style.display = 'none';
+      if (btnDownload) btnDownload.style.display = 'none';
+      if (btnRestart) btnRestart.style.display = 'none';
+      if (btnLater) btnLater.style.display = 'none';
+
+      try {
+        const res = await window.api.checkForUpdates();
+        btnCheckUpdates.disabled = false;
+        btnCheckUpdates.textContent = 'Check for Updates';
+
+        if (res && res.updateAvailable === false) {
+          if (statusMessage) statusMessage.textContent = `You're up to date. Version ${res.currentVersion || '1.0.6'} is the latest stable release.`;
+          if (btnLater) btnLater.style.display = 'inline-block';
+        }
+      } catch (err) {
+        btnCheckUpdates.disabled = false;
+        btnCheckUpdates.textContent = 'Check for Updates';
+        if (statusMessage) statusMessage.textContent = 'Unable to check for updates. The application will continue working normally.';
+        if (btnLater) btnLater.style.display = 'inline-block';
+      }
+    });
+  }
+
+  // Handle Download button click
+  if (btnDownload) {
+    btnDownload.addEventListener('click', async () => {
+      btnDownload.disabled = true;
+      btnDownload.textContent = 'Starting Download...';
+      if (progressWrapper) progressWrapper.style.display = 'block';
+      const res = await window.api.downloadAndInstallUpdate();
+      if (res && res.fallbackUrl) {
+        if (statusMessage) statusMessage.textContent = 'Opened latest release page in your browser for download.';
+        btnDownload.style.display = 'none';
+        if (btnLater) btnLater.style.display = 'inline-block';
+      }
+    });
+  }
+
+  // Handle Restart button click
+  if (btnRestart) {
+    btnRestart.addEventListener('click', async () => {
+      const res = await window.api.quitAndInstall();
+      if (res && res.error) {
+        await showCustomAlert("Update Deferred", res.error);
+      }
+    });
+  }
+
+  // Handle Later button click
+  if (btnLater) {
+    btnLater.addEventListener('click', () => {
+      if (statusContainer) statusContainer.style.display = 'none';
+    });
+  }
+
+  // Event: update-available
   if (typeof window.api.onUpdateAvailable === 'function') {
     window.api.onUpdateAvailable((info) => {
-      updateTitle.textContent = `🚀 Update Available (v${info.version})!`;
-      updateSubtitle.textContent = `A new release is ready for installation.`;
-      updateBtn.textContent = 'Download & Install';
-      updateBtn.disabled = false;
-      updateBanner.style.display = 'flex';
+      if (statusContainer) statusContainer.style.display = 'block';
+      if (statusMessage) statusMessage.textContent = `Update available: Version ${info.version}`;
 
-      updateBtn.onclick = async () => {
-        updateBtn.disabled = true;
-        updateBtn.textContent = 'Downloading...';
-        const res = await window.api.downloadAndInstallUpdate();
-        if (res && res.message) {
-          updateSubtitle.textContent = res.message;
-        }
-      };
+      if (notesBox) {
+        notesBox.textContent = info.releaseNotes || 'Bug fixes and performance enhancements.';
+        notesBox.style.display = 'block';
+      }
+
+      if (btnDownload) {
+        btnDownload.textContent = 'Download Update';
+        btnDownload.disabled = false;
+        btnDownload.style.display = 'inline-block';
+      }
+      if (btnRestart) btnRestart.style.display = 'none';
+      if (btnLater) btnLater.style.display = 'inline-block';
+
+      // Update banner if visible
+      if (updateBanner && updateTitle && updateBtn) {
+        updateTitle.textContent = `🚀 Update Available (v${info.version})!`;
+        if (updateSubtitle) updateSubtitle.textContent = `A new release is ready for installation.`;
+        updateBtn.textContent = 'Download & Install';
+        updateBtn.disabled = false;
+        updateBanner.style.display = 'flex';
+        updateBtn.onclick = () => btnDownload && btnDownload.click();
+      }
     });
   }
 
+  // Event: update-not-available
+  if (typeof window.api.onUpdateNotAvailable === 'function') {
+    window.api.onUpdateNotAvailable((info) => {
+      if (statusMessage && statusContainer && statusContainer.style.display === 'block') {
+        statusMessage.textContent = `You're up to date. Version ${info.version || '1.0.6'} is the latest stable release.`;
+        if (btnLater) btnLater.style.display = 'inline-block';
+      }
+    });
+  }
+
+  // Event: update-download-progress
   if (typeof window.api.onUpdateDownloadProgress === 'function') {
     window.api.onUpdateDownloadProgress((progress) => {
-      updateBtn.textContent = `Downloading (${progress.percent}%)`;
+      if (progressWrapper) progressWrapper.style.display = 'block';
+      if (progressPercent) progressPercent.textContent = `${progress.percent}%`;
+      if (progressBar) progressBar.style.width = `${progress.percent}%`;
+      if (btnDownload) btnDownload.textContent = `Downloading (${progress.percent}%)`;
     });
   }
 
+  // Event: update-downloaded
   if (typeof window.api.onUpdateDownloaded === 'function') {
     window.api.onUpdateDownloaded((info) => {
-      updateTitle.textContent = `✅ Update Ready (v${info.version})!`;
-      updateSubtitle.textContent = `The update has been downloaded. Restart to apply.`;
-      updateBtn.textContent = 'Restart & Install Now';
-      updateBtn.disabled = false;
+      if (statusContainer) statusContainer.style.display = 'block';
+      if (statusMessage) statusMessage.textContent = `Update ready — Naukri Update ${info.version} has been downloaded.`;
+      if (progressWrapper) progressWrapper.style.display = 'none';
+      if (btnDownload) btnDownload.style.display = 'none';
+      if (btnRestart) {
+        btnRestart.style.display = 'inline-block';
+        btnRestart.disabled = false;
+      }
+      if (btnLater) btnLater.style.display = 'inline-block';
 
-      updateBtn.onclick = () => {
-        window.api.quitAndInstall();
-      };
+      if (updateBanner && updateTitle && updateBtn) {
+        updateTitle.textContent = `✅ Update Ready (v${info.version})!`;
+        if (updateSubtitle) updateSubtitle.textContent = `The update has been downloaded. Restart to apply.`;
+        updateBtn.textContent = 'Restart & Install Now';
+        updateBtn.disabled = false;
+        updateBtn.onclick = () => btnRestart && btnRestart.click();
+      }
     });
   }
 }

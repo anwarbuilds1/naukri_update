@@ -1,12 +1,14 @@
 /**
  * Auto-Updater Service for Naukri Update.
  * Checks for updates via electron-updater and GitHub Releases API.
- * Notifies the renderer process when updates are available and handles automated installation.
+ * Notifies the renderer process when updates are available and handles automated installation safely.
  */
 
 const { autoUpdater } = require('electron-updater');
 const { app, ipcMain, shell } = require('electron');
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 class AutoUpdaterService {
   constructor(mainWindow) {
@@ -14,6 +16,7 @@ class AutoUpdaterService {
     this.repoOwner = 'anwarbuilds1';
     this.repoName = 'naukri_update';
     this.updateInfo = null;
+    this.isDownloading = false;
 
     // Configure electron-updater
     autoUpdater.autoDownload = false;
@@ -39,6 +42,7 @@ class AutoUpdaterService {
     });
 
     autoUpdater.on('download-progress', (progressObj) => {
+      this.isDownloading = true;
       this.sendToRenderer('update-download-progress', {
         percent: Math.round(progressObj.percent),
         bytesPerSecond: progressObj.bytesPerSecond,
@@ -49,11 +53,13 @@ class AutoUpdaterService {
 
     autoUpdater.on('update-downloaded', (info) => {
       console.log('[AutoUpdater] Update downloaded. Ready to install.');
+      this.isDownloading = false;
       this.sendToRenderer('update-downloaded', { version: info.version });
     });
 
     autoUpdater.on('error', (err) => {
-      console.warn('[AutoUpdater] electron-updater error:', err.message);
+      console.warn('[AutoUpdater] electron-updater notice:', err.message);
+      this.isDownloading = false;
       // Fallback to GitHub Release API check
       this.checkGitHubReleases();
     });
@@ -65,23 +71,47 @@ class AutoUpdaterService {
 
     ipcMain.handle('download-and-install-update', async () => {
       try {
-        if (this.updateInfo) {
+        if (this.updateInfo && app.isPackaged) {
+          this.isDownloading = true;
           await autoUpdater.downloadUpdate();
           return { success: true, message: 'Downloading update in background...' };
         } else {
-          // Open releases page as fallback
-          shell.openExternal(`https://github.com/${this.repoOwner}/${this.repoName}/releases/latest`);
-          return { success: true, message: 'Opening latest release page...' };
+          // Open releases page as fallback for unpackaged / .deb formats
+          const targetUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases/latest`;
+          shell.openExternal(targetUrl);
+          return { success: true, fallbackUrl: targetUrl, message: 'Opening latest release page...' };
         }
       } catch (err) {
         console.error('[AutoUpdater] Download failed:', err);
-        shell.openExternal(`https://github.com/${this.repoOwner}/${this.repoName}/releases/latest`);
-        return { success: false, error: err.message };
+        const targetUrl = `https://github.com/${this.repoOwner}/${this.repoName}/releases/latest`;
+        shell.openExternal(targetUrl);
+        return { success: false, fallbackUrl: targetUrl, error: err.message };
       }
     });
 
     ipcMain.handle('quit-and-install', () => {
-      autoUpdater.quitAndInstall();
+      // Check if an automation task is currently running before restarting
+      const lockPath = path.join(app.getPath('userData'), '.naukri-automation.lock');
+      if (fs.existsSync(lockPath)) {
+        try {
+          const lockData = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+          const ageMs = Date.now() - (lockData.timestamp || 0);
+          if (ageMs < 30 * 60 * 1000) {
+            return {
+              success: false,
+              error: 'An automation task is currently running. Please wait for it to complete before restarting.'
+            };
+          }
+        } catch (e) {}
+      }
+
+      try {
+        autoUpdater.quitAndInstall(false, true);
+        return { success: true };
+      } catch (err) {
+        console.error('[AutoUpdater] quitAndInstall failed:', err.message);
+        return { success: false, error: err.message };
+      }
     });
   }
 
@@ -124,11 +154,11 @@ class AutoUpdaterService {
             if (res.statusCode === 200) {
               const data = JSON.parse(body);
               const latestTag = (data.tag_name || '').replace(/^v/, '');
-              
+
               if (latestTag && this.isVersionHigher(latestTag, currentVersion)) {
                 const info = {
                   version: latestTag,
-                  releaseNotes: data.body || '',
+                  releaseNotes: data.body || 'New update released on GitHub.',
                   htmlUrl: data.html_url
                 };
                 this.sendToRenderer('update-available', info);
@@ -139,11 +169,13 @@ class AutoUpdaterService {
             this.sendToRenderer('update-not-available', { version: currentVersion });
             resolve({ success: true, updateAvailable: false, currentVersion });
           } catch (e) {
+            this.sendToRenderer('update-error', { error: 'Unable to parse GitHub release data.' });
             resolve({ success: false, error: e.message, currentVersion });
           }
         });
       }).on('error', (err) => {
         console.error('[AutoUpdater] GitHub release check error:', err.message);
+        this.sendToRenderer('update-error', { error: 'Unable to check for updates. Check internet connection.' });
         resolve({ success: false, error: err.message, currentVersion });
       });
     });
@@ -163,3 +195,4 @@ class AutoUpdaterService {
 }
 
 module.exports = AutoUpdaterService;
+

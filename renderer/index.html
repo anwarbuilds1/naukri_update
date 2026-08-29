@@ -286,6 +286,44 @@
               </div>
             </div>
 
+            <div class="form-section" id="about-update-section">
+              <h2>7. About & Application Updates</h2>
+              <p class="form-section-desc" style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
+                Check for official releases, view release notes, and install updates directly from GitHub Releases.
+              </p>
+              <div class="update-card-box" style="background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                  <div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Naukri Update</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);" id="app-current-version-display">Installed Version: Loading...</div>
+                  </div>
+                  <button type="button" class="btn btn-secondary" id="btn-check-updates">Check for Updates</button>
+                </div>
+                
+                <div id="update-status-container" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                  <div id="update-status-message" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;"></div>
+                  
+                  <div id="update-notes-box" style="display: none; background-color: var(--bg-secondary); border-radius: 8px; padding: 12px; font-size: 0.82rem; line-height: 1.5; max-height: 140px; overflow-y: auto; color: var(--text-secondary); margin-bottom: 14px; white-space: pre-wrap;"></div>
+                  
+                  <div id="update-progress-wrapper" style="display: none; margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px;">
+                      <span>Downloading update...</span>
+                      <span id="update-progress-percent">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background-color: var(--bg-primary); border-radius: 3px; overflow: hidden;">
+                      <div id="update-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-indigo) 0%, var(--accent-blue) 100%); transition: width 0.2s ease;"></div>
+                    </div>
+                  </div>
+                  
+                  <div id="update-action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-primary" id="btn-download-update" style="display: none;">Download Update</button>
+                    <button type="button" class="btn btn-primary" id="btn-restart-update" style="display: none;">Restart & Update</button>
+                    <button type="button" class="btn btn-secondary" id="btn-later-update" style="display: none;">Later</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="form-actions-fixed">
               <span id="save-status" class="save-status"></span>
               <button type="submit" class="btn btn-primary" id="save-settings-btn">Save Configuration</button>

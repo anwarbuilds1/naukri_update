@@ -485,6 +485,44 @@ Naukri Update uses enterprise-grade local storage security and atomic state pers
 
 ---
 
+# Updating Naukri Update
+
+Naukri Update features a built-in auto-update system powered by `electron-updater` and GitHub Releases.
+
+### How In-App Updates Work:
+1. **Official Release Provider:** Updates are delivered securely from the official GitHub Releases repository (`https://github.com/anwarbuilds1/naukri_update`).
+2. **Automatic Startup Check:** Every time the application starts up, it silently queries GitHub Releases for new stable tags (e.g. `v1.0.6`).
+3. **Manual Check for Updates:** You can check for updates anytime in **Settings ➔ About & Application Updates ➔ Check for Updates**.
+4. **Update Available Notification:** When a new version is detected, the app displays:
+   - Current installed version vs. new available version.
+   - Release notes detailing bug fixes and enhancements.
+   - `[Download Update]` button and `[Later]` option.
+5. **Background Download Progress:** Clicking **Download Update** downloads the installer in the background while displaying real-time progress (0%–100%). You can continue using the app while downloading.
+6. **Data & Credential Preservation:** Installing an update **never** resets your stored credentials, profile URL, selected resume, schedule preferences, or browser session. Updates strictly overwrite application binary files while keeping your AppData directory untouched.
+7. **Safe Installation & Restart:** When the download completes, click **Restart & Update**. The app verifies checksum integrity, checks that no background automation task is currently in progress, safely closes, and launches the updated version.
+8. **Network Offline Safety:** If GitHub is temporarily unreachable or your internet connection is down, the app displays *"Unable to check for updates"* and continues operating normally without crashing or interrupting scheduled tasks.
+
+### Platform Update Matrix:
+- **Windows (NSIS):** In-place silent download and background update application.
+- **macOS (DMG/Zip):** Background download with one-click restart installation.
+- **Linux (AppImage):** Full differential in-app auto-updating via `electron-updater`.
+- **Linux (.DEB):** Notifies of new version releases and opens the official `.deb` package download link directly in your browser.
+
+---
+
+### Developer Release Process
+
+To publish a new production release:
+
+1. **Increment Version:** Update `"version"` in `package.json` (e.g., `"1.0.6"`).
+2. **Commit Changes:** `git commit -m "release: v1.0.6"`
+3. **Tag Version:** `git tag v1.0.6`
+4. **Push Tag to GitHub:** `git push origin main --tags`
+5. **CI/CD Pipeline:** The GitHub Actions workflow (`.github/workflows/release.yml`) automatically builds platform installers for Windows, macOS, and Linux, generates update metadata files (`latest.yml`, `latest-linux.yml`), and creates an official GitHub Release attached to `v1.0.6`.
+6. **User Auto-Update:** Installed client applications detect `v1.0.6` on their next startup check.
+
+---
+
 # What Happens If...
 
 ## I close the window
