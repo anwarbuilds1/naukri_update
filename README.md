@@ -76,8 +76,8 @@ Choose your operating system below for step-by-step instructions.
 
 Downloaded file: `NaukriUpdate-Setup-<version>.exe` (e.g. `NaukriUpdate-Setup-1.0.0.exe`)
 
-### Step 1 — Open your Downloads folder
-1. Open File Explorer and click on **Downloads**.
+### Step 1 — Locate the downloaded installer
+1. Open File Explorer and navigate to the folder where you saved the downloaded file (for example, your **Downloads** or **Desktop** folder).
 2. Double-click `NaukriUpdate-Setup-1.0.0.exe`.
 
 ### Step 2 — Handle Windows SmartScreen (if it appears)
@@ -106,7 +106,7 @@ This warning appears because Naukri Update is an independent open-source applica
 Downloaded file: `NaukriUpdate-<version>.dmg` (e.g. `NaukriUpdate-1.0.0.dmg`)
 
 ### Step 1 — Open the DMG file
-1. Open Finder and go to your **Downloads** folder.
+1. Open Finder and go to the folder where you saved the downloaded file (for example, your **Downloads** or **Desktop** folder).
 2. Double-click `NaukriUpdate-1.0.0.dmg` to mount the disk image.
 
 ### Step 2 — Drag to Applications
@@ -139,7 +139,7 @@ Downloaded file: `naukri-update_<version>_amd64.deb` (e.g. `naukri-update_1.0.0_
 *Recommended for Ubuntu, Debian, Linux Mint, Pop!_OS, Zorin OS, and Elementary OS.*
 
 #### GUI Installation Method (Recommended):
-1. Open your file manager and go to **Downloads**.
+1. Open your file manager and navigate to the folder where you saved the `.deb` file (for example, **Downloads** or **Desktop**).
 2. Double-click `naukri-update_1.0.0_amd64.deb`.
 3. Your distribution's Software Center (Ubuntu Software, App Center, or GDebi) will launch.
 4. Click the **Install** button.
@@ -148,9 +148,10 @@ Downloaded file: `naukri-update_<version>_amd64.deb` (e.g. `naukri-update_1.0.0_
 7. Open your system Applications menu, search for **Naukri Update**, and click to launch.
 
 #### Terminal Fallback Method:
-If double-clicking `.deb` does not launch your Software Center:
+If double-clicking `.deb` does not launch your Software Center, open Terminal in the folder containing the downloaded file and run:
 ```bash
-sudo dpkg -i ~/Downloads/naukri-update_1.0.0_amd64.deb
+sudo dpkg -i /path/to/naukri-update_1.0.0_amd64.deb
+# Example (if saved in Downloads): sudo dpkg -i ~/Downloads/naukri-update_1.0.0_amd64.deb
 sudo apt-get install -f
 ```
 Proceed to **[First-Time Setup](#first-time-setup)** below.
@@ -162,9 +163,9 @@ Proceed to **[First-Time Setup](#first-time-setup)** below.
 Downloaded file: `NaukriUpdate-<version>.AppImage` (e.g. `NaukriUpdate-1.0.0.AppImage`)  
 *For Arch, Fedora, openSUSE, and other Linux distributions.*
 
-#### Step 1 — Open Downloads
+#### Step 1 — Locate the downloaded AppImage
 1. Open your file manager (Files, Nautilus, Dolphin, or Thunar).
-2. Go to **Downloads**.
+2. Navigate to the folder where you saved the file (for example, **Downloads** or **Desktop**).
 3. Locate `NaukriUpdate-1.0.0.AppImage`.
 
 #### Step 2 — Allow it to run as a program
@@ -183,10 +184,10 @@ Downloaded file: `NaukriUpdate-<version>.AppImage` (e.g. `NaukriUpdate-1.0.0.App
 3. The app window will launch. Proceed to **[First-Time Setup](#first-time-setup)** below.
 
 #### Step 4 — Terminal Fallback (If double-clicking fails)
-If your file manager does not set execution permissions properly, open Terminal and run:
+If your file manager does not set execution permissions properly, open Terminal, navigate to the folder containing the downloaded file, and run:
 ```bash
-chmod +x ~/Downloads/NaukriUpdate-1.0.0.AppImage
-~/Downloads/NaukriUpdate-1.0.0.AppImage
+chmod +x NaukriUpdate-1.0.0.AppImage
+./NaukriUpdate-1.0.0.AppImage
 ```
 
 #### FUSE Issue on Modern Linux (`dlopen(): error loading libfuse.so.2`):
@@ -427,8 +428,8 @@ Use the solutions below if you encounter issues.
 
 ### Problem: Permission denied (Linux)
 - **What it means:** The `.AppImage` file lacks execute permissions.
-- **What to do:** Open Terminal and run: `chmod +x ~/Downloads/NaukriUpdate-*.AppImage`.
-- **If that doesn't work:** Install and use the `.deb` package instead: `sudo dpkg -i ~/Downloads/naukri-update_*.deb`.
+- **What to do:** Open Terminal in the folder where your file is located and run: `chmod +x NaukriUpdate-*.AppImage`.
+- **If that doesn't work:** Install and use the `.deb` package instead: `sudo dpkg -i /path/to/naukri-update_*.deb`.
 
 ### Problem: FUSE error (`dlopen(): error loading libfuse.so.2`)
 - **What it means:** Legacy FUSE 2 library is missing on your modern Linux distribution.
@@ -450,7 +451,7 @@ Use the solutions below if you encounter issues.
 
 ### Problem: Corrupted download file
 - **What it means:** The downloaded installer file is incomplete due to network disruption.
-- **What to do:** Delete the file from Downloads and re-download from GitHub Releases.
+- **What to do:** Delete the corrupted file and re-download a fresh copy from GitHub Releases.
 - **If that doesn't work:** Clear your browser cache and try downloading with another browser.
 
 ### Problem: Antivirus / SmartScreen warning (Windows)
