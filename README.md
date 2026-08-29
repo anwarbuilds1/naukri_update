@@ -2,31 +2,52 @@
 
 > **Automate your Naukri profile updates — keep your profile active and visible to recruiters, entirely from your own computer.**
 
-No technical knowledge required. No Node.js. No terminal. No configuration files.
+No servers. No cloud. No tracking. Runs entirely on your own machine.
 
 ---
 
-## For Normal Users — Recommended
+## Getting Started
 
-### Download the Desktop Application
+> **Pre-built installers are not yet available.** Use the one-command setup below — it handles everything automatically.
+>
+> _(Packaged installers for Windows, macOS, and Linux are planned for a future release.)_
 
-Download the latest release for your operating system from the [Releases page](https://github.com/anwarbuilds1/naukri_update/releases/latest):
+### Step 1 — Prerequisites
 
-| OS | Download |
-|:---|:---|
-| **Windows** | `NaukriUpdate-Setup.exe` |
-| **macOS** | `NaukriUpdate.dmg` |
-| **Linux** | `NaukriUpdate.AppImage` or `.deb` |
+You need two things installed before running the setup command:
 
-### Install & Open
+| Requirement | Where to get it | Why it's needed |
+|:---|:---|:---|
+| **Node.js ≥ 18** | [nodejs.org](https://nodejs.org) — download the **LTS** version | Runs the desktop application |
+| **Google Chrome** | [google.com/chrome](https://www.google.com/chrome/) | Used for browser automation |
 
-1. **Windows:** Run the `.exe` installer and follow the prompts.
-2. **macOS:** Open the `.dmg`, drag the app to your Applications folder.
-3. **Linux:** Make the `.AppImage` executable (`chmod +x`), or install the `.deb` with your package manager.
+> **Tip:** After installing Node.js, close and reopen your terminal before continuing.
 
-### In-App Setup (No Terminal Needed)
+### Step 2 — Run the One-Command Setup
 
-Once the app opens, an onboarding wizard walks you through everything:
+Open a terminal, then run:
+
+```bash
+git clone https://github.com/anwarbuilds1/naukri_update.git
+cd naukri_update
+npm run setup
+```
+
+The setup command automatically:
+
+1. ✓ Detects your OS and environment
+2. ✓ Checks Node.js version — shows a clear message if it's missing or outdated
+3. ✓ Checks for Google Chrome
+4. ✓ Installs all required dependencies
+5. ✓ Creates required application directories
+6. ✓ Migrates or initializes your configuration
+7. ✓ **Launches the desktop application**
+
+**You do not run `npm install` separately.** `npm run setup` handles everything.
+
+### Step 3 — In-App Setup (No Terminal Needed After This)
+
+Once the app opens, a guided wizard takes you through the rest:
 
 ```
 Welcome
@@ -46,65 +67,34 @@ Check setup — verify everything works
 Dashboard — you're done
 ```
 
-**After that:**
-- The app runs in your **System Tray** (near the clock) — no terminal needed.
+**After completing the wizard:**
+- The app lives in your **System Tray** (near the clock). No terminal needed.
 - Right-click the tray icon to pause, reconnect, or open the dashboard.
-- Background automation runs automatically, even after a reboot.
+- Background automation runs on a schedule, even after a reboot.
 
 ---
 
-## Running From Source (Developers / Advanced Users)
+## Re-running Setup
 
-> ⚠️ This section is **not** the primary user path. Normal users should use the installer above.
-
-If you have the repository and want to run directly from source, use the **one-command setup**:
-
-```bash
-git clone https://github.com/anwarbuilds1/naukri_update.git
-cd naukri_update
-npm run setup
-```
-
-That's it. The setup command will:
-
-1. ✓ Detect your operating system and environment
-2. ✓ Check for Node.js ≥ 18 and provide a clear message if missing
-3. ✓ Check for Google Chrome and warn if not found
-4. ✓ Install all required dependencies automatically
-5. ✓ Create required application directories
-6. ✓ Migrate or initialize configuration storage
-7. ✓ Launch the desktop application
-8. ✓ Open the in-app onboarding wizard
-
-**You do not need to run `npm install` separately.** The setup command handles it.
-
-### Setup Requirements (Source Only)
-
-| Requirement | Notes |
-|:---|:---|
-| **Node.js ≥ 18** | Download from [nodejs.org](https://nodejs.org). The setup command will tell you if it's missing. |
-| **Google Chrome** | Install from [google.com/chrome](https://www.google.com/chrome/). The app needs Chrome for browser automation. |
-| **npm** | Comes bundled with Node.js. |
-
-> If Node.js is missing, the setup command will not crash silently — it will show you exactly what to install and how.
-
-### Re-running Setup
-
-`npm run setup` is idempotent — safe to run multiple times:
+`npm run setup` is safe to run multiple times:
 
 - Already installed? **Dependencies are skipped.**
-- Existing configuration found? **It is preserved — never deleted.**
-- Existing resume files? **They are untouched.**
-- Existing browser profile? **It is reused.**
+- Existing config found? **Preserved — never deleted.**
+- Existing resume files? **Untouched.**
+- Existing browser profile? **Reused.**
 
-### Other Developer Commands
+---
+
+## Developer Commands
+
+> ⚠️ This section is for developers and contributors only.
 
 | Command | Description |
 |:---|:---|
-| `npm run setup` | **One-command setup + launch** (recommended) |
-| `npm start` | Launch the desktop app directly (requires prior `npm install`) |
-| `npm run refresh` | Run the automation script once from CLI |
-| `npm run pack` | Package app without installer (for testing) |
+| `npm run setup` | **One-command setup + launch** (primary entry point) |
+| `npm start` | Launch the app directly (requires prior `npm install`) |
+| `npm run refresh` | Run the automation script once from the CLI |
+| `npm run pack` | Package the app without creating an installer |
 | `npm run dist` | Build production installer binaries |
 
 For full developer documentation, see [DEVELOPER_ROADMAP.md](DEVELOPER_ROADMAP.md).
