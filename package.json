@@ -1,6 +1,6 @@
 {
   "name": "naukri-update",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
   "main": "main.js",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "build": {
     "appId": "com.naukri.update",
-    "productName": "NaukriUpdate",
+    "productName": "Naukri Update",
     "directories": {
       "output": "dist"
     },
@@ -54,7 +54,7 @@
       "icon": "assets/icon.png",
       "category": "Utility",
       "maintainer": "Ankit Baghel <anwarbuilds1@gmail.com>",
-      "executableName": "NaukriUpdate"
+      "executableName": "naukri-update"
     },
     "publish": {
       "provider": "github",
