@@ -1,6 +1,43 @@
-# Naukri Profile Refresh
+# Naukri Update (Desktop App)
 
-An automated utility that keeps your Naukri profile active and visible to recruiters by periodically toggling a trailing dot on your resume headline. This script interacts with a dedicated, local Google Chrome instance via the Chrome DevTools Protocol (CDP). By reusing a persistent Chrome profile, it retains your authenticated session without needing manual logins or storing cookies in untrusted places, completely avoiding Google authentication issues.
+A polished, user-friendly desktop application that automates your Naukri profile updates to keep you active and visible to recruiters.
+
+Designed for **completely non-technical users**, this app manages all scheduling, background execution, and browser configurations internally. You do **not** need to understand Node.js, command line terminals, configuration files, or task scheduling commands.
+
+---
+
+## 🚀 Easy User Guide (Non-Technical Setup)
+
+### Step 1: Download & Install
+1. Download the installer matching your operating system:
+   * **Windows:** `.exe` installer (installs desktop shortcut and startup shortcuts).
+   * **macOS:** `.dmg` installer (drag to your Applications folder).
+   * **Linux:** `.AppImage` (standalone) or `.deb` installer.
+2. Launch **Naukri Update** from your computer.
+
+### Step 2: Configure Your Profile
+1. On first run, you will see a simple onboarding wizard.
+2. Go to the **Settings** tab:
+   * **Profile URL:** Copy/paste the link to your Naukri profile editing page (usually `https://www.naukri.com/mnjuser/profile`).
+   * **Credentials:** Enter your Naukri email and password. (These are stored **100% locally** in your system app data directory; the app has no backend server).
+   * **Resume File:** Click **Choose PDF** to select your resume. The app automatically handles copying, date-stamping, and maintaining a single authoritative copy.
+3. Turn **ON** the automation options you want (Headline Auto-Refresh and/or Daily Resume Upload) and save settings.
+
+### Step 3: Establish the Login Session
+1. Click the **Open Naukri Browser** or **Connect Chrome** button on the dashboard.
+2. A separate, dedicated Google Chrome window will open.
+3. If prompted, log into Naukri.com and complete any security challenges (OTP or CAPTCHA).
+4. Once you see your profile dashboard, you are done! You can close that Chrome window; the application will launch it invisibly in the background for scheduled runs.
+
+### Step 4: Let it Run in the Background
+* Minimizing or closing the main app window will hide it to your **System Tray** (near your clock).
+* The app automatically schedules itself to run on boot.
+* Right-click the system tray icon to **Pause Automation**, **Reconnect Chrome**, or open the dashboard at any time.
+
+---
+
+## 🛠 Developer & CLI Guide (Technical Setup)
+
 
 ## Features
 
