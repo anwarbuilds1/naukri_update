@@ -56,15 +56,10 @@ let isQuitting = false;
 let checkIntervalTimer = null;
 let chromeProcess = null;
 
-// Initialize the environment variables file if it doesn't exist
-if (!fs.existsSync(ACTIVE_ENV_PATH)) {
-  const examplePath = path.join(__dirname, '.env.example');
-  if (fs.existsSync(examplePath)) {
-    fs.copyFileSync(examplePath, ACTIVE_ENV_PATH);
-  } else {
-    // Generate default config file
-    ConfigService.save(ConfigService.defaults);
-  }
+// Initialize configuration if neither config.json nor .env exists
+const jsonPath = ConfigService.getConfigJsonPath();
+if (!fs.existsSync(jsonPath) && !fs.existsSync(ACTIVE_ENV_PATH)) {
+  ConfigService.save(ConfigService.defaults);
 }
 
 // Helpers for IPC compatibility/legacy access
@@ -645,63 +640,20 @@ ipcMain.handle('reset-application', async () => {
     configureOSSchedule({ REFRESH_MODE: '', RESUME_UPDATE_ENABLED: 'false' });
   } catch (e) {}
 
-  // Delete credentials, env, state, logs, resume, browser profile
-  const filesToDelete = [
-    '.env',
-    '.naukri-refresh-state.json',
-    'naukri-refresh.log',
-    'naukri-hourly-refresh.log',
-    'chrome_startup.log',
-    '.naukri-hourly-refresh.lock'
-  ];
-  for (const f of filesToDelete) {
-    try {
-      const p = path.join(configDir, f);
-      if (fs.existsSync(p)) fs.unlinkSync(p);
-    } catch (e) {}
-  }
-  
-  // Delete resume dir contents
-  const resumeDir = path.join(configDir, 'resume');
-  try {
-    if (fs.existsSync(resumeDir)) {
-      const files = fs.readdirSync(resumeDir);
-      for (const f of files) {
-        fs.unlinkSync(path.join(resumeDir, f));
-      }
-    }
-  } catch (e) {}
-
-  // Delete browser profile
-  const profileDir = path.join(configDir, '.naukri-chrome-profile');
-  try {
-    if (fs.existsSync(profileDir)) {
-      fs.rmSync(profileDir, { recursive: true, force: true });
-    }
-  } catch (e) {}
-
-  return { success: true };
+  return ConfigService.resetAll();
 });
 
 ipcMain.handle('get-settings', () => {
-  return loadEnvFile();
+  return ConfigService.load();
 });
 
 ipcMain.handle('save-settings', (event, settings) => {
   try {
-    const existing = loadEnvFile();
+    const existing = ConfigService.load();
     if (settings.NAUKRI_PASSWORD === '••••••••') {
       settings.NAUKRI_PASSWORD = existing.NAUKRI_PASSWORD || '';
     }
-    saveEnvFile(settings);
-    
-    // Restrict permissions on env file (Unix chmod 0600)
-    if (process.platform !== 'win32') {
-      try {
-        fs.chmodSync(ACTIVE_ENV_PATH, 0o600);
-      } catch (e) {}
-    }
-    
+    ConfigService.save(settings);
     configureOSSchedule(settings);
     return { success: true };
   } catch (err) {
@@ -710,30 +662,27 @@ ipcMain.handle('save-settings', (event, settings) => {
 });
 
 ipcMain.handle('get-resume-info', () => {
-  const resumeDir = path.join(configDir, 'resume');
-  try {
-    if (!fs.existsSync(resumeDir)) {
-      return { exists: false };
-    }
-    const files = fs.readdirSync(resumeDir).filter(f => f.toLowerCase().endsWith('.pdf') && !f.startsWith('.'));
-    if (files.length === 0) {
-      return { exists: false };
-    }
-    
-    // Choose the single authoritative resume file
-    const file = files[0];
-    const filePath = path.join(resumeDir, file);
-    const stat = fs.statSync(filePath);
-    
-    return {
-      exists: true,
-      name: file,
-      sizeBytes: stat.size,
-      mtime: stat.mtime
-    };
-  } catch (e) {
-    return { exists: false, error: e.message };
+  const config = ConfigService.load();
+  const health = ConfigService.checkResumeHealth(config.RESUME_FILE);
+
+  if (health.exists && health.resolvedPath) {
+    try {
+      const stat = fs.statSync(health.resolvedPath);
+      return {
+        exists: true,
+        status: health.status,
+        name: path.basename(health.resolvedPath),
+        sizeBytes: stat.size,
+        mtime: stat.mtime
+      };
+    } catch (e) {}
   }
+
+  return {
+    exists: false,
+    status: health.status,
+    name: config.RESUME_FILE ? path.basename(config.RESUME_FILE) : ''
+  };
 });
 
 ipcMain.handle('select-resume', async () => {

@@ -472,6 +472,19 @@ Every 15 minutes, the OS scheduler triggers the app in headless mode (`--run-aut
 
 ---
 
+# Credential Security & State Persistence
+
+Naukri Update uses enterprise-grade local storage security and atomic state persistence:
+
+1. **OS Secure Credential Storage:** Sensitive credentials (such as your Naukri account password) are **never** stored in plain-text JSON or `.env` files. The application leverages native OS secure credential stores:
+   - **Linux:** Secret Service API / `libsecret` (with machine-bound AES-256-GCM fallback for headless setups).
+   - **macOS:** Keychain Services.
+   - **Windows:** DPAPI (Data Protection API).
+2. **Atomic JSON Storage (`config.json`):** Non-sensitive application configuration and scheduling preferences are stored in `config.json` inside your system application data directory (`~/.config/NaukriUpdate/` or `%APPDATA%\NaukriUpdate`). Configuration writes are atomic (`.tmp` write ➔ sync ➔ rename) with strict `0o600` file permissions to prevent corruption during unexpected shutdowns.
+3. **Resilient Startup Hydration & Health Check:** Upon startup, settings are loaded seamlessly without race conditions. If a resume file is deleted or moved from disk, the application marks the resume status as `File missing` while keeping all your profile URLs, credentials, and schedules 100% intact.
+
+---
+
 # What Happens If...
 
 ## I close the window

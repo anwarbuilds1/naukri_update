@@ -1,16 +1,19 @@
 /**
  * Central Configuration Service for Naukri Update.
- * Handles loading, validation, defaults, persistence, migration, mapping,
- * backward compatibility, safe updates, reset, and diagnostics.
+ * Handles loading, validation, defaults, disk persistence (config.json + .env sync),
+ * OS secure credential integration, migration, schema versioning, and diagnostics.
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const SecureStoreService = require('./secure-store');
 
 class ConfigService {
   constructor() {
+    this.SCHEMA_VERSION = 1;
     this.defaults = {
+      version: 1,
       NAUKRI_PROFILE_URL: 'https://www.naukri.com/mnjuser/profile',
       NAUKRI_EMAIL: '',
       NAUKRI_PASSWORD: '',
@@ -48,6 +51,13 @@ class ConfigService {
   }
 
   /**
+   * Get path to active config.json file.
+   */
+  getConfigJsonPath() {
+    return path.join(this.getAppConfigDir(), 'config.json');
+  }
+
+  /**
    * Get the path to the active .env file.
    */
   getEnvPath() {
@@ -58,34 +68,130 @@ class ConfigService {
   }
 
   /**
-   * Load the configuration from the active env path, applying defaults.
+   * Secure store instance bound to AppData directory.
+   */
+  getSecureStore() {
+    return new SecureStoreService(this.getAppConfigDir());
+  }
+
+  /**
+   * Load configuration from disk, performing schema migrations and secure password resolution.
    */
   load() {
+    const jsonPath = this.getConfigJsonPath();
     const envPath = this.getEnvPath();
-    const config = { ...this.defaults };
+    let config = { ...this.defaults };
+    let loadedFromDisk = false;
 
-    if (fs.existsSync(envPath)) {
+    // 1. Try loading from config.json first (Primary Source of Truth)
+    if (fs.existsSync(jsonPath)) {
+      try {
+        const rawJson = fs.readFileSync(jsonPath, 'utf8');
+        const parsed = JSON.parse(rawJson);
+        config = { ...this.defaults, ...parsed };
+        loadedFromDisk = true;
+      } catch (err) {
+        console.error('[ConfigService] Corrupted config.json detected. Backing up:', err.message);
+        try {
+          fs.renameSync(jsonPath, `${jsonPath}.bak.${Date.now()}`);
+        } catch (e) {}
+      }
+    }
+
+    // 2. Fallback to .env if config.json was not loaded
+    if (!loadedFromDisk && fs.existsSync(envPath)) {
       try {
         const content = fs.readFileSync(envPath, 'utf8');
-        // Clean UTF-8 BOM if present and parse lines
         for (const line of content.replace(/^﻿/, '').split(/\r?\n/)) {
           const trimmed = line.trim();
           if (!trimmed || trimmed.startsWith('#')) continue;
           const match = trimmed.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
           if (!match) continue;
           let val = match[2];
-          // Strip surrounding quotes
           if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
             val = val.slice(1, -1);
           }
           config[match[1]] = val;
         }
+        loadedFromDisk = true;
       } catch (err) {
-        console.error('[ConfigService] Failed to read env file:', err);
+        console.error('[ConfigService] Failed to read env file:', err.message);
       }
     }
 
+    // 3. Resolve Secure Credentials (Password)
+    const secureStore = this.getSecureStore();
+    let securePass = secureStore.getPassword();
+
+    if (!securePass && config.NAUKRI_PASSWORD && config.NAUKRI_PASSWORD !== '[SECURE_STORE]') {
+      // Migrate plain-text password from legacy .env into SecureStore
+      secureStore.setPassword(config.NAUKRI_PASSWORD);
+      securePass = config.NAUKRI_PASSWORD;
+    }
+
+    config.NAUKRI_PASSWORD = securePass || '';
+
+    // 4. Schema Migration check
+    if (config.version === undefined || config.version < this.SCHEMA_VERSION) {
+      config.version = this.SCHEMA_VERSION;
+    }
+
+    // 5. Check Resume File Availability without destroying settings
+    const resumeInfo = this.checkResumeHealth(config.RESUME_FILE);
+    config.RESUME_FILE_EXISTS = resumeInfo.exists;
+    config.RESUME_FILE_STATUS = resumeInfo.status;
+    if (resumeInfo.exists && resumeInfo.resolvedPath) {
+      config.RESUME_FILE = resumeInfo.relativePath;
+    }
+
     return config;
+  }
+
+  /**
+   * Health check for resume file without deleting configuration.
+   */
+  checkResumeHealth(savedPath) {
+    const configDir = this.getAppConfigDir();
+    const resumeDir = path.join(configDir, 'resume');
+
+    // 1. Check directory resume file
+    if (fs.existsSync(resumeDir)) {
+      try {
+        const files = fs.readdirSync(resumeDir).filter(f => f.toLowerCase().endsWith('.pdf') && !f.startsWith('.'));
+        if (files.length > 0) {
+          const targetFile = files[0];
+          const fullPath = path.join(resumeDir, targetFile);
+          if (fs.existsSync(fullPath)) {
+            return {
+              exists: true,
+              status: 'Available',
+              resolvedPath: fullPath,
+              relativePath: `resume/${targetFile}`
+            };
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 2. Check explicit path
+    if (savedPath) {
+      const fullPath = path.isAbsolute(savedPath) ? savedPath : path.join(configDir, savedPath);
+      if (fs.existsSync(fullPath)) {
+        return {
+          exists: true,
+          status: 'Available',
+          resolvedPath: fullPath,
+          relativePath: savedPath
+        };
+      }
+    }
+
+    return {
+      exists: false,
+      status: savedPath ? 'File not found' : 'Unconfigured',
+      resolvedPath: null,
+      relativePath: savedPath || ''
+    };
   }
 
   /**
@@ -113,12 +219,7 @@ class ConfigService {
       }
     }
 
-    // 3. Password check
-    if (settings.NAUKRI_PASSWORD === undefined) {
-      return { success: false, error: 'Password is required.' };
-    }
-
-    // 4. Scheduling Check
+    // 3. Scheduling Check
     if (settings.REFRESH_MODE === 'interval') {
       const hours = parseInt(settings.REFRESH_INTERVAL_HOURS, 10);
       const minutes = parseInt(settings.REFRESH_INTERVAL_MINUTES, 10);
@@ -148,27 +249,59 @@ class ConfigService {
   }
 
   /**
-   * Save the configuration to the active .env file.
+   * Save configuration to disk atomically with secure credential separation and .env sync.
    */
   save(settings) {
     const currentConfig = this.load();
     const mergedConfig = { ...currentConfig, ...settings };
+
     if (!mergedConfig.NAUKRI_PROFILE_URL) {
       mergedConfig.NAUKRI_PROFILE_URL = this.defaults.NAUKRI_PROFILE_URL;
     }
+
     const validation = this.validate(mergedConfig);
     if (!validation.success) {
       throw new Error(validation.error);
     }
 
-    const envPath = this.getEnvPath();
-    const configDir = path.dirname(envPath);
-
-    // Make sure configDir exists
+    const configDir = this.getAppConfigDir();
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
     }
 
+    // 1. Save Password to SecureStore and exclude from plain-text json/env
+    if (settings.NAUKRI_PASSWORD !== undefined && settings.NAUKRI_PASSWORD !== '••••••••') {
+      const secureStore = this.getSecureStore();
+      if (settings.NAUKRI_PASSWORD) {
+        secureStore.setPassword(settings.NAUKRI_PASSWORD);
+      } else {
+        secureStore.clearPassword();
+      }
+    }
+
+    // Prepare JSON payload (Excludes plain-text password)
+    const jsonPayload = { ...mergedConfig };
+    delete jsonPayload.NAUKRI_PASSWORD;
+    delete jsonPayload.RESUME_FILE_EXISTS;
+    delete jsonPayload.RESUME_FILE_STATUS;
+    jsonPayload.version = this.SCHEMA_VERSION;
+
+    // 2. Atomic Write to config.json
+    const jsonPath = this.getConfigJsonPath();
+    const jsonTmp = `${jsonPath}.tmp`;
+    fs.writeFileSync(jsonTmp, JSON.stringify(jsonPayload, null, 2), 'utf8');
+    if (process.platform !== 'win32') {
+      try { fs.chmodSync(jsonTmp, 0o600); } catch (e) {}
+    }
+    fs.renameSync(jsonTmp, jsonPath);
+    if (process.platform !== 'win32') {
+      try { fs.chmodSync(jsonPath, 0o600); } catch (e) {}
+    }
+
+    // 3. Synchronize non-sensitive settings to .env for CLI compatibility
+    const envPath = this.getEnvPath();
+    const envData = { ...jsonPayload, NAUKRI_PASSWORD: '[SECURE_STORE]' };
+    
     let existingContent = '';
     if (fs.existsSync(envPath)) {
       existingContent = fs.readFileSync(envPath, 'utf8');
@@ -177,44 +310,34 @@ class ConfigService {
     const lines = existingContent.split(/\r?\n/);
     const updatedKeys = new Set();
 
-    // Map properties to settings keys
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line || line.startsWith('#')) continue;
       const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
       if (match) {
         const key = match[1];
-        if (settings[key] !== undefined) {
-          lines[i] = `${key}=${settings[key]}`;
+        if (envData[key] !== undefined) {
+          lines[i] = `${key}=${envData[key]}`;
           updatedKeys.add(key);
         }
       }
     }
 
-    // Append new settings keys
-    for (const key of Object.keys(settings)) {
-      if (!updatedKeys.has(key)) {
-        lines.push(`${key}=${settings[key]}`);
+    for (const key of Object.keys(envData)) {
+      if (!updatedKeys.has(key) && key !== 'version') {
+        lines.push(`${key}=${envData[key]}`);
       }
     }
 
-    // Filter out trailing empty lines to keep file neat
-    const cleanLines = [];
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim() !== '' || (i > 0 && lines[i-1].trim() !== '')) {
-        cleanLines.push(lines[i]);
-      }
-    }
-
-    fs.writeFileSync(envPath, cleanLines.join('\n'), 'utf8');
-
-    // Restrict permissions on env file (Unix chmod 0600)
+    const cleanLines = lines.filter((l, idx, arr) => l.trim() !== '' || (idx > 0 && arr[idx - 1].trim() !== ''));
+    const envTmp = `${envPath}.tmp`;
+    fs.writeFileSync(envTmp, cleanLines.join('\n'), 'utf8');
     if (process.platform !== 'win32') {
-      try {
-        fs.chmodSync(envPath, 0o600);
-      } catch (e) {
-        console.warn('[ConfigService] Failed to restrict permissions on .env file:', e.message);
-      }
+      try { fs.chmodSync(envTmp, 0o600); } catch (e) {}
+    }
+    fs.renameSync(envTmp, envPath);
+    if (process.platform !== 'win32') {
+      try { fs.chmodSync(envPath, 0o600); } catch (e) {}
     }
 
     return { success: true };
@@ -225,17 +348,18 @@ class ConfigService {
    */
   migrate(repoDir) {
     const appConfigDir = this.getAppConfigDir();
-    const appEnvPath = this.getEnvPath();
+    const jsonPath = this.getConfigJsonPath();
+    const envPath = this.getEnvPath();
     const repoEnvPath = path.join(repoDir, '.env');
 
     if (!fs.existsSync(appConfigDir)) {
       fs.mkdirSync(appConfigDir, { recursive: true });
     }
 
-    if (!fs.existsSync(appEnvPath) && fs.existsSync(repoEnvPath)) {
+    if (!fs.existsSync(jsonPath) && !fs.existsSync(envPath) && fs.existsSync(repoEnvPath)) {
       try {
-        fs.copyFileSync(repoEnvPath, appEnvPath);
-        console.log(`[ConfigService] Migrated .env to AppData: ${appEnvPath}`);
+        fs.copyFileSync(repoEnvPath, envPath);
+        console.log(`[ConfigService] Migrated .env to AppData: ${envPath}`);
 
         // Migrate resumes
         const repoResumeDir = path.join(repoDir, 'resume');
@@ -250,6 +374,9 @@ class ConfigService {
           }
           console.log('[ConfigService] Migrated resume files to AppData.');
         }
+        
+        // Convert to config.json & SecureStore
+        this.save(this.load());
         return true;
       } catch (err) {
         console.error('[ConfigService] Migration failed:', err);
@@ -259,9 +386,12 @@ class ConfigService {
   }
 
   /**
-   * Clear email and password credentials.
+   * Clear email and password credentials safely.
    */
   clearCredentials() {
+    const secureStore = this.getSecureStore();
+    secureStore.clearPassword();
+    
     const config = this.load();
     config.NAUKRI_EMAIL = '';
     config.NAUKRI_PASSWORD = '';
@@ -288,6 +418,56 @@ class ConfigService {
     const config = this.load();
     config.RESUME_FILE = '';
     return this.save(config);
+  }
+
+  /**
+   * Perform full intentional application reset.
+   */
+  resetAll() {
+    const configDir = this.getAppConfigDir();
+    const filesToDelete = [
+      'config.json',
+      'config.json.tmp',
+      '.env',
+      '.env.tmp',
+      '.credentials.enc',
+      '.credentials.enc.tmp',
+      '.naukri-refresh-state.json',
+      'naukri-refresh.log',
+      'naukri-hourly-refresh.log',
+      'naukri-app.log',
+      'chrome_startup.log',
+      '.naukri-hourly-refresh.lock'
+    ];
+
+    for (const f of filesToDelete) {
+      try {
+        const p = path.join(configDir, f);
+        if (fs.existsSync(p)) fs.unlinkSync(p);
+      } catch (e) {}
+    }
+
+    const resumeDir = path.join(configDir, 'resume');
+    try {
+      if (fs.existsSync(resumeDir)) {
+        const files = fs.readdirSync(resumeDir);
+        for (const f of files) {
+          try { fs.unlinkSync(path.join(resumeDir, f)); } catch (e) {}
+        }
+      }
+    } catch (e) {}
+
+    const profileDir = path.join(configDir, '.naukri-chrome-profile');
+    try {
+      if (fs.existsSync(profileDir)) {
+        fs.rmSync(profileDir, { recursive: true, force: true });
+      }
+    } catch (e) {}
+
+    const secureStore = this.getSecureStore();
+    secureStore.clearPassword();
+
+    return { success: true };
   }
 
   /**
@@ -346,7 +526,6 @@ class ConfigService {
         const plist = path.join(home, 'Library', 'LaunchAgents', 'com.naukri.update.plist');
         return fs.existsSync(plist);
       } else {
-        // Linux crontab
         const out = execSync('crontab -l', { stdio: 'pipe' }).toString();
         return out.includes('run-automation') || out.includes('NaukriUpdate');
       }
@@ -370,71 +549,48 @@ class ConfigService {
       background: { status: 'ok', message: 'Background automation configured.' }
     };
 
-    // 1. Config Validation Check
     const validation = this.validate(config);
     if (!validation.success) {
       results.config = { status: 'failed', message: validation.error };
     }
 
-    // 2. Credentials Configured Check
     if (!config.NAUKRI_EMAIL || !config.NAUKRI_PASSWORD) {
       results.credentials = { status: 'failed', message: 'Naukri email and password are required for automated login.' };
     }
 
-    // 3. Resume Valid Check
-    const configDir = this.getAppConfigDir();
-    const resumeDir = path.join(configDir, 'resume');
-    let hasResume = false;
-    if (fs.existsSync(resumeDir)) {
-      const files = fs.readdirSync(resumeDir).filter(f => f.toLowerCase().endsWith('.pdf') && !f.startsWith('.'));
-      if (files.length > 0) {
-        const resumePath = path.join(resumeDir, files[0]);
-        try {
-          const fd = fs.openSync(resumePath, 'r');
-          const buffer = Buffer.alloc(4);
-          fs.readSync(fd, buffer, 0, 4, 0);
-          fs.closeSync(fd);
-          if (buffer.toString() === '%PDF') {
-            hasResume = true;
-          }
-        } catch (e) {}
-      }
-    }
-    if (!hasResume && config.RESUME_UPDATE_ENABLED === 'true') {
-      results.resume = { status: 'failed', message: 'Daily resume upload is enabled but no valid resume PDF was found in resume directory.' };
-    } else if (!hasResume) {
-      results.resume = { status: 'failed', message: 'No valid resume PDF loaded. Required to enable daily upload automation.' };
+    const health = this.checkResumeHealth(config.RESUME_FILE);
+    if (!health.exists && config.RESUME_UPDATE_ENABLED === 'true') {
+      results.resume = { status: 'failed', message: 'Daily resume upload is enabled but no valid resume PDF was found.' };
+    } else if (!health.exists) {
+      results.resume = { status: 'failed', message: 'No valid resume PDF loaded.' };
     }
 
-    // 4. Chrome Available Check
     const chromePath = this.findChrome();
     if (!chromePath) {
-      results.chrome = { status: 'failed', message: 'Google Chrome could not be found. Please install Chrome to run automation.' };
+      results.chrome = { status: 'failed', message: 'Google Chrome could not be found. Please install Chrome.' };
     } else {
       results.chrome.message = `Chrome found at: ${chromePath}`;
     }
 
-    // 5. Browser Profile Ready Check
+    const configDir = this.getAppConfigDir();
     const profileDir = path.join(configDir, '.naukri-chrome-profile');
     if (!fs.existsSync(profileDir)) {
-      results.browserProfile = { status: 'failed', message: 'Browser profile directory not created yet. Connecting Chrome will initialize it.' };
+      results.browserProfile = { status: 'failed', message: 'Browser profile directory not created yet.' };
     } else {
       results.browserProfile.message = `Profile initialized at: ${profileDir}`;
     }
 
-    // 6. Scheduler script ready
     const schedulerPath = path.join(__dirname, 'scripts', 'scheduler.js');
     if (!fs.existsSync(schedulerPath)) {
       results.scheduler = { status: 'failed', message: 'Scheduler script was not found in scripts/ directory.' };
     }
 
-    // 7. Background Runtime Task Configured
     const isScheduled = this.isOSTaskConfigured();
     const automationsEnabled = (config.REFRESH_MODE === 'interval' || config.REFRESH_MODE === 'fixed_time' || config.RESUME_UPDATE_ENABLED === 'true');
     if (!isScheduled && automationsEnabled) {
       results.background = { status: 'failed', message: 'Background scheduler is enabled but OS task scheduler hook is missing.' };
     } else if (!isScheduled) {
-      results.background = { status: 'failed', message: 'Background scheduler is not configured. Saving settings will register the task.' };
+      results.background = { status: 'failed', message: 'Background scheduler is not configured.' };
     }
 
     return results;

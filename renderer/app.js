@@ -258,6 +258,17 @@ async function updateResumeDisplay() {
       // Wizard display
       wizResumeName.textContent = info.name;
       wizResumeMeta.textContent = `${sizeKB} KB · Valid PDF. Ready for upload.`;
+    } else if (info.status === 'File not found') {
+      resumeStatusBadge.textContent = 'File missing';
+      resumeStatusBadge.className = 'badge badge-danger';
+      resumeFileName.textContent = info.name ? `${info.name} (Missing)` : 'Resume file missing';
+      resumeFileMeta.textContent = 'The saved resume file is missing from disk. Click below to select a new PDF.';
+      
+      settingsResumeName.textContent = 'Resume File Missing';
+      settingsResumeMeta.textContent = 'The previously saved resume file could not be found. Please select a valid PDF file.';
+      
+      wizResumeName.textContent = 'Resume File Missing';
+      wizResumeMeta.textContent = 'The configured resume file is missing. Click below to choose another resume.';
     } else {
       resumeStatusBadge.textContent = 'Unconfigured';
       resumeStatusBadge.className = 'badge';
