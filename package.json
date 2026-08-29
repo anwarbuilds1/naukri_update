@@ -49,6 +49,12 @@
         "deb"
       ],
       "icon": "assets/icon.png"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "anwarbuilds1",
+      "repo": "naukri_update",
+      "releaseType": "release"
     }
   }
 }

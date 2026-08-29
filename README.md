@@ -8,24 +8,38 @@ No servers. No cloud. No tracking. Runs entirely on your own machine.
 
 ## Getting Started
 
-> **Pre-built installers are not yet available.** Use the one-command setup below — it handles everything automatically.
->
-> _(Packaged installers for Windows, macOS, and Linux are planned for a future release.)_
+There are two ways to install Naukri Update — choose the one that fits you:
 
-### Step 1 — Prerequisites
+---
 
-You need two things installed before running the setup command:
+### Option A — Download the Installer *(Recommended — no Node.js required)*
 
-| Requirement | Where to get it | Why it's needed |
+Download the latest release for your operating system:
+
+| Platform | Download | Notes |
 |:---|:---|:---|
-| **Node.js ≥ 18** | [nodejs.org](https://nodejs.org) — download the **LTS** version | Runs the desktop application |
-| **Google Chrome** | [google.com/chrome](https://www.google.com/chrome/) | Used for browser automation |
+| **Windows** | [`NaukriUpdate-Setup.exe`](https://github.com/anwarbuilds1/naukri_update/releases/latest) | Run the installer, open the app |
+| **macOS** | [`NaukriUpdate.dmg`](https://github.com/anwarbuilds1/naukri_update/releases/latest) | Open DMG, drag to Applications |
+| **Linux** | [`NaukriUpdate.AppImage`](https://github.com/anwarbuilds1/naukri_update/releases/latest) or `.deb` | AppImage: make executable then run; deb: `sudo dpkg -i` |
+
+> **No Node.js, npm, git, or terminal required.** Just download, install, and open.
+
+Once the app opens, the in-app wizard guides you through the rest. Skip to [Step 3](#step-3--in-app-setup-no-terminal-needed).
+
+---
+
+### Option B — Run From Source *(requires Node.js + Git)*
+
+**Before running, install these two things:**
+
+| Requirement | Where to get it |
+|:---|:---|
+| **Node.js ≥ 18** | [nodejs.org](https://nodejs.org) — download the **LTS** version |
+| **Google Chrome** | [google.com/chrome](https://www.google.com/chrome/) |
 
 > **Tip:** After installing Node.js, close and reopen your terminal before continuing.
 
-### Step 2 — Run the One-Command Setup
-
-Open a terminal, then run:
+**Then run:**
 
 ```bash
 git clone https://github.com/anwarbuilds1/naukri_update.git
@@ -44,6 +58,8 @@ The setup command automatically:
 7. ✓ **Launches the desktop application**
 
 **You do not run `npm install` separately.** `npm run setup` handles everything.
+
+---
 
 ### Step 3 — In-App Setup (No Terminal Needed After This)
 

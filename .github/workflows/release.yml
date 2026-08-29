@@ -1,0 +1,174 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'          # triggers on v1.0.0, v1.2.3, etc.
+
+permissions:
+  contents: write     # needed to create GitHub Releases and upload assets
+
+jobs:
+  # ────────────────────────────────────────────
+  # Windows Build
+  # ────────────────────────────────────────────
+  build-windows:
+    name: Build – Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build installer (NSIS .exe)
+        run: npm run dist -- --win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*.exe
+          retention-days: 5
+
+  # ────────────────────────────────────────────
+  # macOS Build
+  # ────────────────────────────────────────────
+  build-mac:
+    name: Build – macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build installer (.dmg)
+        run: npm run dist -- --mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: dist/*.dmg
+          retention-days: 5
+
+  # ────────────────────────────────────────────
+  # Linux Build
+  # ────────────────────────────────────────────
+  build-linux:
+    name: Build – Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system dependencies for Electron
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-dev \
+            libnotify-dev \
+            libnss3 \
+            libxss1 \
+            libxtst6 \
+            xvfb \
+            rpm
+
+      - name: Build installer (AppImage + .deb)
+        run: npm run dist -- --linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-installer
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+          retention-days: 5
+
+  # ────────────────────────────────────────────
+  # Publish GitHub Release (after all builds pass)
+  # ────────────────────────────────────────────
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-windows, build-mac, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List release assets
+        run: ls -lh release-assets/
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Naukri Update ${{ steps.version.outputs.VERSION }}"
+          body: |
+            ## Naukri Update ${{ steps.version.outputs.VERSION }}
+
+            ### Download
+
+            | Platform | File |
+            |:---|:---|
+            | **Windows** | `NaukriUpdate-Setup-*.exe` |
+            | **macOS** | `NaukriUpdate-*.dmg` |
+            | **Linux** | `NaukriUpdate-*.AppImage` or `*.deb` |
+
+            ### Install & Open
+
+            1. Download the file for your OS above.
+            2. Run the installer.
+            3. Open **Naukri Update** — the in-app wizard guides you through the rest.
+
+            No terminal. No Node.js. No configuration files needed.
+
+            ---
+
+            > **Running from source?** See [README](https://github.com/${{ github.repository }}#readme) → `npm run setup`
+          draft: false
+          prerelease: false
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
