@@ -303,8 +303,22 @@ class ConfigService {
       const p = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
       if (fs.existsSync(p)) return p;
     } else {
-      const candidates = ['google-chrome', 'google-chrome-stable', 'chromium-browser', 'chromium'];
+      const candidates = [
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium',
+        '/snap/bin/chromium',
+        '/snap/bin/google-chrome',
+        'google-chrome',
+        'google-chrome-stable',
+        'chromium-browser',
+        'chromium'
+      ];
       for (const c of candidates) {
+        if (c.startsWith('/') && fs.existsSync(c)) {
+          return c;
+        }
         try {
           const p = execSync(`which ${c}`, { stdio: 'pipe' }).toString().trim();
           if (p && fs.existsSync(p)) return p;

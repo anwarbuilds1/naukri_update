@@ -2,7 +2,7 @@
   "name": "naukri-update",
   "version": "1.0.0",
   "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
-  "main": "naukri-profile-refresh.js",
+  "main": "main.js",
   "scripts": {
     "setup": "node scripts/setup.js",
     "start": "electron main.js --no-sandbox",
@@ -53,9 +53,7 @@
       ],
       "icon": "assets/icon.png",
       "category": "Utility",
-      "maintainer": "Ankit Baghel <anwarbuilds1@gmail.com>"
-    },
-    "appImage": {
+      "maintainer": "Ankit Baghel <anwarbuilds1@gmail.com>",
       "executableName": "NaukriUpdate"
     },
     "publish": {

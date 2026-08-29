@@ -15,16 +15,15 @@ Naukri's candidate search algorithms prioritize active job seekers by looking at
 
 # Download Naukri Update
 
-If you are a normal user, you do **NOT** need Node.js, npm, Git, or a terminal. Download the ready-to-use application for your operating system.
+### Linux
+
+If you use Ubuntu, Debian, Linux Mint, Pop!_OS, or another Debian-based distribution:
+Download the **`.deb`** package (e.g. `naukri-update_1.0.0_amd64.deb`).
+
+If you use Fedora, Arch, openSUSE, or another supported Linux distribution:
+Download the **`.AppImage`** file (e.g. `NaukriUpdate-1.0.0.AppImage`).
 
 👉 **[Download Latest Naukri Update Release](https://github.com/anwarbuilds1/naukri_update/releases/latest)**
-
-### How to download:
-1. Open the official **[Releases Page](https://github.com/anwarbuilds1/naukri_update/releases/latest)**.
-2. Always download the latest release available at the top of the page.
-3. Scroll down to the **Assets** section of the latest release.
-4. Download the file that matches your computer's operating system (see guide below).
-5. **Do NOT download "Source code (zip)" or "Source code (tar.gz)"** unless you are a developer intending to modify the code.
 
 ---
 
@@ -32,12 +31,12 @@ If you are a normal user, you do **NOT** need Node.js, npm, Git, or a terminal. 
 
 Use this table to choose the correct file from the Releases page:
 
-| Operating System | Download File Pattern | Example Filename | Recommendation |
+| Operating System / Distribution | Download File Pattern | Example Filename | Recommended Choice |
 | :--- | :--- | :--- | :--- |
-| **Windows** (64-bit) | `NaukriUpdate-Setup-<version>.exe` | `NaukriUpdate-Setup-1.0.0.exe` | **Recommended** |
-| **macOS** (Intel / Apple Silicon) | `NaukriUpdate-<version>.dmg` | `NaukriUpdate-1.0.0.dmg` | **Recommended** |
-| **Ubuntu / Debian / Linux Mint / Pop!_OS** | `naukri-update_<version>_amd64.deb` | `naukri-update_1.0.0_amd64.deb` | **Recommended** |
-| **Other Linux Distributions** | `NaukriUpdate-<version>.AppImage` | `NaukriUpdate-1.0.0.AppImage` | Portable option |
+| **Windows** (64-bit) | `NaukriUpdate-Setup-<version>.exe` | `NaukriUpdate-Setup-1.0.0.exe` | `.exe` |
+| **macOS** (Intel / Apple Silicon) | `NaukriUpdate-<version>.dmg` | `NaukriUpdate-1.0.0.dmg` | `.dmg` |
+| **Ubuntu / Debian / Linux Mint / Pop!_OS** | `naukri-update_<version>_amd64.deb` | `naukri-update_1.0.0_amd64.deb` | `.deb` |
+| **Fedora / Arch / openSUSE / Other Linux** | `NaukriUpdate-<version>.AppImage` | `NaukriUpdate-1.0.0.AppImage` | `.AppImage` |
 
 ### Architecture Notes:
 - **Windows x64:** `NaukriUpdate-Setup-<version>.exe` supports 64-bit Windows 10 and Windows 11.
@@ -58,11 +57,11 @@ Then go to the **[macOS Installation Guide](#macos)**.
 
 ### Ubuntu / Debian / Linux Mint / Pop!_OS
 Download the `.deb` package (e.g. `naukri-update_1.0.0_amd64.deb`).  
-Then go to the **[Linux .deb Installation Guide](#deb)**.
+Then go to the **[Ubuntu / Debian Installation Guide](#ubuntu--debian--linux-mint--pop_os)**.
 
-### Other supported Linux
+### Fedora / Arch / openSUSE / Other Linux
 Download the `.AppImage` file (e.g. `NaukriUpdate-1.0.0.AppImage`).  
-Then go to the **[Linux AppImage Installation Guide](#appimage)**.
+Then go to the **[AppImage Installation Guide](#fedora--arch--opensuse--other-linux--appimage)**.
 
 ---
 
@@ -131,86 +130,171 @@ If a pop-up appears stating *"Naukri Update can't be opened because Apple cannot
 
 ---
 
-## Linux
+# Linux Installation
 
-### `.deb`
+If you use Ubuntu, Debian, Linux Mint, Pop!_OS, or another Debian-based Linux distribution, use the `.deb` package.
 
-Downloaded file: `naukri-update_<version>_amd64.deb` (e.g. `naukri-update_1.0.0_amd64.deb`)  
-*Recommended for Ubuntu, Debian, Linux Mint, Pop!_OS, Zorin OS, and Elementary OS.*
+If you use Fedora, Arch, openSUSE, or another supported Linux distribution, use the AppImage.
 
-#### GUI Installation Method (Recommended):
-1. Open your file manager and navigate to the folder where you saved the `.deb` file (for example, **Downloads** or **Desktop**).
-2. Double-click `naukri-update_1.0.0_amd64.deb`.
-3. Your distribution's Software Center (Ubuntu Software, App Center, or GDebi) will launch.
-4. Click the **Install** button.
-5. Enter your computer user password when prompted.
-6. Wait for installation to complete.
-7. Open your system Applications menu, search for **Naukri Update**, and click to launch.
+## Which file should I download?
 
-#### Terminal Fallback Method:
-If double-clicking `.deb` does not launch your Software Center, open Terminal in the folder containing the downloaded file and run:
-```bash
-sudo dpkg -i /path/to/naukri-update_1.0.0_amd64.deb
-# Example (if saved in Downloads): sudo dpkg -i ~/Downloads/naukri-update_1.0.0_amd64.deb
-sudo apt-get install -f
-```
-Proceed to **[First-Time Setup](#first-time-setup)** below.
+| Linux distribution | Download |
+| :--- | :--- |
+| Ubuntu | `.deb` |
+| Debian | `.deb` |
+| Linux Mint | `.deb` |
+| Pop!_OS | `.deb` |
+| Other Debian-based Linux | `.deb` |
+| Fedora | `.AppImage` |
+| Arch / Manjaro | `.AppImage` |
+| openSUSE | `.AppImage` |
+| Other supported Linux | `.AppImage` |
 
 ---
 
-### AppImage
+## Ubuntu / Debian / Linux Mint / Pop!_OS
 
-Downloaded file: `NaukriUpdate-<version>.AppImage` (e.g. `NaukriUpdate-1.0.0.AppImage`)  
-*For Arch, Fedora, openSUSE, and other Linux distributions.*
+Use this section if you are running Ubuntu, Debian, Linux Mint, Pop!_OS, Zorin OS, Elementary OS, or another Debian-based distribution.
 
-#### Step 1 — Locate the downloaded AppImage
+### Download
+
+1. Open the official **[Releases Page](https://github.com/anwarbuilds1/naukri_update/releases/latest)**.
+2. Locate the latest release at the top of the page.
+3. Expand the **Assets** section.
+4. Download the `.deb` file matching your operating system:
+   - Example filename: `naukri-update_1.0.0_amd64.deb` *(the version number may differ)*
+
+*Note: Do NOT download the `.AppImage` file if you are on Ubuntu, Debian, Linux Mint, or Pop!_OS.*
+
+### Install
+
+1. Open your Downloads folder (or the folder where you saved the downloaded file).
+2. Locate `naukri-update_1.0.0_amd64.deb`.
+3. Double-click the `.deb` file.
+4. Your system's software installer (Ubuntu Software, App Center, or GDebi) will launch.
+5. Click **Install**.
+6. Enter your computer user password when prompted.
+7. Wait until the installation completes.
+
+### Open
+
+1. Open your system's **Applications menu**.
+2. Search for **Naukri Update**.
+3. Click to open it.
+
+You are now ready to proceed to **[First-Time Setup](#first-time-setup)**.
+
+### If double-clicking the `.deb` does nothing
+
+If your Linux desktop environment does not have a default GUI package installer associated with `.deb` files:
+
+1. Open **Terminal**.
+2. Navigate to the folder containing your downloaded file:
+   ```bash
+   cd ~/Downloads
+   ```
+3. Run the installation command:
+   ```bash
+   sudo apt install ./naukri-update_1.0.0_amd64.deb
+   ```
+   *(Replace `naukri-update_1.0.0_amd64.deb` with the actual filename if different.)*
+4. Enter your computer user password when prompted. Note that no characters or asterisks will display while typing your password—this is normal Linux behavior; type your password and press `Enter`.
+5. Once installation finishes, launch the app from your Applications menu or run:
+   ```bash
+   naukri-update
+   ```
+
+---
+
+## Example: I use Ubuntu
+
+1. Open the latest release page: **https://github.com/anwarbuilds1/naukri_update/releases/latest**
+2. Expand the **Assets** section.
+3. Download `naukri-update_1.0.0_amd64.deb`.
+4. Open your **Downloads** folder.
+5. Double-click `naukri-update_1.0.0_amd64.deb`.
+6. Click **Install**.
+7. Enter your computer password if requested.
+8. Open your **Applications** menu.
+9. Search for **Naukri Update**.
+10. Click to open it.
+
+You are now ready for **[First-Time Setup](#first-time-setup)**.
+
+---
+
+## Fedora / Arch / openSUSE / Other Linux — AppImage
+
+Use this section **ONLY** if you are using a Linux distribution for which the `.deb` package is not appropriate (such as Fedora, Arch Linux, Manjaro, openSUSE, or Gentoo).
+
+### Step 1 — Download
+
+1. Open the official **[Releases Page](https://github.com/anwarbuilds1/naukri_update/releases/latest)**.
+2. Expand the **Assets** section.
+3. Download the `.AppImage` file:
+   - Example filename: `NaukriUpdate-1.0.0.AppImage` *(the version number may differ)*
+
+*Note: Do NOT download the `.deb` file unless your distribution supports Debian packages.*
+
+### Step 2 — Find the file
+
 1. Open your file manager (Files, Nautilus, Dolphin, or Thunar).
-2. Navigate to the folder where you saved the file (for example, **Downloads** or **Desktop**).
+2. Go to your **Downloads** folder (or the folder where you saved the file).
 3. Locate `NaukriUpdate-1.0.0.AppImage`.
 
-#### Step 2 — Allow it to run as a program
+### Step 3 — Allow it to run
+
 1. Right-click `NaukriUpdate-1.0.0.AppImage` and select **Properties**.
-2. Open the **Permissions** tab.
-3. Turn **ON** the executable permission. Depending on your Linux desktop, this option is labeled:
-   - **"Allow executing file as program"** *(Ubuntu / GNOME)*
-   - **"Is executable"** *(KDE Plasma)*
-   - **"Execute: Allow executing file as program"** *(XFCE)*
-   - **"Make executable"** *(Cinnamon)*
+2. Select the **Permissions** tab.
+3. Enable execution permissions. Depending on your desktop environment:
+   - **GNOME / Ubuntu:** Turn ON *"Allow executing file as program"*
+   - **KDE Plasma:** Check *"Is executable"*
+   - **XFCE:** Select *"Allow executing file as program"*
+   - **Cinnamon:** Check *"Make executable"*
 4. Close the Properties window.
 
-#### Step 3 — Open the application
+### Step 4 — Open it
+
 1. Double-click `NaukriUpdate-1.0.0.AppImage`.
-2. If prompted whether to "Run" or "Display contents", click **Run** / **Execute**.
-3. The app window will launch. Proceed to **[First-Time Setup](#first-time-setup)** below.
+2. Choose **Run** / **Execute** if prompted.
+3. The application will launch. Proceed to **[First-Time Setup](#first-time-setup)**.
 
-#### Step 4 — Terminal Fallback (If double-clicking fails)
-If your file manager does not set execution permissions properly, open Terminal, navigate to the folder containing the downloaded file, and run:
-```bash
-chmod +x NaukriUpdate-1.0.0.AppImage
-./NaukriUpdate-1.0.0.AppImage
-```
+### AppImage says `libfuse.so.2` is missing
 
-#### FUSE Issue on Modern Linux (`dlopen(): error loading libfuse.so.2`):
-- **What it means:** AppImages require the legacy FUSE 2 library (`libfuse.so.2`). Newer Linux distributions (such as Ubuntu 22.04+, Debian 12+, Fedora 38+, Arch Linux) do not install `libfuse2` by default.
-- **Recommended Fix for Ubuntu / Debian users:** Download and use the **`.deb` package** instead. The `.deb` package does not require FUSE.
-- **How to install FUSE for AppImage:** If you prefer AppImage, install `libfuse2` for your distribution:
-  - **Ubuntu 22.04 / 24.04, Debian 12, Linux Mint 21+, Pop!_OS:**
-    ```bash
-    sudo apt update
-    sudo apt install libfuse2t64 libfuse2
-    ```
-  - **Fedora 38+:**
-    ```bash
-    sudo dnf install fuse-libs
-    ```
-  - **Arch Linux / Manjaro:**
-    ```bash
-    sudo pacman -S fuse2
-    ```
-  - **openSUSE:**
-    ```bash
-    sudo zypper install libfuse2
-    ```
+If double-clicking the AppImage displays an error like `dlopen(): error loading libfuse.so.2`:
+
+This is an AppImage compatibility/runtime issue. It means your Linux distribution does not include the legacy FUSE 2 library by default.
+
+#### Recommended resolution:
+- **If you use Ubuntu, Debian, Linux Mint, or Pop!_OS:** Do **NOT** install FUSE just to run Naukri Update. Use the **`.deb` package** instead from the **[Releases Page](https://github.com/anwarbuilds1/naukri_update/releases/latest)**.
+- **If you use Fedora:**
+  ```bash
+  sudo dnf install fuse-libs
+  ```
+- **If you use Arch Linux / Manjaro:**
+  ```bash
+  sudo pacman -S fuse2
+  ```
+- **If you use openSUSE:**
+  ```bash
+  sudo zypper install libfuse2
+  ```
+
+---
+
+## Example: I use Fedora
+
+1. Open the latest release page: **https://github.com/anwarbuilds1/naukri_update/releases/latest**
+2. Expand **Assets**.
+3. Download `NaukriUpdate-1.0.0.AppImage`.
+4. Open your **Downloads** folder.
+5. Right-click `NaukriUpdate-1.0.0.AppImage`.
+6. Open **Properties** and navigate to **Permissions**.
+7. Enable executable permission (*"Is executable"* or *"Allow executing file as program"*).
+8. Double-click `NaukriUpdate-1.0.0.AppImage`.
+9. Choose **Run** if prompted.
+10. Naukri Update opens.
+11. Continue with **[First-Time Setup](#first-time-setup)**.
 
 ---
 

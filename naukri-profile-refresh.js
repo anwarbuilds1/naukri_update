@@ -683,7 +683,7 @@ if (require.main === module) {
     try {
       browser = await chromium.connectOverCDP(CDP_ENDPOINT, { timeout: 10000 });
     } catch {
-      console.error('Naukri Chrome is not running or its local CDP endpoint is unavailable. Run:\n./start-naukri-chrome.sh\nthen authenticate with Naukri manually in that Chrome window.');
+      console.error('Naukri Chrome is not running or its local CDP endpoint is unavailable. Please launch Naukri Update and click Connect Chrome.');
       process.exitCode = 1;
       return;
     }
