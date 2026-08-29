@@ -68,6 +68,18 @@
         
         <!-- DASHBOARD TAB -->
         <section id="tab-dashboard" class="tab-content active">
+          <!-- Auto-Update Alert Banner -->
+          <div id="update-banner" class="update-banner" style="display: none; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(59, 130, 246, 0.15)); border: 1px solid var(--accent-indigo); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.5rem;">🚀</span>
+              <div>
+                <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-primary);" id="update-banner-title">New Update Available!</h4>
+                <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: var(--text-secondary);" id="update-banner-subtitle">A new version is available.</p>
+              </div>
+            </div>
+            <button id="btn-update-action" class="btn btn-primary" style="padding: 8px 18px; font-size: 0.85rem;">Update Now</button>
+          </div>
+
           <div class="metrics-grid">
             <div class="metric-card" id="naukri-account-card">
               <div class="card-header">

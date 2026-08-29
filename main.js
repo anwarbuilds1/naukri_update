@@ -376,6 +376,17 @@ if (isHeadlessRun) {
     createWindow();
     createTray();
     
+    // Initialize Auto-Updater Service
+    try {
+      const AutoUpdaterService = require('./auto-updater-service');
+      const autoUpdaterService = new AutoUpdaterService(mainWindow);
+      setTimeout(() => {
+        autoUpdaterService.checkForUpdates();
+      }, 5000);
+    } catch (err) {
+      console.warn('[main.js] AutoUpdaterService initialization skipped:', err.message);
+    }
+
     // Run task scheduler check every 60 seconds
     checkIntervalTimer = setInterval(executeDueTasks, 60000);
     

@@ -31,5 +31,14 @@ contextBridge.exposeInMainWorld('api', {
   disconnectNaukri: () => ipcRenderer.invoke('disconnect-chrome'),
   getConnectionStatus: () => ipcRenderer.invoke('get-connection-state'),
   pauseAutomation: () => ipcRenderer.invoke('pause-automation'),
-  resumeAutomation: () => ipcRenderer.invoke('resume-automation')
+  resumeAutomation: () => ipcRenderer.invoke('resume-automation'),
+
+  // Auto-Update API handles
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadAndInstallUpdate: () => ipcRenderer.invoke('download-and-install-update'),
+  quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
+  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, info) => callback(info)),
+  onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', (event, info) => callback(info)),
+  onUpdateDownloadProgress: (callback) => ipcRenderer.on('update-download-progress', (event, progress) => callback(progress)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (event, info) => callback(info))
 });

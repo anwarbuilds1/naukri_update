@@ -1,6 +1,6 @@
 {
   "name": "naukri-update",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
   "main": "main.js",
   "scripts": {
@@ -16,6 +16,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "playwright-core": "^1.61.1"
   },
   "devDependencies": {
@@ -25,6 +26,11 @@
   "build": {
     "appId": "com.naukri.update",
     "productName": "Naukri Update",
+    "publish": {
+      "provider": "github",
+      "owner": "anwarbuilds1",
+      "repo": "naukri_update"
+    },
     "directories": {
       "output": "dist"
     },
@@ -34,6 +40,7 @@
       "config.js",
       "config-service.js",
       "secure-store.js",
+      "auto-updater-service.js",
       "naukri-profile-refresh.js",
       "renderer/**/*",
       "scripts/**/*",

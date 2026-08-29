@@ -1335,6 +1335,54 @@ btnResetApp.addEventListener('click', async () => {
   }
 });
 
+// Auto-Update Listener & UI logic
+function setupAutoUpdater() {
+  const updateBanner = document.getElementById('update-banner');
+  const updateTitle = document.getElementById('update-banner-title');
+  const updateSubtitle = document.getElementById('update-banner-subtitle');
+  const updateBtn = document.getElementById('btn-update-action');
+
+  if (!updateBanner || !window.api) return;
+
+  if (typeof window.api.onUpdateAvailable === 'function') {
+    window.api.onUpdateAvailable((info) => {
+      updateTitle.textContent = `🚀 Update Available (v${info.version})!`;
+      updateSubtitle.textContent = `A new release is ready for installation.`;
+      updateBtn.textContent = 'Download & Install';
+      updateBtn.disabled = false;
+      updateBanner.style.display = 'flex';
+
+      updateBtn.onclick = async () => {
+        updateBtn.disabled = true;
+        updateBtn.textContent = 'Downloading...';
+        const res = await window.api.downloadAndInstallUpdate();
+        if (res && res.message) {
+          updateSubtitle.textContent = res.message;
+        }
+      };
+    });
+  }
+
+  if (typeof window.api.onUpdateDownloadProgress === 'function') {
+    window.api.onUpdateDownloadProgress((progress) => {
+      updateBtn.textContent = `Downloading (${progress.percent}%)`;
+    });
+  }
+
+  if (typeof window.api.onUpdateDownloaded === 'function') {
+    window.api.onUpdateDownloaded((info) => {
+      updateTitle.textContent = `✅ Update Ready (v${info.version})!`;
+      updateSubtitle.textContent = `The update has been downloaded. Restart to apply.`;
+      updateBtn.textContent = 'Restart & Install Now';
+      updateBtn.disabled = false;
+
+      updateBtn.onclick = () => {
+        window.api.quitAndInstall();
+      };
+    });
+  }
+}
+
 // -------------------------------------------------------------
 // App Initialization
 // -------------------------------------------------------------
@@ -1344,6 +1392,7 @@ async function init() {
   await updateDashboardCredentialsCard();
   await updateChromeStatus();
   await updateAutomationDashboard();
+  setupAutoUpdater();
   
   // Status check loop every 3 seconds
   setInterval(updateChromeStatus, 3000);
