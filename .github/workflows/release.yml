@@ -169,6 +169,7 @@ jobs:
             > **Running from source?** See [README](https://github.com/${{ github.repository }}#readme) → `npm run setup`
           draft: false
           prerelease: false
+          make_latest: true
           files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
