@@ -5,68 +5,13 @@ const fs = require('fs');
 const { spawn, execSync, exec } = require('child_process');
 const http = require('http');
 
-// Precedence rules for configDir
-let configDir;
-const envPathVar = process.env.NAUKRI_ENV_PATH;
-const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+const ConfigService = require('./config-service');
 
-if (envPathVar) {
-  configDir = path.dirname(envPathVar);
-} else {
-  // Determine standard AppData directory
-  let appDataDir = '';
-  if (process.platform === 'win32') {
-    appDataDir = path.join(process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming'), 'NaukriUpdate');
-  } else if (process.platform === 'darwin') {
-    appDataDir = path.join(homeDir, 'Library', 'Application Support', 'NaukriUpdate');
-  } else {
-    appDataDir = path.join(process.env.XDG_CONFIG_HOME || path.join(homeDir, '.config'), 'NaukriUpdate');
-  }
+// Perform migration of repo .env to AppData if applicable
+ConfigService.migrate(__dirname);
 
-  // Precedence check:
-  // 1. If AppData .env exists, use AppData config folder.
-  // 2. If repo .env exists and AppData doesn't, migrate/copy it to AppData.
-  // 3. Otherwise, use AppData.
-  const appDataEnv = path.join(appDataDir, '.env');
-  const repoEnv = path.join(__dirname, '.env');
-
-  if (fs.existsSync(appDataEnv)) {
-    configDir = appDataDir;
-  } else if (fs.existsSync(repoEnv)) {
-    // Migration trigger
-    configDir = appDataDir;
-    try {
-      fs.mkdirSync(appDataDir, { recursive: true });
-      fs.copyFileSync(repoEnv, appDataEnv);
-      console.log(`Migrated .env from repo root to AppData: ${appDataEnv}`);
-      
-      // Also migrate resume folder if exists
-      const repoResumeDir = path.join(__dirname, 'resume');
-      const appDataResumeDir = path.join(appDataDir, 'resume');
-      if (fs.existsSync(repoResumeDir)) {
-        fs.mkdirSync(appDataResumeDir, { recursive: true });
-        const files = fs.readdirSync(repoResumeDir);
-        for (const file of files) {
-          fs.copyFileSync(path.join(repoResumeDir, file), path.join(appDataResumeDir, file));
-        }
-        console.log('Migrated resume folder contents to AppData.');
-      }
-    } catch (e) {
-      console.error('Migration to AppData failed, using local dir:', e);
-      configDir = __dirname;
-    }
-  } else {
-    configDir = appDataDir;
-  }
-}
-
-// Make sure configDir exists
-try {
-  fs.mkdirSync(configDir, { recursive: true });
-  fs.mkdirSync(path.join(configDir, 'resume'), { recursive: true });
-} catch (e) {}
-
-const ACTIVE_ENV_PATH = path.join(configDir, '.env');
+const configDir = ConfigService.getAppConfigDir();
+const ACTIVE_ENV_PATH = ConfigService.getEnvPath();
 
 // CLI Arguments parsing
 const args = process.argv;
@@ -84,71 +29,18 @@ if (!fs.existsSync(ACTIVE_ENV_PATH)) {
   if (fs.existsSync(examplePath)) {
     fs.copyFileSync(examplePath, ACTIVE_ENV_PATH);
   } else {
-    fs.writeFileSync(ACTIVE_ENV_PATH, `
-NAUKRI_PROFILE_URL=https://www.naukri.com/mnjuser/profile
-NAUKRI_EMAIL=
-NAUKRI_PASSWORD=
-REFRESH_MODE=interval
-REFRESH_INTERVAL_HOURS=1
-REFRESH_INTERVAL_MINUTES=0
-REFRESH_TIME=06:11
-REFRESH_WINDOW_ENABLED=false
-REFRESH_WINDOW_START=07:00
-REFRESH_WINDOW_END=19:00
-RESUME_UPDATE_ENABLED=false
-RESUME_UPDATE_TIME=07:00
-RESUME_FILE=
-RESUME_UPLOAD_TIMEOUT_MS=120000
-    `.trim());
+    // Generate default config file
+    ConfigService.save(ConfigService.defaults);
   }
 }
 
-// Load env helper
+// Helpers for IPC compatibility/legacy access
 function loadEnvFile() {
-  const out = {};
-  if (!fs.existsSync(ACTIVE_ENV_PATH)) return out;
-  const content = fs.readFileSync(ACTIVE_ENV_PATH, 'utf8');
-  for (const line of content.split(/\r?\n/)) {
-    if (!line.trim() || line.trim().startsWith('#')) continue;
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-    if (!m) continue;
-    let v = m[2];
-    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
-    out[m[1]] = v;
-  }
-  return out;
+  return ConfigService.load();
 }
 
-// Save env helper
 function saveEnvFile(envData) {
-  let content = '';
-  if (fs.existsSync(ACTIVE_ENV_PATH)) {
-    content = fs.readFileSync(ACTIVE_ENV_PATH, 'utf8');
-  }
-  
-  const lines = content.split(/\r?\n/);
-  const updatedKeys = new Set();
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line || line.startsWith('#')) continue;
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-    if (m) {
-      const key = m[1];
-      if (envData[key] !== undefined) {
-        lines[i] = `${key}=${envData[key]}`;
-        updatedKeys.add(key);
-      }
-    }
-  }
-  
-  for (const key of Object.keys(envData)) {
-    if (!updatedKeys.has(key)) {
-      lines.push(`${key}=${envData[key]}`);
-    }
-  }
-  
-  fs.writeFileSync(ACTIVE_ENV_PATH, lines.join('\n'), 'utf8');
+  ConfigService.save(envData);
 }
 
 // OS level scheduler operations
@@ -632,6 +524,10 @@ function triggerResumeTask() {
 }
 
 // IPC Handlers
+
+ipcMain.handle('run-diagnostics', () => {
+  return ConfigService.runDiagnostics();
+});
 
 ipcMain.handle('get-app-info', () => {
   return {

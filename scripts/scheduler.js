@@ -1,68 +1,16 @@
 /**
-/**
- * Scheduler assistant to parse and validate scheduling configuration from .env,
+ * Scheduler assistant to parse and validate scheduling configuration,
  * read/write refresh state, and decide whether a task should run.
  */
 const fs = require('fs');
 const path = require('path');
+const ConfigService = require('../config-service');
 
-const repoDir = path.join(__dirname, '..');
-
-function getEnvPath() {
-  if (process.env.NAUKRI_ENV_PATH) {
-    return process.env.NAUKRI_ENV_PATH;
-  }
-  
-  const home = process.env.HOME || process.env.USERPROFILE || '';
-  let appDataDir = '';
-  if (process.platform === 'win32') {
-    appDataDir = path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'NaukriUpdate');
-  } else if (process.platform === 'darwin') {
-    appDataDir = path.join(home, 'Library', 'Application Support', 'NaukriUpdate');
-  } else {
-    appDataDir = path.join(process.env.XDG_CONFIG_HOME || path.join(home, '.config'), 'NaukriUpdate');
-  }
-  const appDataEnv = path.join(appDataDir, '.env');
-  if (fs.existsSync(appDataEnv)) {
-    return appDataEnv;
-  }
-  
-  const localDirEnv = path.join(repoDir, '.env');
-  if (fs.existsSync(localDirEnv)) {
-    return localDirEnv;
-  }
-  const cwdEnv = path.join(process.cwd(), '.env');
-  if (fs.existsSync(cwdEnv)) {
-    return cwdEnv;
-  }
-  return appDataEnv;
-}
-
-const envPath = getEnvPath();
-const configDir = path.dirname(envPath);
-const stateFile = path.join(configDir, '.naukri-refresh-state.json');
-
-// Simple helper to load .env manually to avoid dependencies
-function loadEnv() {
-  const env = {};
-  if (!fs.existsSync(envPath)) return env;
-  const content = fs.readFileSync(envPath, 'utf8');
-  for (const line of content.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const match = trimmed.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-    if (!match) continue;
-    let val = match[2];
-    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-      val = val.slice(1, -1);
-    }
-    env[match[1]] = val;
-  }
-  return env;
-}
-
-const env = loadEnv();
+const env = ConfigService.load();
 const getEnv = (key, def = '') => (env[key] !== undefined && env[key] !== '' ? env[key] : def);
+const envPath = ConfigService.getEnvPath();
+const configDir = ConfigService.getAppConfigDir();
+const stateFile = path.join(configDir, '.naukri-refresh-state.json');
 
 // Validation helpers
 function validateTime(timeStr, fieldName) {

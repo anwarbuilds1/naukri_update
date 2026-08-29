@@ -1,60 +1,16 @@
 /**
- * Loads all personal data + credentials from .env so nothing sensitive lives in code.
- * Tiny hand-rolled parser — no dependency needed for a flat KEY=value file.
+ * Loads all personal data + credentials from the central ConfigService so nothing sensitive lives in code.
+ * Exposes compatibility fields for the existing automation core.
  */
-const fs = require('fs');
 const path = require('path');
+const ConfigService = require('./config-service');
 
-function loadEnv(file) {
-  const out = {};
-  if (!fs.existsSync(file)) return out;
-  for (const line of fs.readFileSync(file, 'utf8').replace(/^﻿/, '').split(/\r?\n/)) {
-    if (!line.trim() || line.trim().startsWith('#')) continue;
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-    if (!m) continue;
-    let v = m[2];
-    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
-    out[m[1]] = v;
-  }
-  return out;
-}
-
-function getEnvPath() {
-  if (process.env.NAUKRI_ENV_PATH) {
-    return process.env.NAUKRI_ENV_PATH;
-  }
-  
-  const home = process.env.HOME || process.env.USERPROFILE || '';
-  let appDataDir = '';
-  if (process.platform === 'win32') {
-    appDataDir = path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'NaukriUpdate');
-  } else if (process.platform === 'darwin') {
-    appDataDir = path.join(home, 'Library', 'Application Support', 'NaukriUpdate');
-  } else {
-    appDataDir = path.join(process.env.XDG_CONFIG_HOME || path.join(home, '.config'), 'NaukriUpdate');
-  }
-  const appDataEnv = path.join(appDataDir, '.env');
-  if (fs.existsSync(appDataEnv)) {
-    return appDataEnv;
-  }
-  
-  const localDirEnv = path.join(__dirname, '.env');
-  if (fs.existsSync(localDirEnv)) {
-    return localDirEnv;
-  }
-  const cwdEnv = path.join(process.cwd(), '.env');
-  if (fs.existsSync(cwdEnv)) {
-    return cwdEnv;
-  }
-  return appDataEnv;
-}
-
-const envPath = getEnvPath();
-const E = loadEnv(envPath);
+const envPath = ConfigService.getEnvPath();
+const E = ConfigService.load();
 const g = (k, d = '') => (E[k] != null && E[k] !== '' ? E[k] : (process.env[k] || d));
 
-if (!g('NAME') || !g('EMAIL')) {
-  console.warn('[config] .env missing or empty — copy .env.example to .env and fill it in.');
+if (!g('NAME') && !g('EMAIL') && !g('NAUKRI_EMAIL')) {
+  console.warn('[config] Config missing or empty — complete setup in the application GUI.');
 }
 
 const CV = {
@@ -63,11 +19,11 @@ const CV = {
   phone: g('PHONE'),
   location: g('LOCATION'),
   currentRole: g('CURRENT_ROLE'),
-  company: g('COMPANY') || (g('CURRENT_ROLE').split(' at ')[1] || '').split(' (')[0],
+  company: g('COMPANY') || (g('CURRENT_ROLE') ? (g('CURRENT_ROLE').split(' at ')[1] || '').split(' (')[0] : ''),
   education: g('EDUCATION'),
   yearsOfExperience: g('YEARS_EXPERIENCE'),
   skills: g('SKILLS'),
-  highlights: g('HIGHLIGHTS').split('||').map((s) => s.trim()).filter(Boolean),
+  highlights: g('HIGHLIGHTS') ? g('HIGHLIGHTS').split('||').map((s) => s.trim()).filter(Boolean) : [],
   // application answers
   noticePeriod: g('NOTICE_PERIOD'),
   currentCTC: g('CURRENT_CTC'),                 // bare number for chatbots, e.g. "10"
@@ -94,10 +50,18 @@ const naukriCredentials = {
 };
 const geminiKey = g('GEMINI_KEY');
 const naukriProfileUrl = g('NAUKRI_PROFILE_URL', 'https://www.naukri.com/mnjuser/profile');
-const resumeFile = g('RESUME_FILE', 'resume/Anwar_Rizwan_Resume.pdf');
+const resumeFile = g('RESUME_FILE', '');
 const resumeUploadTimeoutMs = parseInt(g('RESUME_UPLOAD_TIMEOUT_MS', '120000'), 10);
 const rawResumeFile = process.env['RESUME_FILE'] !== undefined ? process.env['RESUME_FILE'] : (E['RESUME_FILE'] || '');
 
-module.exports = { CV, naukriCredentials, geminiKey, naukriProfileUrl, resumeFile, resumeUploadTimeoutMs, rawResumeFile, envPath, getEnvPath };
-
-
+module.exports = { 
+  CV, 
+  naukriCredentials, 
+  geminiKey, 
+  naukriProfileUrl, 
+  resumeFile, 
+  resumeUploadTimeoutMs, 
+  rawResumeFile, 
+  envPath, 
+  getEnvPath: () => ConfigService.getEnvPath() 
+};

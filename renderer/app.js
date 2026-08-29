@@ -539,11 +539,139 @@ window.api.onStatusUpdate(() => {
 // -------------------------------------------------------------
 // First Run Wizard Experience
 // -------------------------------------------------------------
+// -------------------------------------------------------------
+// First Run Wizard Experience
+// -------------------------------------------------------------
+const wizConnectChromeBtn = document.getElementById('wiz-connect-chrome-btn');
+const wizConnectionStatus = document.getElementById('wiz-connection-status');
+
+if (wizConnectChromeBtn) {
+  wizConnectChromeBtn.addEventListener('click', async () => {
+    const email = document.getElementById('wiz-email').value.trim();
+    const password = document.getElementById('wiz-password').value;
+    const url = document.getElementById('wiz-url').value.trim();
+    
+    if (!email || !password || !url) {
+      wizError.textContent = 'Please fill out email, password, and URL before connecting Chrome.';
+      return;
+    }
+    
+    // Save settings temporarily so the connection process has access to credentials
+    await window.api.saveSettings({
+      NAUKRI_PROFILE_URL: url,
+      NAUKRI_EMAIL: email,
+      NAUKRI_PASSWORD: password
+    });
+    
+    wizConnectionStatus.innerHTML = `
+      <span class="dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--accent-yellow); display: inline-block;"></span>
+      <span>Connecting...</span>
+    `;
+    
+    const state = await window.api.connectNaukri();
+    updateWizConnectionStatus(state);
+  });
+}
+
+function updateWizConnectionStatus(state) {
+  if (!wizConnectionStatus) return;
+  const status = state.status;
+  let color = 'var(--accent-red)';
+  let label = 'Disconnected';
+  if (status === 'connected') {
+    color = 'var(--accent-green)';
+    label = 'Connected';
+  } else if (status === 'connecting') {
+    color = 'var(--accent-yellow)';
+    label = 'Connecting...';
+  } else if (status === 'verifying') {
+    color = 'var(--accent-yellow)';
+    label = 'Please complete OTP/CAPTCHA in Chrome';
+  } else if (status === 'failed') {
+    color = 'var(--accent-red)';
+    label = `Failed: ${state.message}`;
+  }
+  wizConnectionStatus.innerHTML = `
+    <span class="dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: ${color}; display: inline-block;"></span>
+    <span>${label}</span>
+  `;
+}
+
+// Watch connection state updates
+window.api.onConnectionState((state) => {
+  updateWizConnectionStatus(state);
+  if (naukriConnectionBadge) {
+    updateConnectionBadge(state);
+  }
+});
+
 function showFirstRunWizard() {
-  wizardStep = 1;
+  wizardStep = 0;
+  populateWizardFields();
   updateWizardUI();
   firstRunModal.classList.add('active');
 }
+
+async function populateWizardFields() {
+  try {
+    const settings = await window.api.getSettings();
+    if (settings) {
+      document.getElementById('wiz-url').value = settings.NAUKRI_PROFILE_URL || 'https://www.naukri.com/mnjuser/profile';
+      document.getElementById('wiz-email').value = settings.NAUKRI_EMAIL || '';
+      document.getElementById('wiz-password').value = settings.NAUKRI_PASSWORD || '';
+      
+      document.getElementById('wiz-resume-enabled').checked = settings.RESUME_UPDATE_ENABLED === 'true';
+      document.getElementById('wiz-resume-time').value = settings.RESUME_UPDATE_TIME || '07:00';
+      
+      document.getElementById('wiz-headline-enabled').checked = settings.REFRESH_MODE !== '';
+      document.getElementById('wiz-refresh-mode').value = settings.REFRESH_MODE === 'fixed_time' ? 'fixed_time' : 'interval';
+      document.getElementById('wiz-interval-hours').value = settings.REFRESH_INTERVAL_HOURS || '1';
+      document.getElementById('wiz-interval-minutes').value = settings.REFRESH_INTERVAL_MINUTES || '0';
+      document.getElementById('wiz-refresh-time').value = settings.REFRESH_TIME || '06:11';
+      
+      toggleWizResumeTimeGroup();
+      toggleWizHeadlineSettingsGroup();
+    }
+  } catch (e) {}
+
+  try {
+    const resumeInfo = await window.api.getResumeInfo();
+    if (resumeInfo && resumeInfo.exists) {
+      currentResume = resumeInfo;
+      wizResumeName.textContent = resumeInfo.name;
+      wizResumeMeta.textContent = `${Math.round(resumeInfo.sizeBytes / 1024)} KB • Last modified: ${new Date(resumeInfo.mtime).toLocaleString()}`;
+      wizResumeBox.style.borderColor = 'var(--accent-green)';
+      wizResumeBox.style.backgroundColor = 'rgba(16, 185, 129, 0.02)';
+    } else {
+      currentResume = null;
+      wizResumeName.textContent = 'No Resume Selected';
+      wizResumeMeta.textContent = 'Click below to upload a PDF resume. Only PDF format is accepted.';
+      wizResumeBox.style.borderColor = 'var(--border-color)';
+      wizResumeBox.style.backgroundColor = 'var(--bg-tertiary)';
+    }
+  } catch (e) {}
+}
+
+function toggleWizResumeTimeGroup() {
+  const enabled = document.getElementById('wiz-resume-enabled').checked;
+  document.getElementById('wiz-resume-time-group').style.display = enabled ? 'block' : 'none';
+}
+
+function toggleWizHeadlineSettingsGroup() {
+  const enabled = document.getElementById('wiz-headline-enabled').checked;
+  const group = document.getElementById('wiz-headline-settings-group');
+  group.style.display = enabled ? 'block' : 'none';
+  
+  if (enabled) {
+    const mode = document.getElementById('wiz-refresh-mode').value;
+    document.getElementById('wiz-headline-interval').style.display = mode === 'interval' ? 'grid' : 'none';
+    document.getElementById('wiz-headline-fixed').style.display = mode === 'fixed_time' ? 'block' : 'none';
+  }
+}
+
+document.getElementById('wiz-resume-enabled').addEventListener('change', toggleWizResumeTimeGroup);
+document.getElementById('wiz-headline-enabled').addEventListener('change', toggleWizHeadlineSettingsGroup);
+document.getElementById('wiz-refresh-mode').addEventListener('change', toggleWizHeadlineSettingsGroup);
 
 function updateWizardUI() {
   // Hide all panels
@@ -560,91 +688,138 @@ function updateWizardUI() {
     }, 50);
   }
   
-  // Hide/show other steps
-  for (let i = 1; i <= 4; i++) {
-    const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
-    if (dot) {
-      if (i < wizardStep) {
-        dot.className = 'step-dot completed';
-        dot.textContent = '✓';
-      } else if (i === wizardStep) {
-        dot.className = 'step-dot active';
-        dot.textContent = i;
-      } else {
-        dot.className = 'step-dot';
-        dot.textContent = i;
-      }
+  const progressFill = document.getElementById('wizard-progress-fill');
+  const stepsText = document.getElementById('wizard-steps-text');
+  
+  const pct = Math.round((wizardStep / 9) * 100);
+  if (progressFill) progressFill.style.width = `${pct}%`;
+  if (stepsText) {
+    if (wizardStep === 0) {
+      stepsText.textContent = 'Welcome Screen';
+    } else {
+      stepsText.textContent = `Step ${wizardStep} of 9`;
     }
   }
   
   // Footer buttons state
-  wizPrevBtn.style.visibility = wizardStep > 1 ? 'visible' : 'hidden';
-  wizNextBtn.textContent = wizardStep === 4 ? 'Finish Setup' : 'Next';
+  wizPrevBtn.style.visibility = wizardStep > 0 ? 'visible' : 'hidden';
+  wizNextBtn.textContent = wizardStep === 9 ? 'Finish Setup' : (wizardStep === 0 ? 'Get Started' : 'Next');
   wizError.textContent = '';
 }
 
 wizNextBtn.addEventListener('click', async () => {
   wizError.textContent = '';
   
-  if (wizardStep === 1) {
+  if (wizardStep === 0) {
+    wizardStep = 1;
+    updateWizardUI();
+  } else if (wizardStep === 1) {
+    const url = document.getElementById('wiz-url').value.trim();
+    if (!url) {
+      wizError.textContent = 'Please enter your Naukri Profile URL.';
+      return;
+    }
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      wizError.textContent = 'Please enter a valid URL (starting with http:// or https://).';
+      return;
+    }
+    document.getElementById('naukri-profile-url').value = url;
     wizardStep = 2;
     updateWizardUI();
   } else if (wizardStep === 2) {
     const email = document.getElementById('wiz-email').value.trim();
     const password = document.getElementById('wiz-password').value;
-    const url = document.getElementById('wiz-url').value.trim();
-    
-    if (!email || !password || !url) {
-      wizError.textContent = 'Please fill out all email, password, and URL fields.';
+    if (!email || !password) {
+      wizError.textContent = 'Please enter both your Naukri Email and Password.';
       return;
     }
-    
-    // Basic email format check
     if (!email.includes('@')) {
       wizError.textContent = 'Please enter a valid email address.';
       return;
     }
-    
-    // Copy into main form fields
     document.getElementById('naukri-email').value = email;
     document.getElementById('naukri-password').value = password;
-    document.getElementById('naukri-profile-url').value = url;
-    
     wizardStep = 3;
     updateWizardUI();
   } else if (wizardStep === 3) {
-    if (!currentResume) {
-      wizError.textContent = 'You must select a valid PDF resume to continue.';
-      return;
+    const status = await window.api.getConnectionState();
+    if (status.status !== 'connected') {
+      const proceed = await showCustomConfirm({
+        title: "Browser Session Not Established",
+        message: "You have not verified your Naukri session via the dedicated Chrome. Background automation may fail. Do you want to proceed anyway?",
+        buttonText: "Proceed",
+        buttonClass: "btn-secondary"
+      });
+      if (!proceed) return;
     }
     wizardStep = 4;
     updateWizardUI();
   } else if (wizardStep === 4) {
-    // Collect and save configurations
-    const headOn = document.getElementById('wiz-headline-enabled').checked;
+    if (!currentResume) {
+      wizError.textContent = 'Please select a valid PDF resume to continue.';
+      return;
+    }
+    wizardStep = 5;
+    updateWizardUI();
+  } else if (wizardStep === 5) {
     const resOn = document.getElementById('wiz-resume-enabled').checked;
+    const resTime = document.getElementById('wiz-resume-time').value;
     
-    headlineEnabled.checked = headOn;
     resumeEnabled.checked = resOn;
-    
-    // Update display boxes
-    headlineSettingsBox.style.display = headOn ? 'block' : 'none';
+    document.getElementById('resume-time').value = resTime;
     resumeSettingsBox.style.display = resOn ? 'block' : 'none';
     
-    // Save settings
+    wizardStep = 6;
+    updateWizardUI();
+  } else if (wizardStep === 6) {
+    const headOn = document.getElementById('wiz-headline-enabled').checked;
+    const strat = document.getElementById('wiz-refresh-mode').value;
+    const hours = document.getElementById('wiz-interval-hours').value;
+    const minutes = document.getElementById('wiz-interval-minutes').value;
+    const fixedTime = document.getElementById('wiz-refresh-time').value;
+    
+    headlineEnabled.checked = headOn;
+    refreshMode.value = strat;
+    document.getElementById('interval-hours').value = hours;
+    document.getElementById('interval-minutes').value = minutes;
+    document.getElementById('refresh-time').value = fixedTime;
+    
+    headlineSettingsBox.style.display = headOn ? 'block' : 'none';
+    if (strat === 'interval') {
+      intervalInputs.style.display = 'grid';
+      fixedTimeInputs.style.display = 'none';
+    } else {
+      intervalInputs.style.display = 'none';
+      fixedTimeInputs.style.display = 'block';
+    }
+    
+    wizardStep = 7;
+    updateWizardUI();
+  } else if (wizardStep === 7) {
+    wizardStep = 8;
+    updateWizardUI();
+    runWizardDiagnostics();
+  } else if (wizardStep === 8) {
+    wizardStep = 9;
+    updateWizardUI();
+  } else if (wizardStep === 9) {
+    const headOn = headlineEnabled.checked;
+    const resOn = resumeEnabled.checked;
+    const bgOn = document.getElementById('wiz-background-enabled').checked;
+    
     const settings = {
       NAUKRI_PROFILE_URL: document.getElementById('naukri-profile-url').value.trim(),
       NAUKRI_EMAIL: document.getElementById('naukri-email').value.trim(),
       NAUKRI_PASSWORD: document.getElementById('naukri-password').value,
-      REFRESH_MODE: headOn ? 'interval' : '',
-      REFRESH_INTERVAL_HOURS: '1',
-      REFRESH_INTERVAL_MINUTES: '0',
-      REFRESH_TIME: '06:11',
+      REFRESH_MODE: headOn ? refreshMode.value : '',
+      REFRESH_INTERVAL_HOURS: document.getElementById('interval-hours').value,
+      REFRESH_INTERVAL_MINUTES: document.getElementById('interval-minutes').value,
+      REFRESH_TIME: document.getElementById('refresh-time').value,
       RESUME_UPDATE_ENABLED: resOn ? 'true' : 'false',
-      RESUME_UPDATE_TIME: '07:00',
-      REFRESH_WINDOW_ENABLED: 'false',
-      REFRESH_WINDOW_START: '07:00',
-      REFRESH_WINDOW_END: '19:00'
+      RESUME_UPDATE_TIME: document.getElementById('resume-time').value,
+      REFRESH_WINDOW_ENABLED: windowEnabled.checked ? 'true' : 'false',
+      REFRESH_WINDOW_START: document.getElementById('window-start').value,
+      REFRESH_WINDOW_END: document.getElementById('window-end').value
     };
     
     wizNextBtn.textContent = 'Saving...';
@@ -671,11 +846,80 @@ wizNextBtn.addEventListener('click', async () => {
 });
 
 wizPrevBtn.addEventListener('click', () => {
-  if (wizardStep > 1) {
+  if (wizardStep > 0) {
     wizardStep--;
     updateWizardUI();
   }
 });
+
+if (wizSelectResumeBtn) {
+  wizSelectResumeBtn.addEventListener('click', async () => {
+    wizError.textContent = '';
+    const res = await window.api.selectResume();
+    if (res.success) {
+      currentResume = res;
+      wizResumeName.textContent = res.name;
+      wizResumeMeta.textContent = `${Math.round(res.sizeBytes / 1024)} KB • mtime: ${new Date(res.mtime).toLocaleString()}`;
+      wizResumeBox.style.borderColor = 'var(--accent-green)';
+      wizResumeBox.style.backgroundColor = 'rgba(16, 185, 129, 0.02)';
+    } else if (res.error) {
+      wizError.textContent = res.error;
+    }
+  });
+}
+
+async function runWizardDiagnostics() {
+  const btn = document.getElementById('wiz-run-diagnostics-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+  }
+  
+  const indicators = ['config', 'creds', 'resume', 'chrome', 'profile', 'scheduler'];
+  indicators.forEach(ind => {
+    const el = document.getElementById(`diag-${ind}`);
+    if (el) {
+      el.style.color = 'var(--text-tertiary)';
+      el.textContent = 'Checking...';
+    }
+  });
+  
+  try {
+    const res = await window.api.runDiagnostics();
+    
+    const setStatus = (id, success, message) => {
+      const el = document.getElementById(`diag-${id}`);
+      if (el) {
+        if (success) {
+          el.style.color = 'var(--accent-green)';
+          el.textContent = '✓ OK';
+        } else {
+          el.style.color = 'var(--accent-red)';
+          el.textContent = `✗ ${message}`;
+        }
+      }
+    };
+    
+    setStatus('config', res.schemaValid, 'Schema Invalid');
+    setStatus('creds', res.credentialsProvided, 'Missing Credentials');
+    setStatus('resume', res.resumeFileValid, res.resumeError || 'Invalid PDF');
+    setStatus('chrome', res.chromeExecutableAvailable, 'Chrome not found');
+    setStatus('profile', res.browserProfileDirectoryReady, 'Directory error');
+    setStatus('scheduler', res.backgroundSchedulerExecutableReady, 'Script error');
+    
+  } catch (err) {
+    wizError.textContent = `Diagnostics failed: ${err.message}`;
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Verify System Readiness';
+    }
+  }
+}
+
+if (document.getElementById('wiz-run-diagnostics-btn')) {
+  document.getElementById('wiz-run-diagnostics-btn').addEventListener('click', runWizardDiagnostics);
+}
 
 // -------------------------------------------------------------
 // Privacy Modal, Help Guide & Data Control Listeners
@@ -1069,7 +1313,8 @@ btnResetApp.addEventListener('click', async () => {
       await showCustomAlert("Success", "Application reset completed successfully. Re-launching configuration wizard.");
       isFirstRun = true;
       firstRunModal.classList.add('active');
-      wizardStep = 1;
+      wizardStep = 0;
+      populateWizardFields();
       updateWizardUI();
       loadSettings();
       updateResumeDisplay();

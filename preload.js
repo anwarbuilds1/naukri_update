@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('api', {
   deleteResume: () => ipcRenderer.invoke('delete-resume'),
   resetBrowserProfile: () => ipcRenderer.invoke('reset-browser-profile'),
   resetApplication: () => ipcRenderer.invoke('reset-application'),
+  runDiagnostics: () => ipcRenderer.invoke('run-diagnostics'),
 
   // Explicit security-focused aliases requested by system requirements
   chooseResume: () => ipcRenderer.invoke('select-resume'),

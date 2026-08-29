@@ -352,22 +352,56 @@
               </div>
               <div class="guide-section" id="sec-works">
                 <h3>3. How It Works</h3>
-                <p>The application operates using a dedicated, local Chrome browser session configured to interact with Naukri. It does not use external web APIs or scraping backend proxies.</p>
-                <pre>
-Your Computer
-      │
-      ├── Desktop App (Electron GUI)
-      │
-      ├── Local Settings (.env file)
-      │
-      ├── Your Resume (PDF file)
-      │
-      └── Dedicated Browser Profile (.naukri-chrome-profile)
-                 │
-                 ▼
-              Naukri (naukri.com)
-                </pre>
-                <p>Communication occurs strictly between the desktop application, your local files, and Naukri's official web pages. The automation runs in a dedicated Chrome browser context that is completely isolated from your normal personal browsing profile.</p>
+                <p>The application operates entirely on your local machine using an isolated, dedicated Chrome browser session. Below is the system architecture showing how different local components interface directly with Naukri.com without any remote proxies or telemetry.</p>
+                
+                <div class="architecture-visualizer" style="margin: 24px 0; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px;">
+                  <h4 style="color: var(--accent-indigo); margin-bottom: 20px; text-align: center; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Local Architecture & Data Flow</h4>
+                  
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+                    <!-- Column 1: Interface & Config -->
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                      <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4;">
+                        <strong style="color: var(--text-primary); display: block; margin-bottom: 6px; font-size: 0.85rem;">Electron GUI</strong>
+                        <span style="color: var(--text-secondary);">The desktop control dashboard used to view logs, check connection status, and trigger updates.</span>
+                      </div>
+                      <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4;">
+                        <strong style="color: var(--text-primary); display: block; margin-bottom: 6px; font-size: 0.85rem;">Config & Credentials</strong>
+                        <span style="color: var(--text-secondary);">Stored locally in your AppData folder. Credentials file permissions are secured (chmod 0600 on Linux/macOS).</span>
+                      </div>
+                    </div>
+                    
+                    <!-- Column 2: Automation & Schedulers -->
+                    <div style="display: flex; flex-direction: column; gap: 16px; justify-content: center;">
+                      <div style="background-color: rgba(99, 102, 241, 0.05); border: 1px solid var(--accent-indigo); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4; text-align: center;">
+                        <strong style="color: var(--accent-indigo); display: block; margin-bottom: 6px; font-size: 0.85rem;">Playwright Engine</strong>
+                        <span style="color: var(--text-secondary);">Controls the local Chrome instance via CDP (port 9222) headlessly or headfully.</span>
+                      </div>
+                      <div style="background-color: rgba(16, 185, 129, 0.05); border: 1px solid var(--accent-green); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4; text-align: center;">
+                        <strong style="color: var(--accent-green); display: block; margin-bottom: 6px; font-size: 0.85rem;">OS Background Task</strong>
+                        <span style="color: var(--text-secondary);">Runs silently on a 15-minute cron/scheduler trigger to perform hourly or daily tasks.</span>
+                      </div>
+                    </div>
+                    
+                    <!-- Column 3: Browser Session & Target -->
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                      <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4;">
+                        <strong style="color: var(--text-primary); display: block; margin-bottom: 6px; font-size: 0.85rem;">Dedicated Chrome Profile</strong>
+                        <span style="color: var(--text-secondary);">A sandboxed browser environment holding the cookies, caches, and logins for your Naukri account.</span>
+                      </div>
+                      <div style="background-color: rgba(59, 130, 246, 0.05); border: 1px solid var(--accent-blue); padding: 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4; text-align: center;">
+                        <strong style="color: var(--accent-blue); display: block; margin-bottom: 6px; font-size: 0.85rem;">Naukri.com Portal</strong>
+                        <span style="color: var(--text-secondary);">The target web server receiving direct HTTPS traffic directly from your local Chrome instance.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p><strong>Technical Mechanics:</strong></p>
+                <ul style="padding-left: 20px; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin-top: 10px;">
+                  <li><strong>Dedicated Profile Directory:</strong> The app creates a custom folder (<code>.naukri-chrome-profile</code>) in your local AppData so that automation does not interfere with your personal daily browser.</li>
+                  <li><strong>Playwright & CDP:</strong> The application launches Google Chrome with remote debugging enabled. Playwright connects to Chrome via port 9222 and automates interaction with the Naukri pages.</li>
+                  <li><strong>Background Schedulers & Constraints:</strong> If native OS scheduling is enabled, a system script is registered (using Crontab on Linux, LaunchAgents on macOS, or Task Scheduler on Windows). It runs every 15 minutes to inspect your refresh queue. If the scheduled time for headline refresh or resume upload has arrived, and it fits within your configured active time window, the task triggers. Otherwise, the script exits immediately with zero resource usage.</li>
+                </ul>
               </div>
               <div class="guide-section" id="sec-setup">
                 <h3>4. First-Time Setup</h3>
@@ -599,106 +633,122 @@ Your Computer
   </div>
 
   <!-- FIRST RUN EXPERIENCE MODAL -->
+  <!-- FIRST RUN EXPERIENCE MODAL -->
   <div class="modal-overlay" id="first-run-modal">
-    <div class="modal-box">
-      <div class="wizard-header">
-        <h2 id="wizard-title">Welcome to Naukri Update</h2>
-        <div class="wizard-steps">
-          <div class="step-dot active" data-step="1">1</div>
-          <div class="step-line"></div>
-          <div class="step-dot" data-step="2">2</div>
-          <div class="step-line"></div>
-          <div class="step-dot" data-step="3">3</div>
-          <div class="step-line"></div>
-          <div class="step-dot" data-step="4">4</div>
+    <div class="modal-box" style="width: 640px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+      <div class="wizard-header" style="flex-shrink: 0;">
+        <h2 id="wizard-title" style="margin-bottom: 12px;">Welcome to Naukri Update</h2>
+        <div class="wizard-progress-bar-container" style="width: 100%; height: 6px; background-color: var(--bg-tertiary); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+          <div id="wizard-progress-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-indigo) 0%, var(--accent-blue) 100%); transition: width 0.3s ease;"></div>
         </div>
+        <div class="wizard-steps-text" id="wizard-steps-text" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Welcome Screen</div>
       </div>
       
-      <div class="wizard-content">
-        <!-- Step 1: Privacy Summary -->
-        <div class="wizard-step-panel active" id="wizard-step-1">
-          <h3>Before you continue</h3>
-          <p style="margin-top: 10px; line-height: 1.5; font-size: 0.9rem; color: var(--text-secondary);">This application will need access to:</p>
-          
-          <div class="privacy-summary-box" style="margin-top: 15px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; font-size: 0.85rem;">
-            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: var(--accent-green); font-weight: bold;">✓</span>
-              <span><strong>Your Naukri account:</strong> Used to update your resume headline and upload your resume. Stored locally in a <code>.env</code> file.</span>
+      <div class="wizard-content" style="flex-grow: 1; overflow-y: auto; padding: 8px 4px 20px 4px; margin-top: 10px;">
+        <!-- Step 0: Welcome Screen -->
+        <div class="wizard-step-panel active" id="wizard-step-0">
+          <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 20px;">
+            Naukri Update automates your Naukri profile updates to keep you active and visible to recruiters, entirely from your local machine.
+          </p>
+          <div style="background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;">
+            <h4 style="color: var(--accent-indigo); font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">Key Privacy Features:</h4>
+            <div style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; line-height: 1.5;">
+              <span style="color: var(--accent-green);">✓</span>
+              <span><strong>Local Storage Only:</strong> All configuration files and credentials are stored strictly on your hard drive.</span>
             </div>
-            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: var(--accent-green); font-weight: bold;">✓</span>
-              <span><strong>Your selected resume:</strong> Read locally and uploaded to Naukri when automation runs. Stored locally inside the app's folder.</span>
+            <div style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; line-height: 1.5;">
+              <span style="color: var(--accent-green);">✓</span>
+              <span><strong>No Exfiltration:</strong> No telemetry, analytics, or background servers. The app only contacts Naukri.com directly.</span>
             </div>
-            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: var(--accent-indigo); font-weight: bold;">ℹ</span>
-              <span><strong>External Communication:</strong> The app only communicates with Naukri.com to perform the updates. No analytics, tracking, or telemetry data leaves your machine.</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: var(--accent-yellow); font-weight: bold;">⚠</span>
-              <span><strong>No CAPTCHA Bypass:</strong> If Naukri requests OTP or CAPTCHA verification, you must complete it manually in the dedicated Chrome window.</span>
+            <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; line-height: 1.5;">
+              <span style="color: var(--accent-indigo);">ℹ</span>
+              <span><strong>Security:</strong> Restricts file permissions (chmod 0600) on Unix/Linux systems for plain-text password safety.</span>
             </div>
           </div>
-          
-          <div style="margin-top: 20px; text-align: center;">
-            <a href="#" id="wiz-view-full-guide-link" style="color: var(--accent-indigo); text-decoration: underline; font-size: 0.85rem; font-weight: 500;">View Full Privacy & Data Guide</a>
+          <p style="font-size: 0.82rem; color: var(--text-tertiary); margin-top: 15px; text-align: center;">
+            Click <strong>Get Started</strong> to launch the step-by-step setup wizard.
+          </p>
+        </div>
+
+        <!-- Step 1: Naukri Account (Profile URL) -->
+        <div class="wizard-step-panel" id="wizard-step-1" style="display: none;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Naukri Profile Link</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+            Provide the URL of your Naukri edit profile page. The automation uses this page to modify headline and upload resume.
+          </p>
+          <div class="form-group">
+            <label for="wiz-url" style="font-weight: 600;">Naukri Profile URL</label>
+            <input type="url" id="wiz-url" value="https://www.naukri.com/mnjuser/profile" style="width: 100%;" placeholder="https://www.naukri.com/mnjuser/profile">
+            <span class="help-text">Usually: <code>https://www.naukri.com/mnjuser/profile</code></span>
           </div>
         </div>
 
-        <!-- Step 2 -->
+        <!-- Step 2: Credentials & Privacy -->
         <div class="wizard-step-panel" id="wizard-step-2" style="display: none;">
-          <h3>Step 2: Naukri Account Authentication</h3>
-          <p>Please enter your Naukri details to enable authentication when your session expires.</p>
-          
-          <div class="form-group" style="margin-top: 15px;">
-            <label for="wiz-email">Naukri Email</label>
-            <input type="email" id="wiz-email" placeholder="example@email.com">
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Credentials Configuration</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Enter your Naukri credentials. They are used to sign in to Naukri.com automatically when the session expires.
+          </p>
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label for="wiz-email" style="font-weight: 600;">Naukri Email</label>
+            <input type="email" id="wiz-email" placeholder="email@example.com" style="width: 100%;">
           </div>
-          <div class="form-group" style="margin-top: 15px;">
-            <label for="wiz-password">Naukri Password</label>
-            <input type="password" id="wiz-password" placeholder="••••••••">
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label for="wiz-password" style="font-weight: 600;">Naukri Password</label>
+            <input type="password" id="wiz-password" placeholder="••••••••" style="width: 100%;">
           </div>
-          <div class="form-group" style="margin-top: 15px;">
-            <label for="wiz-url">Naukri Profile URL</label>
-            <input type="url" id="wiz-url" value="https://www.naukri.com/mnjuser/profile">
+          <div style="background-color: rgba(99, 102, 241, 0.05); border-left: 3px solid var(--accent-indigo); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary);">
+            <strong>Privacy Note:</strong> Credentials are saved locally in plain text inside your AppData directory. They never leave your computer except to authenticate directly on Naukri.com.
           </div>
         </div>
 
-        <!-- Step 3 -->
+        <!-- Step 3: Connect Naukri (Establish Session) -->
         <div class="wizard-step-panel" id="wizard-step-3" style="display: none;">
-          <h3>Step 3: Select Your Resume</h3>
-          <p>Choose the PDF resume you want to keep updated. The app will manage this single file internally in a secure application directory.</p>
-          
-          <div class="resume-selector-box select-large" style="margin-top: 25px;" id="wiz-resume-box">
-            <div class="resume-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Establish Login Session</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+            To persist your login session in the dedicated Chrome browser profile, launch the browser and complete authentication.
+          </p>
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; gap: 15px;">
+            <button type="button" class="btn btn-primary" id="wiz-connect-chrome-btn" style="padding: 12px 28px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Connect Chrome
+            </button>
+            <div id="wiz-connection-status" style="font-size: 0.88rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+              <span class="dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--accent-red); display: inline-block;"></span>
+              <span>Not Connected</span>
             </div>
-            <div class="resume-details">
-              <div class="name" id="wiz-resume-name">No Resume Selected</div>
-              <div class="meta" id="wiz-resume-meta">Click below to upload a PDF resume. Only PDF format is accepted.</div>
+            <p style="font-size: 0.8rem; color: var(--text-tertiary); text-align: center; margin-bottom: 0;">
+              After logging in, you can verify your profile edit page is active, then click Next.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4: Choose Resume -->
+        <div class="wizard-step-panel" id="wizard-step-4" style="display: none;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Choose Your Resume</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+            Select the authoritative PDF resume file you want to upload daily. The app copy-manages this file.
+          </p>
+          
+          <div class="resume-selector-box select-large" id="wiz-resume-box" style="padding: 30px; text-align: center; background-color: var(--bg-tertiary); border: 1px dashed var(--border-color); border-radius: 10px;">
+            <div class="resume-icon" style="margin: 0 auto 15px auto;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 32px; height: 32px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="resume-details" style="margin-bottom: 15px;">
+              <div class="name" id="wiz-resume-name" style="font-weight: 600;">No Resume Selected</div>
+              <div class="meta" id="wiz-resume-meta" style="font-size: 0.8rem; color: var(--text-tertiary);">Only PDF files up to 2MB are supported.</div>
             </div>
             <button type="button" class="btn btn-secondary" id="wiz-select-resume-btn">Choose PDF File</button>
           </div>
         </div>
 
-        <!-- Step 4 -->
-        <div class="wizard-step-panel" id="wizard-step-4" style="display: none;">
-          <h3>Step 4: Setup Scheduling</h3>
-          <p>Enable automation. We recommend running the headline refresh hourly and the resume upload once daily.</p>
-          
-          <div class="wiz-checkbox-row" style="margin-top: 25px;">
-            <div class="check-col">
-              <label class="switch">
-                <input type="checkbox" id="wiz-headline-enabled" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="text-col">
-              <h4>Hourly Headline Refresh</h4>
-              <p>Toggles a trailing dot on your resume headline every hour to trigger the Naukri "last updated" timestamp.</p>
-            </div>
-          </div>
-
-          <div class="wiz-checkbox-row" style="margin-top: 20px;">
+        <!-- Step 5: Resume Automation -->
+        <div class="wizard-step-panel" id="wizard-step-5" style="display: none;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Resume Upload Settings</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+            Enable daily resume PDF uploads. The system adds a dated suffix during upload to prevent duplicates.
+          </p>
+          <div class="wiz-checkbox-row">
             <div class="check-col">
               <label class="switch">
                 <input type="checkbox" id="wiz-resume-enabled" checked>
@@ -707,15 +757,143 @@ Your Computer
             </div>
             <div class="text-col">
               <h4>Daily Resume PDF Upload</h4>
-              <p>Re-uploads your PDF resume once daily with a dynamic date stamp (e.g. <code>resume_29-08-2026.pdf</code>) to ensure maximum visibility.</p>
+              <p>Re-uploads your resume once a day to refresh the Naukri timestamp.</p>
             </div>
+          </div>
+          <div id="wiz-resume-time-group" class="form-group" style="margin-top: 20px;">
+            <label for="wiz-resume-time" style="font-weight: 600;">Daily Upload Time</label>
+            <input type="time" id="wiz-resume-time" value="07:00" style="width: 120px;">
+            <span class="help-text">Time in 24-hour format when resume should be uploaded.</span>
+          </div>
+        </div>
+
+        <!-- Step 6: Headline Automation -->
+        <div class="wizard-step-panel" id="wizard-step-6" style="display: none;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Resume Headline Settings</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+            Toggle a trailing period on your resume headline text to mark your profile as active.
+          </p>
+          <div class="wiz-checkbox-row">
+            <div class="check-col">
+              <label class="switch">
+                <input type="checkbox" id="wiz-headline-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="text-col">
+              <h4>Hourly Resume Headline Refresh</h4>
+              <p>Updates and toggles your resume headline periodically.</p>
+            </div>
+          </div>
+          <div id="wiz-headline-settings-group" style="margin-top: 20px; background-color: var(--bg-tertiary); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="wiz-refresh-mode" style="font-weight: 600;">Refresh Strategy</label>
+              <select id="wiz-refresh-mode" style="width: 100%;">
+                <option value="interval">Periodic Interval (Recommended)</option>
+                <option value="fixed_time">Fixed Daily Time</option>
+              </select>
+            </div>
+            <div id="wiz-headline-interval" class="form-inline-grid">
+              <div class="form-group">
+                <label for="wiz-interval-hours">Interval Hours</label>
+                <input type="number" id="wiz-interval-hours" value="1" min="0" max="23">
+              </div>
+              <div class="form-group">
+                <label for="wiz-interval-minutes">Interval Minutes</label>
+                <input type="number" id="wiz-interval-minutes" value="0" min="0" max="59">
+              </div>
+            </div>
+            <div id="wiz-headline-fixed" class="form-group" style="display: none;">
+              <label for="wiz-refresh-time">Fixed Refresh Time</label>
+              <input type="time" id="wiz-refresh-time" value="06:11" style="width: 120px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7: Background Automation -->
+        <div class="wizard-step-panel" id="wizard-step-7" style="display: none;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Background System Scheduler</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+            Run automation tasks periodically in the background using native operating system features.
+          </p>
+          <div class="wiz-checkbox-row">
+            <div class="check-col">
+              <label class="switch">
+                <input type="checkbox" id="wiz-background-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="text-col">
+              <h4>Register Background Task on Boot</h4>
+              <p>Uses Windows Task Scheduler, macOS LaunchAgents, or Linux crontab to trigger checks every 15 minutes.</p>
+            </div>
+          </div>
+          <div style="background-color: rgba(99, 102, 241, 0.05); border-left: 3px solid var(--accent-indigo); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary); margin-top: 15px;">
+            <strong>Zero Technical Setup:</strong> The app takes care of registering tasks automatically in your OS. You do not need to execute commands or configure schedulers manually.
+          </div>
+        </div>
+
+        <!-- Step 8: Review Settings & Run Diagnostics -->
+        <div class="wizard-step-panel" id="wizard-step-8" style="display: none;">
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Review Settings & Diagnostics</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Confirm your configuration and run setup verification checks to ensure everything is ready.
+          </p>
+          <button type="button" class="btn btn-secondary" id="wiz-run-diagnostics-btn" style="width: 100%; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Verify System Readiness
+          </button>
+          <div class="diagnostics-list" id="wiz-diagnostics-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+            <div class="diagnostic-item" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <span style="font-weight: 500;">Configuration Schema</span>
+              <span class="diag-status" id="diag-config" style="color: var(--text-tertiary);">Not run</span>
+            </div>
+            <div class="diagnostic-item" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <span style="font-weight: 500;">Credentials Provided</span>
+              <span class="diag-status" id="diag-creds" style="color: var(--text-tertiary);">Not run</span>
+            </div>
+            <div class="diagnostic-item" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <span style="font-weight: 500;">Resume PDF Valid</span>
+              <span class="diag-status" id="diag-resume" style="color: var(--text-tertiary);">Not run</span>
+            </div>
+            <div class="diagnostic-item" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <span style="font-weight: 500;">Google Chrome Availability</span>
+              <span class="diag-status" id="diag-chrome" style="color: var(--text-tertiary);">Not run</span>
+            </div>
+            <div class="diagnostic-item" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <span style="font-weight: 500;">Browser Profile Config</span>
+              <span class="diag-status" id="diag-profile" style="color: var(--text-tertiary);">Not run</span>
+            </div>
+            <div class="diagnostic-item" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <span style="font-weight: 500;">Background Scheduler Link</span>
+              <span class="diag-status" id="diag-scheduler" style="color: var(--text-tertiary);">Not run</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 9: Finish -->
+        <div class="wizard-step-panel" id="wizard-step-9" style="display: none; text-align: center; padding: 20px 0;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background-color: rgba(16, 185, 129, 0.1); border: 2px solid var(--accent-green); color: var(--accent-green); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 28px; height: 28px;"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h3 style="font-size: 1.3rem; margin-bottom: 12px;">Configuration Complete!</h3>
+          <p style="font-size: 0.92rem; color: var(--text-secondary); max-width: 460px; margin: 0 auto 20px auto; line-height: 1.6;">
+            Naukri Update has been fully configured and is ready to keep your profile active. The application will continue running in your System Tray when minimized or closed.
+          </p>
+          <div style="background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: left; font-size: 0.85rem; max-width: 460px; margin: 0 auto;">
+            <strong>Quick Checklist:</strong>
+            <ul style="padding-left: 20px; margin-top: 8px; color: var(--text-secondary); line-height: 1.5;">
+              <li>Dedicated Chrome session stores cookies locally.</li>
+              <li>Automation executes headlessly when due.</li>
+              <li>You can pause or force updates from the tray context menu.</li>
+            </ul>
           </div>
         </div>
       </div>
       
-      <div class="wizard-footer">
+      <div class="wizard-footer" style="flex-shrink: 0; padding-top: 15px; border-top: 1px solid var(--border-color);">
         <button class="btn btn-secondary" id="wiz-prev-btn" style="visibility: hidden;">Back</button>
-        <div id="wiz-error" class="wiz-error"></div>
+        <div id="wiz-error" class="wiz-error" style="font-size: 0.8rem; color: var(--accent-red); margin: 0 10px;"></div>
         <button class="btn btn-primary" id="wiz-next-btn">Next</button>
       </div>
     </div>
