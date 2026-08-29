@@ -44,7 +44,8 @@
     },
     "mac": {
       "target": "dmg",
-      "icon": "assets/icon.icns"
+      "icon": "assets/icon.icns",
+      "identity": null
     },
     "linux": {
       "target": [
