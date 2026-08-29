@@ -151,7 +151,9 @@ class ConfigService {
    * Save the configuration to the active .env file.
    */
   save(settings) {
-    const validation = this.validate(settings);
+    const currentConfig = this.load();
+    const mergedConfig = { ...currentConfig, ...settings };
+    const validation = this.validate(mergedConfig);
     if (!validation.success) {
       throw new Error(validation.error);
     }
