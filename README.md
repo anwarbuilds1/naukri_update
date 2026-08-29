@@ -130,7 +130,12 @@ RESUME_FILE=resume/Anwar_Rizwan_Resume.pdf
 #### 3. Resume PDF Updates (Optional)
 * **`RESUME_UPDATE_ENABLED`**: Toggles daily resume updates. Set to `true` to enable daily uploads, or `false` to disable.
 * **`RESUME_UPDATE_TIME`**: (Used when `RESUME_UPDATE_ENABLED=true`) The exact daily time (24-hour format, `HH:MM`, e.g., `07:00`) when the resume should be uploaded.
-* **`RESUME_FILE`**: Path to your local resume PDF file (e.g., `resume/Anwar_Rizwan_Resume.pdf`). The automation automatically matches and uploads it, dynamically appending the current date on Naukri (e.g., `Anwar_Rizwan_Resume_DD-MM-YYYY.pdf`) to trigger an update.
+* **`RESUME_FILE`**: Path to your local resume PDF file (e.g., `resume/Ram_Resume.pdf`).
+  * **Automatic Discovery**: If `RESUME_FILE` is empty or omitted, the automation automatically discovers the single resume PDF file inside the `resume/` directory.
+  * **Single Resume Rule**: The `resume/` directory must contain exactly one source resume PDF file. If multiple PDFs are present and `RESUME_FILE` is not set explicitly, the script fails with a clear error to prevent ambiguity.
+  * **Dynamic Filename Generation**: The upload filename is dynamically generated with today's date (e.g., `Ram_Resume_DD-MM-YYYY.pdf`). The system normalizes filenames, removes any existing trailing dates, sanitizes special characters/spaces, and ensures date idempotency without modifying your local source filename.
+  * **Duplicate & Stale Cleanup**: Old dated uploads, duplicate generic files, or copy duplicates (e.g. matching your resume base name, `resume`, or `cv`) within the `resume/` directory are automatically cleaned up safely *only after* a successful upload and verification.
+
 
 
 

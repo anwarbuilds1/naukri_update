@@ -19,7 +19,38 @@ function loadEnv(file) {
   return out;
 }
 
-const E = loadEnv(path.join(__dirname, '.env'));
+function getEnvPath() {
+  if (process.env.NAUKRI_ENV_PATH) {
+    return process.env.NAUKRI_ENV_PATH;
+  }
+  
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  let appDataDir = '';
+  if (process.platform === 'win32') {
+    appDataDir = path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'NaukriUpdate');
+  } else if (process.platform === 'darwin') {
+    appDataDir = path.join(home, 'Library', 'Application Support', 'NaukriUpdate');
+  } else {
+    appDataDir = path.join(process.env.XDG_CONFIG_HOME || path.join(home, '.config'), 'NaukriUpdate');
+  }
+  const appDataEnv = path.join(appDataDir, '.env');
+  if (fs.existsSync(appDataEnv)) {
+    return appDataEnv;
+  }
+  
+  const localDirEnv = path.join(__dirname, '.env');
+  if (fs.existsSync(localDirEnv)) {
+    return localDirEnv;
+  }
+  const cwdEnv = path.join(process.cwd(), '.env');
+  if (fs.existsSync(cwdEnv)) {
+    return cwdEnv;
+  }
+  return appDataEnv;
+}
+
+const envPath = getEnvPath();
+const E = loadEnv(envPath);
 const g = (k, d = '') => (E[k] != null && E[k] !== '' ? E[k] : (process.env[k] || d));
 
 if (!g('NAME') || !g('EMAIL')) {
@@ -64,5 +95,9 @@ const naukriCredentials = {
 const geminiKey = g('GEMINI_KEY');
 const naukriProfileUrl = g('NAUKRI_PROFILE_URL', 'https://www.naukri.com/mnjuser/profile');
 const resumeFile = g('RESUME_FILE', 'resume/Anwar_Rizwan_Resume.pdf');
+const resumeUploadTimeoutMs = parseInt(g('RESUME_UPLOAD_TIMEOUT_MS', '120000'), 10);
+const rawResumeFile = process.env['RESUME_FILE'] !== undefined ? process.env['RESUME_FILE'] : (E['RESUME_FILE'] || '');
 
-module.exports = { CV, naukriCredentials, geminiKey, naukriProfileUrl, resumeFile };
+module.exports = { CV, naukriCredentials, geminiKey, naukriProfileUrl, resumeFile, resumeUploadTimeoutMs, rawResumeFile, envPath, getEnvPath };
+
+

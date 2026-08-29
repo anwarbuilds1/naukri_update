@@ -7,11 +7,43 @@ const fs = require('fs');
 const path = require('path');
 
 const repoDir = path.join(__dirname, '..');
-const stateFile = path.join(repoDir, '.naukri-refresh-state.json');
+
+function getEnvPath() {
+  if (process.env.NAUKRI_ENV_PATH) {
+    return process.env.NAUKRI_ENV_PATH;
+  }
+  
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  let appDataDir = '';
+  if (process.platform === 'win32') {
+    appDataDir = path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'NaukriUpdate');
+  } else if (process.platform === 'darwin') {
+    appDataDir = path.join(home, 'Library', 'Application Support', 'NaukriUpdate');
+  } else {
+    appDataDir = path.join(process.env.XDG_CONFIG_HOME || path.join(home, '.config'), 'NaukriUpdate');
+  }
+  const appDataEnv = path.join(appDataDir, '.env');
+  if (fs.existsSync(appDataEnv)) {
+    return appDataEnv;
+  }
+  
+  const localDirEnv = path.join(repoDir, '.env');
+  if (fs.existsSync(localDirEnv)) {
+    return localDirEnv;
+  }
+  const cwdEnv = path.join(process.cwd(), '.env');
+  if (fs.existsSync(cwdEnv)) {
+    return cwdEnv;
+  }
+  return appDataEnv;
+}
+
+const envPath = getEnvPath();
+const configDir = path.dirname(envPath);
+const stateFile = path.join(configDir, '.naukri-refresh-state.json');
 
 // Simple helper to load .env manually to avoid dependencies
 function loadEnv() {
-  const envPath = path.join(repoDir, '.env');
   const env = {};
   if (!fs.existsSync(envPath)) return env;
   const content = fs.readFileSync(envPath, 'utf8');
@@ -205,12 +237,12 @@ try {
   }
 
   if (command === '--should-refresh') {
-    const due = checkRefreshDue(config, state, now);
+    const due = !state.paused && checkRefreshDue(config, state, now);
     process.exit(due ? 0 : 1);
   }
 
   if (command === '--should-upload-resume') {
-    const due = checkResumeDue(config, state, now);
+    const due = !state.paused && checkResumeDue(config, state, now);
     process.exit(due ? 0 : 1);
   }
 

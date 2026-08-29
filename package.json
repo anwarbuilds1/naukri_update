@@ -4,11 +4,49 @@
   "description": "Keeps a Naukri profile fresh by toggling a trailing dot on the resume headline",
   "main": "naukri-profile-refresh.js",
   "scripts": {
-    "refresh": "node naukri-profile-refresh.js"
+    "start": "electron main.js --no-sandbox",
+    "refresh": "node naukri-profile-refresh.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "author": "Ankit Baghel",
   "license": "ISC",
   "dependencies": {
     "playwright-core": "^1.61.1"
+  },
+  "devDependencies": {
+    "electron": "^41.7.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.naukri.update",
+    "productName": "NaukriUpdate",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "config.js",
+      "naukri-profile-refresh.js",
+      "renderer/**/*",
+      "scripts/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/icon.png"
+    }
   }
 }

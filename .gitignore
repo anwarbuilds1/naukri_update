@@ -22,3 +22,6 @@ apply-state-*.json
 
 # deps
 node_modules/
+
+# build outputs
+dist/

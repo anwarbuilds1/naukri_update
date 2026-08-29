@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naukri Profile Update Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-wrapper">
+          <img src="../assets/icon.png" class="brand-logo" alt="Naukri Update Logo" style="width: 24px; height: 24px; object-fit: contain;">
+        </div>
+        <div class="brand-text">
+          <h1>Naukri Update</h1>
+          <span>Automation Core v1.0.0</span>
+        </div>
+      </div>
+      
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+        <button class="nav-item" data-tab="logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Activity Logs
+        </button>
+        <button class="nav-item" data-tab="guide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          User Guide
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="status-indicator">
+          <span class="dot" id="global-status-dot"></span>
+          <span id="global-status-text">Connecting...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="top-bar">
+        <h2 id="tab-title">Dashboard</h2>
+        <div class="quick-actions">
+          <button id="quick-chrome-btn" class="btn btn-secondary btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+            Open Naukri Browser
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Views -->
+      <div class="content-body">
+        
+        <!-- DASHBOARD TAB -->
+        <section id="tab-dashboard" class="tab-content active">
+          <div class="metrics-grid">
+            <div class="metric-card" id="naukri-account-card">
+              <div class="card-header">
+                <h3>Naukri Account</h3>
+                <span class="badge" id="naukri-connection-badge">Not configured</span>
+              </div>
+              
+              <p class="card-desc" id="naukri-status-message" style="margin-top: 15px; min-height: auto;">Please configure your credentials in the Settings tab.</p>
+              
+              <div class="card-actions">
+                <button id="dash-connect-chrome" class="btn btn-primary" disabled>Connect Chrome</button>
+              </div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="card-header">
+                <h3>Active Resume</h3>
+                <span class="badge badge-success" id="resume-status-badge">Unconfigured</span>
+              </div>
+              <p class="card-desc" id="resume-file-name">No resume file selected.</p>
+              <div class="card-meta" id="resume-file-meta">--</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="card-header">
+                <h3>Headline Refresh</h3>
+                <span class="badge" id="headline-status-badge">Disabled</span>
+              </div>
+              <p class="card-desc" id="headline-schedule-desc">Schedule details not loaded.</p>
+              <div class="card-meta" id="headline-next-run">Next check: --</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="card-header">
+                <h3>Resume Upload</h3>
+                <span class="badge" id="resume-upload-status-badge">Disabled</span>
+              </div>
+              <p class="card-desc" id="resume-upload-schedule-desc">Schedule details not loaded.</p>
+              <div class="card-meta" id="resume-upload-next-run">Next run: --</div>
+            </div>
+          </div>
+
+          <div class="dashboard-section-title">Manual Triggers</div>
+          <div class="trigger-actions">
+            <button id="trigger-headline-btn" class="btn btn-secondary">
+              <svg class="icon-spin-hover" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Refresh Headline Now
+            </button>
+            <button id="trigger-resume-btn" class="btn btn-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              Upload Resume Now
+            </button>
+          </div>
+
+          <div class="dashboard-section-title">Execution State</div>
+          <div class="status-log-card">
+            <div class="status-row">
+              <span class="status-label">Last Run Status:</span>
+              <span class="status-value font-semibold" id="last-run-status">No runs recorded yet</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Last Headline Refresh:</span>
+              <span class="status-value" id="last-headline-time">Never</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Last Resume Upload:</span>
+              <span class="status-value" id="last-resume-time">Never</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS TAB -->
+        <section id="tab-settings" class="tab-content">
+          <form id="settings-form" class="settings-form">
+            
+            <div class="form-section">
+              <h2>1. Naukri Account Credentials</h2>
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="naukri-profile-url">Naukri Profile URL <button type="button" class="why-btn" data-why="profileUrl">ⓘ Why do we need this?</button></label>
+                  <input type="url" id="naukri-profile-url" placeholder="https://www.naukri.com/mnjuser/profile" required>
+                  <span class="help-text">Direct URL to your Naukri profile editor.</span>
+                </div>
+                <div class="form-group">
+                  <label for="naukri-email">Naukri Email <button type="button" class="why-btn" data-why="email">ⓘ Why do we need this?</button></label>
+                  <input type="email" id="naukri-email" placeholder="email@example.com" required>
+                </div>
+                <div class="form-group">
+                  <label for="naukri-password">Naukri Password <button type="button" class="why-btn" data-why="password">ⓘ Why do we need this?</button></label>
+                  <div class="pass-wrapper">
+                    <input type="password" id="naukri-password" placeholder="••••••••••••" required>
+                    <button type="button" id="settings-toggle-pass-btn" class="btn-toggle-pass" title="Show/Hide Password">👁</button>
+                  </div>
+                  <span class="help-text">Stored locally in your configuration.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h2>2. Resume File Source <button type="button" class="why-btn" data-why="resume">ⓘ Why do we need this?</button></h2>
+              <div class="resume-selector-box">
+                <div class="resume-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div class="resume-details">
+                  <div class="name" id="settings-resume-name">No Authoritative Resume Loaded</div>
+                  <div class="meta" id="settings-resume-meta">Please select a valid PDF resume file. This file will be managed inside the application data.</div>
+                </div>
+                <button type="button" class="btn btn-secondary" id="select-resume-btn">Choose PDF</button>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h2>3. Headline Refresh Automation <button type="button" class="why-btn" data-why="headline">ⓘ Why do we need this?</button></h2>
+              <div class="automation-toggle-row">
+                <label class="switch-label" for="headline-enabled">Enable Headline Auto-Refresh</label>
+                <label class="switch">
+                  <input type="checkbox" id="headline-enabled">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="conditional-settings" id="headline-settings-box">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="refresh-mode">Refresh Mode</label>
+                    <select id="refresh-mode">
+                      <option value="interval">Time Interval</option>
+                      <option value="fixed_time">Fixed Daily Time</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Interval settings -->
+                  <div class="form-group form-inline-grid" id="interval-inputs">
+                    <div>
+                      <label for="interval-hours">Hours</label>
+                      <input type="number" id="interval-hours" min="0" max="23" value="1">
+                    </div>
+                    <div>
+                      <label for="interval-minutes">Minutes</label>
+                      <input type="number" id="interval-minutes" min="0" max="59" value="0">
+                    </div>
+                  </div>
+                  
+                  <!-- Fixed Time settings -->
+                  <div class="form-group" id="fixed-time-inputs" style="display: none;">
+                    <label for="refresh-time">Execution Time (24h)</label>
+                    <input type="time" id="refresh-time" value="06:11">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h2>4. Daily Resume Upload Automation <button type="button" class="why-btn" data-why="resumeUpload">ⓘ Why do we need this?</button></h2>
+              <div class="automation-toggle-row">
+                <label class="switch-label" for="resume-enabled">Enable Daily Resume Upload</label>
+                <label class="switch">
+                  <input type="checkbox" id="resume-enabled">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="conditional-settings" id="resume-settings-box">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="resume-time">Upload Time (Daily, 24h)</label>
+                    <input type="time" id="resume-time" value="07:00">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h2>5. Active Execution Window <button type="button" class="why-btn" data-why="timeWindow">ⓘ Why do we need this?</button></h2>
+              <div class="automation-toggle-row">
+                <label class="switch-label" for="window-enabled">Limit to Active Time Window</label>
+                <label class="switch">
+                  <input type="checkbox" id="window-enabled">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="conditional-settings" id="window-settings-box">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="window-start">Window Start Time</label>
+                    <input type="time" id="window-start" value="07:00">
+                  </div>
+                  <div class="form-group">
+                    <label for="window-end">Window End Time</label>
+                    <input type="time" id="window-end" value="19:00">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h2>6. Privacy & Data Management <button type="button" class="why-btn" data-why="background">ⓘ Why do we need this?</button></h2>
+              <p class="form-section-desc" style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+                Manage your local data, active browser sessions, and configuration files. This application runs entirely on your local machine.
+              </p>
+              <div class="data-management-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+                <button type="button" class="btn btn-secondary" id="btn-open-folder">Open Data Folder</button>
+                <button type="button" class="btn btn-secondary" id="btn-clear-creds">Clear Credentials</button>
+                <button type="button" class="btn btn-secondary" id="btn-remove-resume">Remove Resume PDF</button>
+                <button type="button" class="btn btn-secondary" id="btn-reset-browser">Reset Browser Profile</button>
+                <button type="button" class="btn btn-secondary btn-danger" id="btn-reset-app" style="background-color: var(--accent-red); color: white; border: none;">Reset Entire Application</button>
+              </div>
+            </div>
+
+            <div class="form-actions-fixed">
+              <span id="save-status" class="save-status"></span>
+              <button type="submit" class="btn btn-primary" id="save-settings-btn">Save Configuration</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- LOGS TAB -->
+        <section id="tab-logs" class="tab-content">
+          <div class="log-viewer-container">
+            <div class="log-selector-bar">
+              <button class="log-tab-btn active" data-log="refresh">Profile Refresh Log</button>
+              <button class="log-tab-btn" data-log="runner">Hourly Scheduler Runner Log</button>
+              <button class="btn btn-secondary btn-sm" id="clear-logs-btn" style="margin-left: auto;">Refresh Views</button>
+            </div>
+            
+            <div class="log-console" id="log-console-box">
+              <pre id="log-content">Loading activity logs...</pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- USER GUIDE TAB -->
+        <section id="tab-guide" class="tab-content">
+          <div class="guide-container">
+            <div class="guide-sidebar">
+              <div class="search-box-wrapper">
+                <input type="text" id="guide-search-input" placeholder="Search User Guide...">
+              </div>
+              <ul class="guide-nav-list" id="guide-nav-list">
+                <li class="active" data-section="sec-welcome">1. Welcome</li>
+                <li data-section="sec-does">2. What This App Does</li>
+                <li data-section="sec-works">3. How It Works</li>
+                <li data-section="sec-setup">4. First-Time Setup</li>
+                <li data-section="sec-connecting">5. Connecting Naukri</li>
+                <li data-section="sec-credentials">6. Naukri Credentials</li>
+                <li data-section="sec-choosing">7. Choosing Your Resume</li>
+                <li data-section="sec-automation-resume">8. Resume Automation</li>
+                <li data-section="sec-automation-headline">9. Resume Headline Automation</li>
+                <li data-section="sec-scheduling">10. Scheduling</li>
+                <li data-section="sec-browser">11. Chrome / Browser</li>
+                <li data-section="sec-data-stored">12. What Data Is Stored</li>
+                <li data-section="sec-where-stored">13. Where Data Is Stored</li>
+                <li data-section="sec-data-leaves">14. What Data Leaves Your Computer</li>
+                <li data-section="sec-security">15. Security & Privacy</li>
+                <li data-section="sec-background">16. Background Operation</li>
+                <li data-section="sec-notifications">17. Notifications</li>
+                <li data-section="sec-troubleshooting">18. Troubleshooting</li>
+                <li data-section="sec-errors">19. Common Errors</li>
+                <li data-section="sec-logs">20. Logs & Diagnostics</li>
+                <li data-section="sec-disconnecting">21. Disconnecting / Removing Data</li>
+                <li data-section="sec-updating">22. Updating the Application</li>
+                <li data-section="sec-opensource">23. Open Source / Transparency</li>
+                <li data-section="sec-faq">24. FAQ</li>
+                <li data-section="sec-advanced">25. Advanced / Technical Details</li>
+              </ul>
+            </div>
+            <div class="guide-content-panel" id="guide-content-panel">
+              <div class="guide-section" id="sec-welcome">
+                <h3>1. Welcome</h3>
+                <p>Welcome to Naukri Update. This application is designed to help you automate selected Naukri profile updates directly and safely from your own computer.</p>
+                <p>The application runs locally on your machine. There is no external database or server managing your data. You control your Naukri account, your resume, what automation features are enabled, when they run, and where your settings are stored.</p>
+              </div>
+              <div class="guide-section" id="sec-does">
+                <h3>2. What This App Does</h3>
+                <p>This application implements two separate profile optimization automations:</p>
+                <h4>Resume Headline Auto-Refresh</h4>
+                <p>The Resume Headline automation updates your headline text by dynamically adding or removing a trailing dot. This action forces Naukri's system to record a new "last updated" timestamp on your profile, pushing you higher in search rankings when recruiters search for candidates. The application performs the update and immediately verifies the result on your profile.</p>
+                <h4>Resume PDF Daily Upload</h4>
+                <p>The Resume Update automation uploads your selected resume PDF file to your Naukri account according to a configured schedule. The upload process waits for the file to be completely sent and verified by Naukri before completing the task. To prevent duplicate warning errors on Naukri, the application automatically appends the current date to the file name (e.g. <code>YourName_Resume_29-08-2026.pdf</code>) during the upload process. You do not need to rename your local file manually.</p>
+              </div>
+              <div class="guide-section" id="sec-works">
+                <h3>3. How It Works</h3>
+                <p>The application operates using a dedicated, local Chrome browser session configured to interact with Naukri. It does not use external web APIs or scraping backend proxies.</p>
+                <pre>
+Your Computer
+      │
+      ├── Desktop App (Electron GUI)
+      │
+      ├── Local Settings (.env file)
+      │
+      ├── Your Resume (PDF file)
+      │
+      └── Dedicated Browser Profile (.naukri-chrome-profile)
+                 │
+                 ▼
+              Naukri (naukri.com)
+                </pre>
+                <p>Communication occurs strictly between the desktop application, your local files, and Naukri's official web pages. The automation runs in a dedicated Chrome browser context that is completely isolated from your normal personal browsing profile.</p>
+              </div>
+              <div class="guide-section" id="sec-setup">
+                <h3>4. First-Time Setup</h3>
+                <p>To set up Naukri Update for the first time, follow these steps:</p>
+                <ol>
+                  <li><strong>Start the Application:</strong> Upon launching, the First-Run onboarding wizard will guide you.</li>
+                  <li><strong>Review the Privacy Agreement:</strong> Understand how your data is handled.</li>
+                  <li><strong>Enter Naukri Credentials:</strong> Provide your Naukri login email, password, and profile URL.</li>
+                  <li><strong>Select Your Resume PDF:</strong> Choose your authoritative resume file. The app copies this to its local directory.</li>
+                  <li><strong>Enable Scheduling:</strong> Choose your preferred execution times for the automations.</li>
+                  <li><strong>Connect Chrome:</strong> Connect the dedicated Chrome browser and log in. If prompted, complete OTP/CAPTCHA verification in that window.</li>
+                </ol>
+              </div>
+              <div class="guide-section" id="sec-connecting">
+                <h3>5. Connecting Naukri</h3>
+                <p>To connect the application to Naukri, click the <strong>Connect Chrome</strong> button on the Dashboard. This will launch a dedicated Google Chrome instance controlled by the application via Chrome DevTools Protocol (CDP) on port 9222.</p>
+                <p>If you are already logged in to Naukri in this dedicated browser, the application will detect the active session and show a "Connected" state. If you are not logged in, the application will use the credentials you configured to authenticate automatically. If Naukri presents an OTP or CAPTCHA, the automation will pause and display "Please complete OTP/CAPTCHA in the Chrome window." Complete it manually in the opened Chrome window. The application does not attempt to bypass security protections.</p>
+              </div>
+              <div class="guide-section" id="sec-credentials">
+                <h3>6. Naukri Credentials</h3>
+                <p>The application requires your Naukri email and password to log in automatically when your session expires.</p>
+                <blockquote>
+                  <strong>Security Disclosure:</strong> Your Naukri credentials are saved locally in plain text inside the <code>.env</code> configuration file located in the application data directory. They are <strong>not encrypted</strong>. They are never sent to our servers and are omitted from all application logs.
+                </blockquote>
+                <p>Access to these credentials is restricted to users who have local file access to your computer. You can remove these credentials at any time from <strong>Settings → Privacy & Data Management → Clear Credentials</strong>.</p>
+              </div>
+              <div class="guide-section" id="sec-choosing">
+                <h3>7. Choosing Your Resume</h3>
+                <p>The application needs a valid resume PDF file to perform the daily upload automation. You can select a PDF from your computer under <strong>Settings → Resume File Source</strong>. The application validates that the file is a readable PDF (less than 2MB and starts with the <code>%PDF</code> header) and copies it into its local application storage folder. The application only accesses this local copy when running the upload automation.</p>
+              </div>
+              <div class="guide-section" id="sec-automation-resume">
+                <h3>8. Resume Automation</h3>
+                <p>When the Daily Resume Upload automation triggers, the following operations occur:</p>
+                <ol>
+                  <li>The app locates the local resume copy in your application data folder.</li>
+                  <li>The PDF structure and file size stability are verified.</li>
+                  <li>The app opens the dedicated Chrome browser and navigates to your Naukri profile editor.</li>
+                  <li>The file name is dynamically appended with the current date (e.g. <code>Resume_29-08-2026.pdf</code>) to prevent duplicate warning messages on Naukri.</li>
+                  <li>The app uploads the file and tracks the upload progress (from 0% to 100%).</li>
+                  <li>It waits for the success confirmation popup on Naukri.</li>
+                  <li>It saves the profile, reloads the page, and verifies that the active resume name on Naukri matches the uploaded dated filename.</li>
+                  <li>Finally, it scans the local resume directory to delete old temporary dated files, ensuring only the single source resume remains.</li>
+                </ol>
+              </div>
+              <div class="guide-section" id="sec-automation-headline">
+                <h3>9. Resume Headline Automation</h3>
+                <p>The Resume Headline automation updates your profile activity timestamp without changing your actual profile contents. It opens your profile, clicks the edit icon next to your headline, toggles a dot (<code>.</code>) at the end of the text, clicks Save, reloads the page, and verifies that the new headline is correctly saved on Naukri. This is done entirely using Playwright browser actions on the dedicated Chrome browser.</p>
+              </div>
+              <div class="guide-section" id="sec-scheduling">
+                <h3>10. Scheduling</h3>
+                <p>The application handles background scheduling by integrating with your operating system's native scheduler:</p>
+                <ul>
+                  <li><strong>Windows:</strong> Task Scheduler (creates a task named <code>NaukriUpdateTask</code> running every 15 minutes).</li>
+                  <li><strong>macOS:</strong> LaunchAgent (creates a plist file at <code>~/Library/LaunchAgents/com.naukri.update.plist</code> running every 15 minutes).</li>
+                  <li><strong>Linux:</strong> Crontab (adds a cron job running every 15 minutes).</li>
+                </ul>
+                <p>When the system scheduler triggers, it launches the application headlessly with the <code>--run-automation</code> flag. The app checks if your scheduled automation time has arrived, connects to the browser profile, runs the required updates, and exits quietly. Additionally, when the desktop app window is open, an in-app timer checks for tasks every 60 seconds.</p>
+              </div>
+              <div class="guide-section" id="sec-browser">
+                <h3>11. Chrome / Browser</h3>
+                <p>The dedicated Chrome profile is stored locally in the <code>.naukri-chrome-profile</code> directory. This profile holds browser cache, cookies, and local session details for Naukri, allowing you to stay logged in. This profile is completely isolated from your main personal Chrome browser, protecting your personal browsing history and passwords from the automation. If the browser gets stuck or you want to clear all cookies, you can reset it via <strong>Settings → Privacy & Data Management → Reset Browser Session</strong>.</p>
+              </div>
+              <div class="guide-section" id="sec-data-stored">
+                <h3>12. What Data Is Stored</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Data Item</th>
+                      <th>Purpose</th>
+                      <th>Storage Location</th>
+                      <th>Encryption</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Naukri Email</td>
+                      <td>Automated logins</td>
+                      <td>Local <code>.env</code> file</td>
+                      <td>None (Plain Text)</td>
+                    </tr>
+                    <tr>
+                      <td>Naukri Password</td>
+                      <td>Automated logins</td>
+                      <td>Local <code>.env</code> file</td>
+                      <td>None (Plain Text)</td>
+                    </tr>
+                    <tr>
+                      <td>Resume PDF</td>
+                      <td>Upload updates</td>
+                      <td>Local <code>resume/</code> folder</td>
+                      <td>None</td>
+                    </tr>
+                    <tr>
+                      <td>Browser Session</td>
+                      <td>Session persistence</td>
+                      <td>Local <code>.naukri-chrome-profile</code></td>
+                      <td>Standard Chrome Profile Security</td>
+                    </tr>
+                    <tr>
+                      <td>Execution Logs</td>
+                      <td>Debugging & status</td>
+                      <td>Local log files</td>
+                      <td>None (Passwords scrubbed)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="guide-section" id="sec-where-stored">
+                <h3>13. Where Data Is Stored</h3>
+                <p>All application files are stored locally on your computer. Below are the actual filesystem paths for your current platform:</p>
+                <ul>
+                  <li><strong>Configuration File (.env):</strong> <code class="path-env-val">--</code></li>
+                  <li><strong>Resume PDF Directory:</strong> <code class="path-resume-val">--</code></li>
+                  <li><strong>Dedicated Chrome Profile:</strong> <code class="path-chrome-val">--</code></li>
+                  <li><strong>Automation Activity Logs:</strong> <code class="path-logs-val">--</code></li>
+                </ul>
+                <p>You can quickly open this folder by clicking <strong>Settings → Privacy & Data Management → Open Data Folder</strong>.</p>
+              </div>
+              <div class="guide-section" id="sec-data-leaves">
+                <h3>14. What Data Leaves Your Computer</h3>
+                <p>Your data only leaves your computer to communicate directly with <strong>Naukri.com</strong>:</p>
+                <ul>
+                  <li>Your Naukri credentials are transmitted to Naukri's authentication endpoint during login.</li>
+                  <li>Your resume PDF file is uploaded to Naukri's file upload servers during the resume update automation.</li>
+                  <li>Your updated resume headline is sent to Naukri's profile updates API.</li>
+                </ul>
+                <p><strong>Strict Privacy Commitment:</strong> This application contains no analytics libraries, no crash reporting telemetry, no update tracker, and no third-party network connections. No data is ever sent to any application server or developers.</p>
+              </div>
+              <div class="guide-section" id="sec-security">
+                <h3>15. Security & Privacy</h3>
+                <p>We believe in absolute transparency about security:</p>
+                <ul>
+                  <li><strong>Local Security:</strong> Since credentials are stored in plain text, anyone with access to your computer's filesystem can read your Naukri password. We restrict file access permissions on Unix/Linux systems (chmod 0600), but highly recommend securing your operating system user account.</li>
+                  <li><strong>Log Safety:</strong> The application automatically scrubs and masks passwords (e.g. replacing them with <code>••••••••</code>) before saving log files or showing them in the GUI.</li>
+                  <li><strong>Naukri Protection:</strong> The application cannot bypass CAPTCHAs, OTPs, or two-factor authentication. These are security measures enforced by Naukri and must be resolved manually by you.</li>
+                </ul>
+              </div>
+              <div class="guide-section" id="sec-background">
+                <h3>16. Background Operation</h3>
+                <p>Understanding how the application runs when closed:</p>
+                <ul>
+                  <li><strong>Minimize / Close Window:</strong> Clicking the window close (X) or minimize button hides the application to your system tray. The automation continues to run in the background.</li>
+                  <li><strong>Quit Application:</strong> Right-clicking the tray icon and selecting <strong>Quit</strong> completely shuts down the app. However, scheduled system tasks (cron/LaunchAgent/Windows Task Scheduler) will still launch the application in headless mode when an automation is due.</li>
+                  <li><strong>Close Chrome:</strong> If you close the dedicated Chrome browser window, the app updates the Dashboard to "Disconnected". When the next scheduled run occurs, the system scheduler will automatically launch Chrome again.</li>
+                </ul>
+              </div>
+              <div class="guide-section" id="sec-notifications">
+                <h3>17. Notifications</h3>
+                <p>The application sends system notifications when background tasks complete or fail (e.g. <code>Profile Refreshed</code>, <code>Resume Uploaded</code>, or <code>Headline Refresh Failed</code>). These notifications never contain passwords, emails, or personal details, ensuring your privacy is protected if other users view your notifications.</p>
+              </div>
+              <div class="guide-section" id="sec-troubleshooting">
+                <h3>18. Troubleshooting</h3>
+                <h4>Naukri is showing "Disconnected"</h4>
+                <p>Click <strong>Connect Chrome</strong>. If Chrome opens, log in to Naukri manually and solve any verification steps. Once your profile page is visible, the dashboard will update to "Connected".</p>
+                <h4>Resume Upload Fails</h4>
+                <p>Ensure that your resume is a valid PDF and is not opened or locked by another program. Check that you have a stable network connection. You can check the detailed error description in the activity logs.</p>
+                <h4>Chrome Window Closed unexpectedly</h4>
+                <p>The application detects browser closures within 2 seconds, updating its status to "Disconnected". Simply click <strong>Connect Chrome</strong> again to restore connection.</p>
+              </div>
+              <div class="guide-section" id="sec-errors">
+                <h3>19. Common Errors</h3>
+                <ul>
+                  <li><code>CDP Endpoint Unreachable:</code> Chrome failed to launch or crashed. Close the application, check if Google Chrome is installed, and try restarting.</li>
+                  <li><code>Not on authenticated profile page:</code> The browser was redirected. This usually means Naukri logged you out. Click Connect Chrome and log in again.</li>
+                  <li><code>Path traversal warning:</code> Your resume file path configurations point outside the secure application directory. Please select your resume again using the settings file picker.</li>
+                </ul>
+              </div>
+              <div class="guide-section" id="sec-logs">
+                <h3>20. Logs & Diagnostics</h3>
+                <p>Under the <strong>Activity Logs</strong> tab, you can view the execution history. If an automation fails, the application saves a debug screenshot at <code>naukri-refresh-error.png</code> inside the configuration folder so you can see exactly why it failed. The logs are masked and never store plain-text passwords.</p>
+              </div>
+              <div class="guide-section" id="sec-disconnecting">
+                <h3>21. Disconnecting / Removing Data</h3>
+                <p>You can remove your data using the controls in <strong>Settings → Privacy & Data Management</strong>:</p>
+                <ul>
+                  <li><strong>Clear Credentials:</strong> Removes your email and password from the local <code>.env</code> file.</li>
+                  <li><strong>Remove Resume:</strong> Deletes the resume PDF from the local data folder and clears the path.</li>
+                  <li><strong>Reset Browser Session:</strong> Deletes cookies, history, and Naukri session data in Chrome.</li>
+                  <li><strong>Reset Entire Application:</strong> Deletes configuration files, logs, resumes, and browser profiles, restoring the application to the first-run state.</li>
+                  <li><strong>Uninstall:</strong> Quit the application, delete the configuration folder (<span class="path-configdir-text">data folder</span>), delete the application executable, and clear your OS scheduler (using Task Scheduler, launchctl, or crontab).</li>
+                </ul>
+              </div>
+              <div class="guide-section" id="sec-updating">
+                <h3>22. Updating the Application</h3>
+                <p>Naukri frequently updates its user interface, which may break automation selectors. When this happens, we release updates. Since this app contains no auto-update servers (for privacy reasons), you must download the latest release manually from our official GitHub repository. Updates include selector bug fixes, security enhancements, and compatibility adjustments.</p>
+              </div>
+              <div class="guide-section" id="sec-opensource">
+                <h3>23. Open Source / Transparency</h3>
+                <p>This project is fully open source. You can inspect the entire codebase, verify how it reads your configuration, how it communicates with Chrome over CDP, and confirm that no personal data is transmitted outside your local machine.</p>
+                <p>Official Repository URL: <a href="https://github.com/anwarbuilds/naukri_update" id="opensource-repo-link" style="color: var(--accent-indigo); text-decoration: underline;">https://github.com/anwarbuilds/naukri_update</a></p>
+              </div>
+              <div class="guide-section" id="sec-faq">
+                <h3>24. FAQ</h3>
+                <h4>Why do you need my Naukri password?</h4>
+                <p>The password is used by Playwright to sign in to your Naukri account if the dedicated browser session expires, ensuring that background updates run without interruption.</p>
+                <h4>Can the application see my normal Chrome passwords?</h4>
+                <p>No. The dedicated Chrome profile is entirely separate from your personal Chrome profile. The automation cannot read your personal browser history, cookies, or saved passwords.</p>
+                <h4>Does the application have access to my entire computer?</h4>
+                <p>No. The application only accesses files inside its dedicated configuration directory and the specific PDF file you select as your resume. It does not scan or read other areas of your hard drive.</p>
+                <h4>Does this bypass CAPTCHA?</h4>
+                <p>No. CAPTCHA is designed to block automated bots. If Naukri presents a CAPTCHA, the automation pauses and waits for you to solve it manually in the Chrome window.</p>
+              </div>
+              <div class="guide-section" id="sec-advanced">
+                <h3>25. Advanced / Technical Details</h3>
+                <p>For developers and advanced users, the application manages the following configuration settings in the <code>.env</code> file:</p>
+                <ul>
+                  <li><code>NAUKRI_EMAIL</code>: Naukri username</li>
+                  <li><code>NAUKRI_PASSWORD</code>: Naukri login password</li>
+                  <li><code>NAUKRI_PROFILE_URL</code>: URL to profile editor</li>
+                  <li><code>REFRESH_MODE</code>: <code>interval</code> or <code>fixed_time</code></li>
+                  <li><code>REFRESH_INTERVAL_HOURS</code>: Hours between headline updates</li>
+                  <li><code>REFRESH_INTERVAL_MINUTES</code>: Minutes between headline updates</li>
+                  <li><code>REFRESH_TIME</code>: Time for headline updates (24h format)</li>
+                  <li><code>RESUME_UPDATE_ENABLED</code>: <code>true</code> or <code>false</code></li>
+                  <li><code>RESUME_UPDATE_TIME</code>: Time for resume upload (24h format)</li>
+                  <li><code>RESUME_FILE</code>: Path to active resume PDF</li>
+                  <li><code>REFRESH_WINDOW_ENABLED</code>: <code>true</code> or <code>false</code></li>
+                  <li><code>REFRESH_WINDOW_START</code>: Start of execution window</li>
+                  <li><code>REFRESH_WINDOW_END</code>: End of execution window</li>
+                </ul>
+                <p>You can run automation directly from the terminal inside the project directory using: <code>node naukri-profile-refresh.js --refresh-headline</code> or <code>--upload-resume</code>.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- FIRST RUN EXPERIENCE MODAL -->
+  <div class="modal-overlay" id="first-run-modal">
+    <div class="modal-box">
+      <div class="wizard-header">
+        <h2 id="wizard-title">Welcome to Naukri Update</h2>
+        <div class="wizard-steps">
+          <div class="step-dot active" data-step="1">1</div>
+          <div class="step-line"></div>
+          <div class="step-dot" data-step="2">2</div>
+          <div class="step-line"></div>
+          <div class="step-dot" data-step="3">3</div>
+          <div class="step-line"></div>
+          <div class="step-dot" data-step="4">4</div>
+        </div>
+      </div>
+      
+      <div class="wizard-content">
+        <!-- Step 1: Privacy Summary -->
+        <div class="wizard-step-panel active" id="wizard-step-1">
+          <h3>Before you continue</h3>
+          <p style="margin-top: 10px; line-height: 1.5; font-size: 0.9rem; color: var(--text-secondary);">This application will need access to:</p>
+          
+          <div class="privacy-summary-box" style="margin-top: 15px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; font-size: 0.85rem;">
+            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;">
+              <span style="color: var(--accent-green); font-weight: bold;">✓</span>
+              <span><strong>Your Naukri account:</strong> Used to update your resume headline and upload your resume. Stored locally in a <code>.env</code> file.</span>
+            </div>
+            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;">
+              <span style="color: var(--accent-green); font-weight: bold;">✓</span>
+              <span><strong>Your selected resume:</strong> Read locally and uploaded to Naukri when automation runs. Stored locally inside the app's folder.</span>
+            </div>
+            <div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;">
+              <span style="color: var(--accent-indigo); font-weight: bold;">ℹ</span>
+              <span><strong>External Communication:</strong> The app only communicates with Naukri.com to perform the updates. No analytics, tracking, or telemetry data leaves your machine.</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <span style="color: var(--accent-yellow); font-weight: bold;">⚠</span>
+              <span><strong>No CAPTCHA Bypass:</strong> If Naukri requests OTP or CAPTCHA verification, you must complete it manually in the dedicated Chrome window.</span>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <a href="#" id="wiz-view-full-guide-link" style="color: var(--accent-indigo); text-decoration: underline; font-size: 0.85rem; font-weight: 500;">View Full Privacy & Data Guide</a>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="wizard-step-panel" id="wizard-step-2" style="display: none;">
+          <h3>Step 2: Naukri Account Authentication</h3>
+          <p>Please enter your Naukri details to enable authentication when your session expires.</p>
+          
+          <div class="form-group" style="margin-top: 15px;">
+            <label for="wiz-email">Naukri Email</label>
+            <input type="email" id="wiz-email" placeholder="example@email.com">
+          </div>
+          <div class="form-group" style="margin-top: 15px;">
+            <label for="wiz-password">Naukri Password</label>
+            <input type="password" id="wiz-password" placeholder="••••••••">
+          </div>
+          <div class="form-group" style="margin-top: 15px;">
+            <label for="wiz-url">Naukri Profile URL</label>
+            <input type="url" id="wiz-url" value="https://www.naukri.com/mnjuser/profile">
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="wizard-step-panel" id="wizard-step-3" style="display: none;">
+          <h3>Step 3: Select Your Resume</h3>
+          <p>Choose the PDF resume you want to keep updated. The app will manage this single file internally in a secure application directory.</p>
+          
+          <div class="resume-selector-box select-large" style="margin-top: 25px;" id="wiz-resume-box">
+            <div class="resume-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="resume-details">
+              <div class="name" id="wiz-resume-name">No Resume Selected</div>
+              <div class="meta" id="wiz-resume-meta">Click below to upload a PDF resume. Only PDF format is accepted.</div>
+            </div>
+            <button type="button" class="btn btn-secondary" id="wiz-select-resume-btn">Choose PDF File</button>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="wizard-step-panel" id="wizard-step-4" style="display: none;">
+          <h3>Step 4: Setup Scheduling</h3>
+          <p>Enable automation. We recommend running the headline refresh hourly and the resume upload once daily.</p>
+          
+          <div class="wiz-checkbox-row" style="margin-top: 25px;">
+            <div class="check-col">
+              <label class="switch">
+                <input type="checkbox" id="wiz-headline-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="text-col">
+              <h4>Hourly Headline Refresh</h4>
+              <p>Toggles a trailing dot on your resume headline every hour to trigger the Naukri "last updated" timestamp.</p>
+            </div>
+          </div>
+
+          <div class="wiz-checkbox-row" style="margin-top: 20px;">
+            <div class="check-col">
+              <label class="switch">
+                <input type="checkbox" id="wiz-resume-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="text-col">
+              <h4>Daily Resume PDF Upload</h4>
+              <p>Re-uploads your PDF resume once daily with a dynamic date stamp (e.g. <code>resume_29-08-2026.pdf</code>) to ensure maximum visibility.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="wizard-footer">
+        <button class="btn btn-secondary" id="wiz-prev-btn" style="visibility: hidden;">Back</button>
+        <div id="wiz-error" class="wiz-error"></div>
+        <button class="btn btn-primary" id="wiz-next-btn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHY NEEDED MODAL -->
+  <div class="modal-overlay" id="why-modal">
+    <div class="modal-box why-modal-box">
+      <h3 id="why-title" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 16px;">Why do we need this?</h3>
+      <div class="why-body" id="why-body">
+        <!-- Content will be injected dynamically -->
+      </div>
+      <div class="why-footer" style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-secondary" id="why-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRMATION & ALERT MODAL -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box confirmation-modal-box" style="max-width: 480px;">
+      <h3 id="confirm-title" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">Confirm Action</h3>
+      <div id="confirm-body" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+        <!-- Warning message goes here -->
+      </div>
+      <div id="confirm-input-container" style="display: none; margin-bottom: 20px;">
+        <label for="confirm-text-input" id="confirm-input-label" style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;"></label>
+        <input type="text" id="confirm-text-input" style="width: 100%; padding: 10px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.9rem; transition: var(--transition-fast);" placeholder="">
+      </div>
+      <div class="confirm-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn btn-secondary" id="confirm-cancel-btn">Cancel</button>
+        <button class="btn" id="confirm-action-btn" style="background-color: var(--accent-indigo); color: white; border: none;">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
