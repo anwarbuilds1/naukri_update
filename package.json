@@ -53,7 +53,6 @@
       ],
       "icon": "assets/icon.png",
       "category": "Utility",
-      "desktopName": "naukri-update",
       "maintainer": "Ankit Baghel <anwarbuilds1@gmail.com>"
     },
     "publish": {
