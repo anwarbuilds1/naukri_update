@@ -153,6 +153,9 @@ class ConfigService {
   save(settings) {
     const currentConfig = this.load();
     const mergedConfig = { ...currentConfig, ...settings };
+    if (!mergedConfig.NAUKRI_PROFILE_URL) {
+      mergedConfig.NAUKRI_PROFILE_URL = this.defaults.NAUKRI_PROFILE_URL;
+    }
     const validation = this.validate(mergedConfig);
     if (!validation.success) {
       throw new Error(validation.error);
