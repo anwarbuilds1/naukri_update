@@ -1,281 +1,163 @@
-# Naukri Update (Desktop App)
+# Naukri Update
 
-A polished, user-friendly desktop application that automates your Naukri profile updates to keep you active and visible to recruiters.
+> **Automate your Naukri profile updates — keep your profile active and visible to recruiters, entirely from your own computer.**
 
-Designed for **completely non-technical users**, this app manages all scheduling, background execution, and browser configurations internally. You do **not** need to understand Node.js, command line terminals, configuration files, or task scheduling commands.
-
----
-
-## 🚀 Easy User Guide (Non-Technical Setup)
-
-### Step 1: Download & Install
-1. Download the installer matching your operating system:
-   * **Windows:** `.exe` installer (installs desktop shortcut and startup shortcuts).
-   * **macOS:** `.dmg` installer (drag to your Applications folder).
-   * **Linux:** `.AppImage` (standalone) or `.deb` installer.
-2. Launch **Naukri Update** from your computer.
-
-### Step 2: Configure Your Profile
-1. On first run, you will see a simple onboarding wizard.
-2. Go to the **Settings** tab:
-   * **Profile URL:** Copy/paste the link to your Naukri profile editing page (usually `https://www.naukri.com/mnjuser/profile`).
-   * **Credentials:** Enter your Naukri email and password. (These are stored **100% locally** in your system app data directory; the app has no backend server).
-   * **Resume File:** Click **Choose PDF** to select your resume. The app automatically handles copying, date-stamping, and maintaining a single authoritative copy.
-3. Turn **ON** the automation options you want (Headline Auto-Refresh and/or Daily Resume Upload) and save settings.
-
-### Step 3: Establish the Login Session
-1. Click the **Open Naukri Browser** or **Connect Chrome** button on the dashboard.
-2. A separate, dedicated Google Chrome window will open.
-3. If prompted, log into Naukri.com and complete any security challenges (OTP or CAPTCHA).
-4. Once you see your profile dashboard, you are done! You can close that Chrome window; the application will launch it invisibly in the background for scheduled runs.
-
-### Step 4: Let it Run in the Background
-* Minimizing or closing the main app window will hide it to your **System Tray** (near your clock).
-* The app automatically schedules itself to run on boot.
-* Right-click the system tray icon to **Pause Automation**, **Reconnect Chrome**, or open the dashboard at any time.
+No technical knowledge required. No Node.js. No terminal. No configuration files.
 
 ---
 
-## 🛠 Developer & CLI Guide (Technical Setup)
+## For Normal Users — Recommended
 
-If you are a developer or contributor wanting to build, test, extend, or package the application from source code, please refer to the comprehensive [Developer Onboarding Roadmap & Walkthrough](DEVELOPER_ROADMAP.md).
+### Download the Desktop Application
 
-## Features
+Download the latest release for your operating system from the [Releases page](https://github.com/anwarbuilds1/naukri_update/releases/latest):
 
-- **Headline Toggle**: Automatically toggles the trailing period on your resume headline to mark the profile as updated.
-- **Dedicated Browser Session**: Uses a separate, isolated Chrome profile to retain login sessions securely.
-- **Chrome CDP Integration**: Reuses an open browser instance via the Chrome DevTools Protocol.
-- **Server-Side Verification**: Verifies the update by reloading the page and checking the headline directly from Naukri's server before logging success.
-- **Flexible Automation**: Supports scheduling with configurable intervals (e.g. every 1, 2, 3, 4, 6, 8, 12, or 24 hours).
-- **Cross-Platform**: Fully compatible with Linux (bash + cron) and Windows (PowerShell + Task Scheduler).
+| OS | Download |
+|:---|:---|
+| **Windows** | `NaukriUpdate-Setup.exe` |
+| **macOS** | `NaukriUpdate.dmg` |
+| **Linux** | `NaukriUpdate.AppImage` or `.deb` |
 
-## How It Works
+### Install & Open
 
-```
-User
-  ↓ (start browser once & authenticate)
-Dedicated Chrome (runs on 127.0.0.1:9222)
-  ↓
-Naukri session (stored in local profile directory)
-  ↓
-Playwright/CDP (script connects to running Chrome)
-  ↓
-Resume headline (toggles trailing period)
-  ↓
-Save & Reload
-  ↓
-Server verification (verifies headline changes successfully)
-```
+1. **Windows:** Run the `.exe` installer and follow the prompts.
+2. **macOS:** Open the `.dmg`, drag the app to your Applications folder.
+3. **Linux:** Make the `.AppImage` executable (`chmod +x`), or install the `.deb` with your package manager.
 
-## Recommended File Structure
+### In-App Setup (No Terminal Needed)
+
+Once the app opens, an onboarding wizard walks you through everything:
 
 ```
-naukri_update/
-│
-├── naukri-profile-refresh.js
-├── config.js
-├── package.json
-├── package-lock.json
-├── .env.example
-├── .gitignore
-├── README.md
-│
-├── scripts/
-│   ├── start-naukri-chrome.sh     # Linux browser launcher
-│   ├── start-naukri-chrome.ps1    # Windows browser launcher
-│   ├── naukri-refresh-runner.sh   # Main refresh execution runner
-│   └── install-cron.sh            # Cron job installation wizard
-│
-└── .naukri-chrome-profile/        # Chrome session profile (local & gitignored)
+Welcome
+  ↓
+Enter your Naukri email & password
+  ↓
+Connect Chrome (log in to Naukri once)
+  ↓
+Select your resume PDF
+  ↓
+Configure automation schedule
+  ↓
+Enable background automation
+  ↓
+Check setup — verify everything works
+  ↓
+Dashboard — you're done
 ```
 
-## Requirements
+**After that:**
+- The app runs in your **System Tray** (near the clock) — no terminal needed.
+- Right-click the tray icon to pause, reconnect, or open the dashboard.
+- Background automation runs automatically, even after a reboot.
 
-### Linux
+---
 
-- **Node.js**: 20 or higher.
-- **Google Chrome**: Stable version installed.
-- **cron**: Standard task scheduler.
-- **bash**: Default shell.
+## Running From Source (Developers / Advanced Users)
 
-### Windows
+> ⚠️ This section is **not** the primary user path. Normal users should use the installer above.
 
-- **Node.js**: 20 or higher.
-- **Google Chrome**: Stable version installed.
-- **Task Scheduler**: Standard administrative tool.
-- **PowerShell**: 5.1 or Core.
-
-## Installation
-
-Clone the repository and install the dependencies:
+If you have the repository and want to run directly from source, use the **one-command setup**:
 
 ```bash
 git clone https://github.com/anwarbuilds1/naukri_update.git
 cd naukri_update
-npm install
+npm run setup
 ```
 
-## Configuration
+That's it. The setup command will:
 
-Copy the environment template:
+1. ✓ Detect your operating system and environment
+2. ✓ Check for Node.js ≥ 18 and provide a clear message if missing
+3. ✓ Check for Google Chrome and warn if not found
+4. ✓ Install all required dependencies automatically
+5. ✓ Create required application directories
+6. ✓ Migrate or initialize configuration storage
+7. ✓ Launch the desktop application
+8. ✓ Open the in-app onboarding wizard
 
-```bash
-cp .env.example .env
-```
+**You do not need to run `npm install` separately.** The setup command handles it.
 
-Open `.env` and fill in your configuration:
+### Setup Requirements (Source Only)
 
-```dotenv
-NAUKRI_PROFILE_URL=https://www.naukri.com/mnjuser/profile
-NAUKRI_EMAIL=your-email@example.com
-NAUKRI_PASSWORD=your-naukri-password
+| Requirement | Notes |
+|:---|:---|
+| **Node.js ≥ 18** | Download from [nodejs.org](https://nodejs.org). The setup command will tell you if it's missing. |
+| **Google Chrome** | Install from [google.com/chrome](https://www.google.com/chrome/). The app needs Chrome for browser automation. |
+| **npm** | Comes bundled with Node.js. |
 
-# --- Headline Refresh Scheduling ---
-# Mode can be "interval" or "fixed_time"
-REFRESH_MODE=interval
-REFRESH_INTERVAL_HOURS=1
-REFRESH_INTERVAL_MINUTES=0
-REFRESH_TIME=06:11
+> If Node.js is missing, the setup command will not crash silently — it will show you exactly what to install and how.
 
-# --- Active Time Window (Optional) ---
-# When enabled, the script will only execute refreshes inside this window
-REFRESH_WINDOW_ENABLED=false
-REFRESH_WINDOW_START=07:00
-REFRESH_WINDOW_END=19:00
+### Re-running Setup
 
-RESUME_UPDATE_ENABLED=false
-RESUME_UPDATE_TIME=07:00
-RESUME_FILE=resume/Anwar_Rizwan_Resume.pdf
-```
+`npm run setup` is idempotent — safe to run multiple times:
 
-### Detailed Configuration Reference
+- Already installed? **Dependencies are skipped.**
+- Existing configuration found? **It is preserved — never deleted.**
+- Existing resume files? **They are untouched.**
+- Existing browser profile? **It is reused.**
 
-#### 1. Headline Refresh Scheduling
-* **`REFRESH_MODE`**: The scheduling strategy for profile refreshes. 
-  * `interval`: Refreshes the profile periodically at regular intervals.
-  * `fixed_time`: Refreshes the profile exactly once per day at a specific time.
-* **`REFRESH_INTERVAL_HOURS`**: (Used when `REFRESH_MODE=interval`) The hour component of the refresh frequency.
-* **`REFRESH_INTERVAL_MINUTES`**: (Used when `REFRESH_MODE=interval`) The minute component of the refresh frequency.
-  * *Example:* Setting hours to `1` and minutes to `30` will trigger a refresh every 1 hour and 30 minutes.
-* **`REFRESH_TIME`**: (Used when `REFRESH_MODE=fixed_time`) The exact time of day (24-hour format, `HH:MM`, e.g., `06:11`) to execute the daily refresh.
+### Other Developer Commands
 
-#### 2. Active Time Window (Optional)
-* **`REFRESH_WINDOW_ENABLED`**: If set to `true`, limits interval refreshes to occur only within the specified start and end times. If `false`, refreshes will happen 24/7.
-* **`REFRESH_WINDOW_START`**: (Used when `REFRESH_WINDOW_ENABLED=true`) The start time of the active window (24-hour format, `HH:MM`, e.g., `07:00`).
-* **`REFRESH_WINDOW_END`**: (Used when `REFRESH_WINDOW_ENABLED=true`) The end time of the active window (24-hour format, `HH:MM`, e.g., `19:00`). 
-  * *Note:* Supports midnight-crossing windows (e.g., start at `22:00` and end at `06:00`).
+| Command | Description |
+|:---|:---|
+| `npm run setup` | **One-command setup + launch** (recommended) |
+| `npm start` | Launch the desktop app directly (requires prior `npm install`) |
+| `npm run refresh` | Run the automation script once from CLI |
+| `npm run pack` | Package app without installer (for testing) |
+| `npm run dist` | Build production installer binaries |
 
-#### 3. Resume PDF Updates (Optional)
-* **`RESUME_UPDATE_ENABLED`**: Toggles daily resume updates. Set to `true` to enable daily uploads, or `false` to disable.
-* **`RESUME_UPDATE_TIME`**: (Used when `RESUME_UPDATE_ENABLED=true`) The exact daily time (24-hour format, `HH:MM`, e.g., `07:00`) when the resume should be uploaded.
-* **`RESUME_FILE`**: Path to your local resume PDF file (e.g., `resume/Ram_Resume.pdf`).
-  * **Automatic Discovery**: If `RESUME_FILE` is empty or omitted, the automation automatically discovers the single resume PDF file inside the `resume/` directory.
-  * **Single Resume Rule**: The `resume/` directory must contain exactly one source resume PDF file. If multiple PDFs are present and `RESUME_FILE` is not set explicitly, the script fails with a clear error to prevent ambiguity.
-  * **Dynamic Filename Generation**: The upload filename is dynamically generated with today's date (e.g., `Ram_Resume_DD-MM-YYYY.pdf`). The system normalizes filenames, removes any existing trailing dates, sanitizes special characters/spaces, and ensures date idempotency without modifying your local source filename.
-  * **Duplicate & Stale Cleanup**: Old dated uploads, duplicate generic files, or copy duplicates (e.g. matching your resume base name, `resume`, or `cv`) within the `resume/` directory are automatically cleaned up safely *only after* a successful upload and verification.
+For full developer documentation, see [DEVELOPER_ROADMAP.md](DEVELOPER_ROADMAP.md).
 
+---
 
+## Privacy & Security
 
+| Question | Answer |
+|:---|:---|
+| Does this app have a backend server? | **No.** The app runs entirely on your computer. |
+| Are credentials sent anywhere except Naukri.com? | **No.** Credentials are used only to authenticate on Naukri.com directly. |
+| Where are credentials stored? | Locally in your system's app data directory, in a plain-text config file restricted to your user account. |
+| Is there any telemetry or analytics? | **No.** None whatsoever. |
+| What does the app communicate with? | Only `naukri.com` — and only to perform the profile updates you configured. |
+| Can I delete my data? | Yes. From the app: **Settings → Privacy & Data Management**. |
 
-> [!IMPORTANT]
-> The `.env` file is excluded from version control (listed in `.gitignore`). Never commit your `.env` file containing credentials to Git.
-> On Linux, restrict access permissions for the `.env` file:
->
-> ```bash
-> chmod 600 .env
-> ```
+---
 
-## First Login & Authentication
+## Features
 
-To store your login session in the dedicated Chrome profile:
+- **Headline Toggle:** Automatically toggles a trailing period on your resume headline to trigger Naukri's "last updated" timestamp.
+- **Daily Resume Upload:** Re-uploads your PDF resume once a day with a date-stamped filename (e.g. `Resume_29-08-2026.pdf`) to stay visible.
+- **Dedicated Browser Session:** Uses an isolated Chrome profile — completely separate from your personal browser.
+- **Headless Automation:** Runs invisibly in the background without opening a visible browser window.
+- **Background Scheduling:** Uses native OS scheduling (cron / LaunchAgent / Task Scheduler) — configured automatically by the app.
+- **System Tray Integration:** Lives quietly in the tray. Right-click for quick actions.
+- **Active Time Window:** Optionally restrict automation to specific hours of the day.
+- **Server Verification:** Verifies every update was applied successfully by reloading the page.
+- **Automatic Log Rotation:** Keeps the last 5 run logs to prevent disk bloat.
 
-1. Run the launcher from the repository root:
-   - **Linux**: `./scripts/start-naukri-chrome.sh`
-   - **Windows**: `.\scripts\start-naukri-chrome.ps1`
-2. Google Chrome will launch and open the Naukri profile page.
-3. If you are not authenticated, fill in your credentials and complete any verification (such as CAPTCHA or OTP).
-4. Keep this Chrome window open. Future runs will reuse this session automatically.
-
-## Run Manually
-
-You can test the script manually. Ensure the dedicated Chrome instance is running:
-
-```bash
-# Performs the profile refresh directly
-node naukri-profile-refresh.js
-```
-
-To run the full automated check manually (which automatically starts Chrome in the background if it is not already running):
-
-- **Linux**: `./scripts/naukri-refresh-runner.sh`
-
-## Scheduling Automation
-
-### Linux (cron)
-
-We provide an installer script `install-cron.sh` that validates the scheduling settings in your `.env` and configures a cron job that checks the schedule every minute. The runner script then dynamically decides whether a headline refresh or a resume upload is due based on the precise scheduling settings.
-
-To configure and install the scheduling:
-
-1. Open `.env` and configure the scheduling variables under the `# Scheduling Configuration` section.
-2. Run the cron installer from the repository root:
-   ```bash
-   ./scripts/install-cron.sh
-   ```
-
-- **Inspect active cron jobs**: `crontab -l`
-- **Pause or edit jobs**: `crontab -e`
-- **Remove the scheduling**:
-  ```bash
-  crontab -l | grep -v "naukri-refresh-runner.sh" | crontab -
-  ```
-
-### Windows (Task Scheduler)
-
-To run the script automatically on Windows:
-
-1. Open **Task Scheduler** and click **Create Basic Task**.
-2. Set the Trigger to **Daily** and configure it to repeat at your preferred interval (e.g. 1 hour, 2 hours, etc.).
-3. Set the Action to **Start a Program**.
-4. In the **Program/script** field, type `powershell.exe`.
-5. In the **Add arguments** field, specify the path to the startup/refresh flow:
-   ```powershell
-   -NoProfile -WindowStyle Hidden -Command "& { Set-Location 'C:\path\to\your\naukri_update'; .\scripts\start-naukri-chrome.ps1; Start-Sleep -Seconds 10; node naukri-profile-refresh.js }"
-   ```
-   _(Be sure to replace `C:\path\to\your\naukri_update` with your actual cloned repository path.)_
-
-## Security & Isolation
-
-- **Isolated Browser**: The dedicated Chrome profile is stored locally in `.naukri-chrome-profile/` and is fully gitignored. It does not access your everyday Chrome profile cookies or passwords.
-- **Local Credentials**: All passwords and configurations remain in `.env` locally.
-- **No Exfiltration**: No telemetry, external webhooks, or remote servers are contacted. All traffic is bound to localhost (`127.0.0.1:9222`).
-
-## Optimization & Resource Safety
-
-This automation is designed to run 24/7 without consuming unnecessary resources, leaking handles, or cluttering your system:
-
-- **Lightweight Check Intervals**: Although the cron job triggers every minute, it performs a lightweight Node.js check (taking less than 100ms with virtually 0% CPU/RAM) and exits immediately if no task is due. Heavy browser processes are only launched when necessary.
-- **Concurrency Protection**: The runner uses Linux's native `flock` utility. If a previous run is still active (e.g. during a network slowdown), subsequent minute-checks exit immediately, preventing process stacking.
-- **Automatic Log Rotation**: To prevent disk bloat, both log files (`naukri-hourly-refresh.log` and `naukri-refresh.log`) are automatically rotated and trimmed to keep only the **last 5 runs**.
-- **Process Detachment & Handle Safety**: When starting Chrome in the background, the runner closes inherited file descriptors (`9>&-`) to ensure clean execution and prevent leaked file locks.
-- **Self-Healing Lock Cleanup**: The browser launcher automatically detects and cleans up stale `SingletonLock` files if Chrome was killed unexpectedly, avoiding startup lockups.
+---
 
 ## Troubleshooting
 
-- **CDP unavailable**: Make sure Google Chrome is running and listening on `127.0.0.1:9222`. Run `curl http://127.0.0.1:9222/json/version` to check.
-- **Chrome SingletonLock error**: If Chrome refuses to start and complains about a profile in use, close any running instances. If none are running, delete `.naukri-chrome-profile/SingletonLock` manually.
-- **Naukri selector changes**: If Naukri modifies its profile layout, the selectors in `naukri-profile-refresh.js` might need updating. Check the generated `naukri-refresh-error.png` screenshot for diagnostics.
-- **Cron path issues**: Cron runs with a limited environment. Ensure the absolute paths in the crontab match your Node.js binary location.
+| Problem | Solution |
+|:---|:---|
+| App won't connect to Chrome | Click **Connect Chrome** on the Dashboard. If Chrome is already open, close it and try again. |
+| Naukri asked for OTP / CAPTCHA | Complete it manually in the dedicated Chrome window — the app will wait and resume. |
+| Background automation not running | Go to **Settings → Background Automation** and re-enable it. The app will re-register the OS task. |
+| Resume upload failed | Ensure your resume file is a valid PDF under 2 MB. Re-select it from the Settings tab. |
+| Existing `.env` from an old version | The app will detect and migrate it automatically. You can also import settings from the wizard. |
 
-## Git Safety
-
-Before committing changes, check that your local credentials and profile directories are properly ignored:
-
-```bash
-git status
-git check-ignore -v .env .naukri-chrome-profile naukri-refresh.log naukri-hourly-refresh.log
-```
+---
 
 ## Disclaimer
 
-This project is an independent automation tool and is not affiliated with, authorized, maintained, sponsored, or endorsed by Naukri.com or Info Edge. You are solely responsible for compliance with Naukri's Terms of Service.
+This project is an independent automation tool and is **not affiliated with, authorized by, maintained by, sponsored by, or endorsed by Naukri.com or Info Edge (India) Ltd.**
+
+You are solely responsible for compliance with Naukri's Terms of Service.
+
+---
+
+## License
+
+ISC License — see [LICENSE](LICENSE) for details.

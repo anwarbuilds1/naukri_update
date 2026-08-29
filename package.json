@@ -1,9 +1,10 @@
 {
   "name": "naukri-update",
   "version": "1.0.0",
-  "description": "Keeps a Naukri profile fresh by toggling a trailing dot on the resume headline",
+  "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
   "main": "naukri-profile-refresh.js",
   "scripts": {
+    "setup": "node scripts/setup.js",
     "start": "electron main.js --no-sandbox",
     "refresh": "node naukri-profile-refresh.js",
     "pack": "electron-builder --dir",
@@ -28,6 +29,7 @@
       "main.js",
       "preload.js",
       "config.js",
+      "config-service.js",
       "naukri-profile-refresh.js",
       "renderer/**/*",
       "scripts/**/*",
