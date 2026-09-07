@@ -1,6 +1,8 @@
 {
   "name": "naukri-update",
   "version": "1.0.6",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
   "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
   "main": "main.js",
   "scripts": {
@@ -8,7 +10,10 @@
     "start": "electron main.js --no-sandbox",
     "refresh": "node naukri-profile-refresh.js",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "dev": "turbo run dev"
   },
   "author": {
     "name": "anwar",
@@ -21,7 +26,8 @@
   },
   "devDependencies": {
     "electron": "^41.7.1",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "turbo": "^2.1.3"
   },
   "build": {
     "appId": "com.naukri.update",

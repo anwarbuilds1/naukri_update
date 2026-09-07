@@ -1,5 +1,7 @@
 # secrets & personal data
 .env
+.env.local
+.env.*.local
 .naukri-chrome-profile/
 .naukri-brave-profile/
 naukri-refresh.log
@@ -9,19 +11,33 @@ naukri-refresh-error*.png
 
 # runtime output
 *.log
+naukri-*.log
+naukri-app.log
+chrome_startup.log
 applications*.csv
 apply-state-*.json
 *.png
+
+# runtime state files
+.naukri-refresh-state.json
+.naukri-automation.lock
 
 # saved browser sessions (contain logged-in cookies)
 .*-chrome-profile/
 .*-apply-profile/
 
 # resume / personal docs
-*.pdf
+resume/*.pdf
 
 # deps
 node_modules/
 
 # build outputs
 dist/
+
+# monorepo
+.turbo/
+apps/web/.next/
+apps/web/out/
+apps/agent/dist/
+packages/*/dist/
