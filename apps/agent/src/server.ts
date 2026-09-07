@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
 import type { AgentStatus, ApiResponse } from '@naukri-update/shared';
+import { cleanupStaleResumes, sanitizeFilename } from './automation.js';
 import { getDefaultConfigDir, saveEncryptedPassword } from './config.js';
 
 export interface AgentServerOptions {
@@ -19,6 +20,7 @@ export interface AgentServerOptions {
   configDir?: string;
   getStatus: () => AgentStatus;
   handleCommand: (type: string, requestId: string) => Promise<void>;
+  isBusy?: () => boolean;
 }
 
 function json<T>(res: http.ServerResponse, status: number, body: T): void {
@@ -100,6 +102,18 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
             });
             return;
           }
+
+          if (
+            opts.isBusy?.() &&
+            (payload.type === 'trigger-refresh' || payload.type === 'trigger-resume-upload')
+          ) {
+            json(res, 409, {
+              success: false,
+              error: { code: 'BUSY', message: 'Agent is already executing an automation task.' },
+            });
+            return;
+          }
+
           await handleCommand(payload.type, payload.requestId);
           json(res, 202, { success: true, data: { queued: true, requestId: payload.requestId } });
         } catch (err: unknown) {
@@ -174,32 +188,91 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
       return;
     }
 
-    // POST /api/agent/resume — receive and store resume PDF
+    // POST /api/agent/resume — receive, validate, and store resume PDF locally
     if (req.method === 'POST' && url.pathname === '/api/agent/resume') {
       const resumeDir = path.join(configDir, 'resume');
       if (!fs.existsSync(resumeDir)) {
         fs.mkdirSync(resumeDir, { recursive: true });
       }
 
-      const targetPath = path.join(resumeDir, 'uploaded_resume.pdf');
-      const fileStream = fs.createWriteStream(targetPath);
-      req.pipe(fileStream);
+      const chunks: Buffer[] = [];
+      let totalSize = 0;
+      const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
-      fileStream.on('finish', () => {
-        json(res, 200, {
-          success: true,
-          data: {
-            filename: 'uploaded_resume.pdf',
-            path: targetPath,
-          },
-        });
+      req.on('data', (chunk: Buffer) => {
+        totalSize += chunk.length;
+        if (totalSize <= MAX_SIZE + 1024) {
+          chunks.push(chunk);
+        }
       });
 
-      fileStream.on('error', (err) => {
-        json(res, 500, {
-          success: false,
-          error: { code: 'FILE_WRITE_ERROR', message: err.message },
-        });
+      req.on('end', () => {
+        if (totalSize === 0) {
+          json(res, 400, {
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'Uploaded file is empty.' },
+          });
+          return;
+        }
+
+        if (totalSize > MAX_SIZE) {
+          json(res, 413, {
+            success: false,
+            error: { code: 'FILE_TOO_LARGE', message: 'File exceeds maximum allowed size of 5 MB.' },
+          });
+          return;
+        }
+
+        const buffer = Buffer.concat(chunks);
+
+        // Validate %PDF magic bytes
+        if (buffer.subarray(0, 4).toString('utf8') !== '%PDF') {
+          json(res, 400, {
+            success: false,
+            error: { code: 'INVALID_FILE_CONTENT', message: 'File is not a valid PDF document.' },
+          });
+          return;
+        }
+
+        // Safe filename extraction & sanitization (prevent path traversal)
+        const rawHeader = req.headers['x-filename'];
+        const headerStr = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
+        let originalName = 'resume.pdf';
+        if (headerStr) {
+          try {
+            originalName = path.basename(decodeURIComponent(headerStr));
+          } catch {
+            originalName = path.basename(headerStr);
+          }
+        }
+
+        if (!originalName.toLowerCase().endsWith('.pdf')) {
+          originalName += '.pdf';
+        }
+
+        const sanitizedName = sanitizeFilename(originalName);
+        const targetPath = path.join(resumeDir, sanitizedName);
+
+        try {
+          fs.writeFileSync(targetPath, buffer);
+          // Clean up older stale resumes while keeping target
+          cleanupStaleResumes(resumeDir, targetPath, sanitizedName);
+
+          json(res, 200, {
+            success: true,
+            data: {
+              filename: sanitizedName,
+              path: targetPath,
+              sizeBytes: buffer.length,
+            },
+          });
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          json(res, 500, {
+            success: false,
+            error: { code: 'FILE_WRITE_ERROR', message: msg },
+          });
+        }
       });
       return;
     }

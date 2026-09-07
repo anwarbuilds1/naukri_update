@@ -97,6 +97,7 @@ export function releaseAutomationLock(configDir: string): void {
 // ─── State ──────────────────────────────────────────────────────────────────
 
 let isRunning = false;
+let currentTaskName: TaskType | undefined = undefined;
 const taskState = {
   lastRefreshTime: 0,
   lastResumeUploadTime: 0,
@@ -114,22 +115,28 @@ function getAgentStatus(): AgentStatus {
     lastSeen: Date.now(),
     lastRefreshTime: taskState.lastRefreshTime || undefined,
     lastResumeUploadTime: taskState.lastResumeUploadTime || undefined,
-    currentTask: isRunning ? (currentStatus === 'running' ? 'headline-refresh' : undefined) : undefined,
+    currentTask: isRunning ? currentTaskName : undefined,
   };
 }
 
 // ─── Task Runner ─────────────────────────────────────────────────────────────
 
-async function runDueTasks(tasks: TaskType[]): Promise<void> {
+async function runDueTasks(tasks: TaskType[], requestId?: string): Promise<void> {
   if (isRunning || tasks.length === 0) return;
 
   if (!acquireAutomationLock(config.configDir)) {
     console.log('[main] Could not acquire automation lock. Skipping task batch.');
+    if (requestId) {
+      gateway.updateCommandStatus(requestId, 'failed', 'dispatched', 'Could not acquire automation lock').catch(() => {});
+    }
     return;
   }
 
   isRunning = true;
   currentStatus = 'running';
+  if (requestId) {
+    gateway.updateCommandStatus(requestId, 'running', 'dispatched').catch(() => {});
+  }
   gateway.sendHeartbeat(currentStatus, chromeConnected, config.version).catch(() => {});
 
   try {
@@ -137,6 +144,7 @@ async function runDueTasks(tasks: TaskType[]): Promise<void> {
     config = loadAgentConfig();
 
     for (const task of tasks) {
+      currentTaskName = task;
       console.log(`[main] Starting automation task: ${task}`);
       const result = await runTask(task, {
         cdpEndpoint: config.cdpEndpoint,
@@ -151,7 +159,7 @@ async function runDueTasks(tasks: TaskType[]): Promise<void> {
         resumeUploadTimeoutMs: config.resumeUploadTimeoutMs,
       });
 
-      reporter.report(result);
+      reporter.report(result, requestId);
 
       if (result.success) {
         if (task === 'headline-refresh') taskState.lastRefreshTime = Date.now();
@@ -167,6 +175,7 @@ async function runDueTasks(tasks: TaskType[]): Promise<void> {
   } finally {
     releaseAutomationLock(config.configDir);
     isRunning = false;
+    currentTaskName = undefined;
     if (currentStatus === 'running') {
       currentStatus = 'idle';
     }
@@ -183,33 +192,34 @@ async function handleCommand(type: string, requestId: string): Promise<void> {
     case 'pause':
       taskState.paused = true;
       currentStatus = 'idle';
+      gateway.updateCommandStatus(requestId, 'succeeded', 'dispatched').catch(() => {});
       break;
     case 'resume':
       taskState.paused = false;
+      gateway.updateCommandStatus(requestId, 'succeeded', 'dispatched').catch(() => {});
       break;
     case 'trigger-refresh':
-      if (!isRunning) {
-        setImmediate(() => void runDueTasks(['headline-refresh']));
-      } else {
-        console.log('[main] Trigger refresh ignored: automation already running.');
-      }
+      setImmediate(() => void runDueTasks(['headline-refresh'], requestId));
       break;
     case 'trigger-resume-upload':
-      if (!isRunning) {
-        setImmediate(() => void runDueTasks(['resume-upload']));
-      } else {
-        console.log('[main] Trigger resume upload ignored: automation already running.');
-      }
+      setImmediate(() => void runDueTasks(['resume-upload'], requestId));
       break;
     case 'connect-chrome':
       console.log('[main] Ensuring Chrome is running with CDP...');
       await ensureChromeRunning(config.profileDir, config.naukriProfileUrl, config.cdpEndpoint);
       chromeConnected = await checkCDPAvailable(config.cdpEndpoint);
+      gateway.updateCommandStatus(
+        requestId,
+        chromeConnected ? 'succeeded' : 'failed',
+        'dispatched',
+        chromeConnected ? undefined : 'Chrome failed to start'
+      ).catch(() => {});
       break;
     case 'disconnect-chrome':
       console.log('[main] Disconnecting Chrome processes...');
       await disconnectChrome(config.cdpEndpoint);
       chromeConnected = false;
+      gateway.updateCommandStatus(requestId, 'succeeded', 'dispatched').catch(() => {});
       break;
     case 'reset-browser-profile':
       console.warn('[main] reset-browser-profile requested.');
@@ -223,8 +233,10 @@ async function handleCommand(type: string, requestId: string): Promise<void> {
           console.error(`[main] Failed to remove profile dir: ${msg}`);
         }
       }
+      gateway.updateCommandStatus(requestId, 'succeeded', 'dispatched').catch(() => {});
       break;
     default:
+      gateway.updateCommandStatus(requestId, 'failed', 'dispatched', `Unknown command type: ${type}`).catch(() => {});
       throw new Error(`Unknown command type: ${type}`);
   }
 }
@@ -286,6 +298,7 @@ async function main(): Promise<void> {
     agentSecret: config.agentSecret,
     getStatus: getAgentStatus,
     handleCommand,
+    isBusy: () => isRunning,
   });
 
   // Initial poll

@@ -64,101 +64,75 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const command = parseResult.data as AgentCommand;
 
-  // 1. Atomic command registration and idempotency check
-  let currentStatus: CommandStatus = 'queued';
+  // 1. Atomic command registration using unique primary key constraint (request_id)
+  let isNew = false;
   try {
-    const { data: existing } = await (supabase.from('agent_commands') as any)
-      .select('status')
-      .eq('request_id', command.requestId)
-      .maybeSingle();
+    const { error: insertErr } = await (supabase.from('agent_commands') as any).insert({
+      request_id: command.requestId,
+      user_id: user.id,
+      command_type: command.type,
+      status: 'queued',
+    });
 
-    if (existing) {
-      currentStatus = (existing as any).status as CommandStatus;
-
-      // Duplicate detection: if already dispatched, running, or completed
-      if (['dispatched', 'running', 'succeeded'].includes(currentStatus)) {
-        return NextResponse.json(
-          {
-            success: true,
-            data: {
-              queued: false,
-              duplicate: true,
-              status: currentStatus,
-              requestId: command.requestId,
-            },
-          },
-          { status: 200 }
-        );
-      }
-
-      // If existing command is in 'failed', validate transition back to 'queued' for retry
-      if (!isValidCommandTransition(currentStatus, 'queued')) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: 'INVALID_TRANSITION',
-              message: `Cannot transition command from '${currentStatus}' to 'queued'`,
-            },
-          },
-          { status: 409 }
-        );
-      }
-
-      // Update back to queued for retry
-      await (supabase.from('agent_commands') as any)
-        .update({ status: 'queued', error_message: null })
-        .eq('request_id', command.requestId);
+    if (!insertErr) {
+      isNew = true;
     } else {
-      // New command: insert atomic record
-      const { error: insertErr } = await (supabase.from('agent_commands') as any).insert({
-        request_id: command.requestId,
-        user_id: user.id,
-        command_type: command.type,
-        status: 'queued',
-      });
+      // Conflict / duplicate request_id detected.
+      // Retrieve existing command to inspect its current state.
+      const { data: existing } = await (supabase.from('agent_commands') as any)
+        .select('status, error_message')
+        .eq('request_id', command.requestId)
+        .maybeSingle();
 
-      if (insertErr) {
-        // Race condition handled by primary key constraint
-        return NextResponse.json(
-          {
-            success: true,
-            data: {
-              queued: false,
-              duplicate: true,
-              requestId: command.requestId,
-            },
+      const existingStatus = (existing as any)?.status as CommandStatus | undefined;
+
+      // Never re-dispatch an existing command with the same requestId.
+      // Return its current state to the caller.
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            queued: false,
+            duplicate: true,
+            status: existingStatus ?? 'unknown',
+            requestId: command.requestId,
+            message: `Command already registered with status '${existingStatus ?? 'unknown'}'. Use a new requestId for a new execution.`,
           },
-          { status: 200 }
-        );
-      }
+        },
+        { status: 200 }
+      );
     }
   } catch (err: unknown) {
-    console.warn('[api/agent/command] Could not query/insert agent_commands in DB:', err);
+    console.warn('[api/agent/command] Error inserting agent_commands record:', err);
   }
 
   // 2. Dispatch to local agent
   const agentRes = await agentClient.sendCommand(command);
 
-  // 3. Update command state based on dispatch result
+  // 3. Atomic transition: queued -> dispatched (or queued -> failed if dispatch fails)
+  // Verify previous state is 'queued' using conditional WHERE clause (.eq('status', 'queued'))
   try {
     if (agentRes.success) {
-      if (isValidCommandTransition('queued', 'dispatched')) {
+      if (isNew) {
         await (supabase.from('agent_commands') as any)
           .update({ status: 'dispatched' })
-          .eq('request_id', command.requestId);
+          .eq('request_id', command.requestId)
+          .eq('status', 'queued'); // Atomic transition verification
       }
       return NextResponse.json(agentRes, { status: 202 });
     } else {
-      if (isValidCommandTransition('queued', 'failed')) {
+      if (isNew) {
         await (supabase.from('agent_commands') as any)
           .update({
             status: 'failed',
-            error_message: agentRes.error?.message ?? 'Dispatch failed',
+            error_message: agentRes.error?.message ?? 'Dispatch to local agent failed',
           })
-          .eq('request_id', command.requestId);
+          .eq('request_id', command.requestId)
+          .eq('status', 'queued'); // Atomic transition verification
       }
-      return NextResponse.json(agentRes, { status: 503 });
+
+      const status = agentRes.error?.code === 'BUSY' ? 409 : 503;
+      return NextResponse.json(agentRes, { status });
     }
   } catch {
     return NextResponse.json(agentRes, { status: agentRes.success ? 202 : 503 });

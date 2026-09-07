@@ -4,7 +4,7 @@
  */
 
 import * as http from 'http';
-import type { AgentStatusValue, ScheduleConfig } from '@naukri-update/shared';
+import type { AgentStatusValue, CommandStatus, ScheduleConfig } from '@naukri-update/shared';
 
 export class GatewayClient {
   private baseUrl: string;
@@ -119,6 +119,61 @@ export class GatewayClient {
         req.end();
       } catch {
         resolve(null);
+      }
+    });
+  }
+
+  /**
+   * Report command state machine transition to Next.js gateway.
+   */
+  async updateCommandStatus(
+    requestId: string,
+    status: CommandStatus,
+    previousStatus?: CommandStatus,
+    errorMessage?: string
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        const url = new URL('/api/agent/report', this.baseUrl);
+        const payload = JSON.stringify({
+          type: 'command-update',
+          payload: {
+            requestId,
+            status,
+            previousStatus,
+            errorMessage,
+          },
+        });
+
+        const req = http.request(
+          {
+            hostname: url.hostname,
+            port: url.port || 80,
+            path: url.pathname,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': Buffer.byteLength(payload),
+              'X-Agent-Secret': this.agentSecret,
+            },
+            timeout: 5000,
+          },
+          (res) => {
+            res.resume();
+            resolve(res.statusCode === 200);
+          }
+        );
+
+        req.on('error', () => resolve(false));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(false);
+        });
+
+        req.write(payload);
+        req.end();
+      } catch {
+        resolve(false);
       }
     });
   }

@@ -10,11 +10,26 @@ function generateRequestId(): string {
   return 'req-' + Math.random().toString(36).slice(2) + Date.now();
 }
 
+function getRelativeTime(timestamp?: number): { text: string; isStale: boolean } {
+  if (!timestamp || timestamp <= 0) return { text: 'Never', isStale: true };
+  const diffSec = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+  const isStale = diffSec > 90;
+
+  if (diffSec < 10) return { text: 'Just now', isStale: false };
+  if (diffSec < 60) return { text: `${diffSec}s ago`, isStale: false };
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return { text: `${diffMin}m ago`, isStale };
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return { text: `${diffHours}h ago`, isStale: true };
+  return { text: `${Math.floor(diffHours / 24)}d ago`, isStale: true };
+}
+
 export function AgentStatusCard() {
   const [status, setStatus] = useState<AgentStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [commandLoading, setCommandLoading] = useState<string | null>(null);
   const [commandFeedback, setCommandFeedback] = useState<string | null>(null);
+  const [now, setNow] = useState<number>(Date.now());
 
   async function fetchStatus() {
     try {
@@ -34,8 +49,12 @@ export function AgentStatusCard() {
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 10000);
-    return () => clearInterval(interval);
+    const statusInterval = setInterval(fetchStatus, 10000);
+    const clockInterval = setInterval(() => setNow(Date.now()), 5000);
+    return () => {
+      clearInterval(statusInterval);
+      clearInterval(clockInterval);
+    };
   }, []);
 
   async function handleCommand(type: AgentCommandType) {
@@ -58,6 +77,8 @@ export function AgentStatusCard() {
       if (res.ok && json.success) {
         setCommandFeedback(json.data?.duplicate ? 'Command already queued' : 'Command sent successfully');
         await fetchStatus();
+      } else if (res.status === 409 || json.error?.code === 'AGENT_BUSY') {
+        setCommandFeedback('Agent is currently busy running automation');
       } else {
         setCommandFeedback(json.error?.message || 'Failed to dispatch command');
       }
@@ -72,6 +93,7 @@ export function AgentStatusCard() {
 
   const currentStatus = status?.status ?? 'offline';
   const isOnline = currentStatus !== 'offline';
+  const isBusy = currentStatus === 'running';
 
   const statusConfig: Record<string, { label: string; color: string; badge: string }> = {
     idle: { label: 'Idle / Ready', color: 'bg-emerald-500', badge: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
@@ -83,6 +105,7 @@ export function AgentStatusCard() {
   };
 
   const badge = statusConfig[currentStatus] || statusConfig['offline']!;
+  const heartbeat = getRelativeTime(status?.lastSeen);
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-5">
@@ -93,6 +116,20 @@ export function AgentStatusCard() {
           {badge.label}
         </span>
       </div>
+
+      {/* Busy Task Indicator */}
+      {isBusy && (
+        <div className="flex items-center gap-2.5 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-xs text-blue-300">
+          <svg className="h-4 w-4 animate-spin text-blue-400" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+          <div>
+            <span className="font-semibold">Automation in progress:</span>{' '}
+            <span>{status?.currentTask === 'resume-upload' ? 'Uploading resume to Naukri...' : 'Refreshing profile headline on Naukri...'}</span>
+          </div>
+        </div>
+      )}
 
       {/* High-visibility OTP/CAPTCHA manual intervention banner */}
       {currentStatus === 'otp-required' && (
@@ -105,13 +142,24 @@ export function AgentStatusCard() {
       )}
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 gap-4 text-xs">
+      <div className="grid grid-cols-3 gap-3 text-xs">
         <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
           <span className="text-slate-500 block">Chrome CDP</span>
           <span className={`font-semibold mt-0.5 block ${status?.chromeConnected ? 'text-emerald-400' : 'text-slate-400'}`}>
-            {status?.chromeConnected ? 'Connected (Port 9222)' : 'Disconnected'}
+            {status?.chromeConnected ? 'Port 9222 (Ready)' : 'Disconnected'}
           </span>
         </div>
+
+        <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
+          <span className="text-slate-500 block">Last Heartbeat</span>
+          <span
+            className={`font-semibold mt-0.5 block ${heartbeat.isStale ? 'text-amber-400' : 'text-slate-300'}`}
+            title={status?.lastSeen ? new Date(status.lastSeen).toLocaleString() : 'No heartbeat'}
+          >
+            {heartbeat.text}
+          </span>
+        </div>
+
         <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80">
           <span className="text-slate-500 block">Agent Version</span>
           <span className="font-semibold text-slate-300 mt-0.5 block">
@@ -130,23 +178,25 @@ export function AgentStatusCard() {
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => handleCommand('trigger-refresh')}
-            disabled={!isOnline || commandLoading !== null}
+            disabled={!isOnline || isBusy || commandLoading !== null}
             className="rounded-md bg-indigo-600/90 hover:bg-indigo-600 px-3 py-2 text-xs font-medium text-white transition disabled:opacity-40 disabled:pointer-events-none"
+            title={isBusy ? 'Agent is currently busy' : 'Trigger headline refresh'}
           >
             {commandLoading === 'trigger-refresh' ? 'Dispatching...' : 'Refresh Headline'}
           </button>
 
           <button
             onClick={() => handleCommand('trigger-resume-upload')}
-            disabled={!isOnline || commandLoading !== null}
+            disabled={!isOnline || isBusy || commandLoading !== null}
             className="rounded-md bg-slate-800 hover:bg-slate-700 px-3 py-2 text-xs font-medium text-white transition disabled:opacity-40 disabled:pointer-events-none"
+            title={isBusy ? 'Agent is currently busy' : 'Trigger resume upload'}
           >
             {commandLoading === 'trigger-resume-upload' ? 'Dispatching...' : 'Upload Resume'}
           </button>
 
           <button
             onClick={() => handleCommand('connect-chrome')}
-            disabled={!isOnline || commandLoading !== null}
+            disabled={!isOnline || isBusy || commandLoading !== null}
             className="rounded-md border border-slate-700 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition disabled:opacity-40 disabled:pointer-events-none"
           >
             {commandLoading === 'connect-chrome' ? 'Connecting...' : 'Launch Chrome'}
@@ -154,7 +204,7 @@ export function AgentStatusCard() {
 
           <button
             onClick={() => handleCommand('disconnect-chrome')}
-            disabled={!isOnline || commandLoading !== null}
+            disabled={!isOnline || isBusy || commandLoading !== null}
             className="rounded-md border border-slate-700 hover:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition disabled:opacity-40 disabled:pointer-events-none"
           >
             {commandLoading === 'disconnect-chrome' ? 'Stopping...' : 'Stop Chrome'}

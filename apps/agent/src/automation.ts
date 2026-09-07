@@ -507,15 +507,20 @@ export async function validateFile(filePath: string): Promise<void> {
 }
 
 export function sanitizeFilename(filename: string, now: Date = new Date()): string {
-  const ext = path.extname(filename);
-  let base = path.basename(filename, ext);
+  // Normalize backslashes to forward slashes to protect against cross-platform traversal
+  const normalized = filename.replace(/\\/g, '/');
+  const ext = path.extname(normalized);
+  let base = path.basename(normalized, ext);
 
   // Remove existing trailing date in DD-MM-YYYY format
   base = base.replace(/[-_]\d{2}-\d{2}-\d{4}$/, '');
 
-  // Sanitize characters: keep alphanumeric, underscores, dots.
+  // Strip leading dots or slashes from basename
+  base = base.replace(/^[.\s_-]+/, '');
+
+  // Sanitize characters: keep alphanumeric, underscores.
   let sanitizedBase = base
-    .replace(/[^a-zA-Z0-9_.]/g, '_')
+    .replace(/[^a-zA-Z0-9_]/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '');
 

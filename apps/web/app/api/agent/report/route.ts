@@ -74,7 +74,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   let body: {
-    type: 'heartbeat' | 'run-result';
+    type: 'heartbeat' | 'run-result' | 'command-update';
     payload: Record<string, unknown>;
   };
 
@@ -100,6 +100,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         },
         { onConflict: 'user_id' }
       );
+    } else if (body.type === 'command-update') {
+      const p = body.payload;
+      const requestId = p['requestId'] as string | undefined;
+      const status = p['status'] as string | undefined;
+      const previousStatus = p['previousStatus'] as string | undefined;
+      const errorMessage = (p['errorMessage'] as string | undefined) ?? null;
+
+      if (requestId && status) {
+        let updateQuery = (adminSupabase.from('agent_commands') as any)
+          .update({
+            status,
+            error_message: errorMessage,
+          })
+          .eq('request_id', requestId);
+
+        if (previousStatus) {
+          updateQuery = updateQuery.eq('status', previousStatus);
+        }
+
+        await updateQuery;
+      }
     } else if (body.type === 'run-result') {
       const p = body.payload;
       await (adminSupabase.from('run_log') as any).insert({
@@ -109,6 +130,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         message: typeof p['message'] === 'string' ? p['message'] : '',
         duration_ms: typeof p['durationMs'] === 'number' ? p['durationMs'] : 0,
       });
+
+      // If associated with a command requestId, atomically update command state from running -> succeeded / failed
+      const requestId = p['requestId'] as string | undefined;
+      if (requestId) {
+        const finalStatus = p['success'] ? 'succeeded' : 'failed';
+        await (adminSupabase.from('agent_commands') as any)
+          .update({
+            status: finalStatus,
+            error_message: p['success'] ? null : (typeof p['message'] === 'string' ? p['message'] : 'Execution failed'),
+          })
+          .eq('request_id', requestId)
+          .eq('status', 'running');
+      }
 
       // Also update agent_status heartbeat
       await (adminSupabase.from('agent_status') as any).upsert(

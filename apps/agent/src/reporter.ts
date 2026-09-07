@@ -30,9 +30,9 @@ export class Reporter {
     }
   }
 
-  report(result: RunResult): void {
+  report(result: RunResult, requestId?: string): void {
     // 1. Always append to local log file
-    const line = JSON.stringify({ ...result, iso: new Date(result.timestamp).toISOString() });
+    const line = JSON.stringify({ ...result, iso: new Date(result.timestamp).toISOString(), requestId });
     try {
       appendFileSync(this.logPath, line + '\n', 'utf8');
     } catch (err) {
@@ -43,17 +43,17 @@ export class Reporter {
     console.log(`[reporter] ${status} ${result.task} (${result.durationMs}ms): ${result.message}`);
 
     // 2. Report to Next.js gateway on localhost (non-blocking, fire-and-forget)
-    this.reportToGateway(result).catch(() => {
+    this.reportToGateway(result, requestId).catch(() => {
       // Gateway offline or unconfigured; local log is preserved
     });
   }
 
-  private async reportToGateway(result: RunResult): Promise<void> {
+  private async reportToGateway(result: RunResult, requestId?: string): Promise<void> {
     try {
       const url = new URL('/api/agent/report', this.webGatewayUrl);
       const payload = JSON.stringify({
         type: 'run-result',
-        payload: result,
+        payload: { ...result, requestId },
       });
 
       await new Promise<void>((resolve) => {
