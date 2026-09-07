@@ -1,43 +1,76 @@
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { AgentStatus, ApiResponse } from '@naukri-update/shared';
-
-const AGENT_URL = process.env['AGENT_URL'] ?? 'http://127.0.0.1:7842';
-const AGENT_SECRET = process.env['AGENT_SECRET'] ?? '';
+import { getAgentAvailability, type AgentStatus, type ApiResponse } from '@naukri-update/shared';
+import { agentClient } from '@/lib/agent-client';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/agent/status
  *
- * Proxies the agent status request to the local agent HTTP server.
- * AGENT_SECRET is kept server-side and never exposed to the browser.
- * Returns a synthetic "offline" status when the agent is unreachable.
+ * Observes live agent state and falls back to persisted Supabase heartbeat
+ * when the agent is offline/unreachable. Does NOT write to agent_status on
+ * every browser poll (heartbeats write to agent_status).
  */
-export async function GET(_req: NextRequest): Promise<NextResponse> {
-  try {
-    const res = await fetch(`${AGENT_URL}/api/agent/status`, {
-      headers: { 'X-Agent-Secret': AGENT_SECRET },
-      signal: AbortSignal.timeout(5000),
-    });
+export async function GET(): Promise<NextResponse> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!res.ok) {
-      const body: ApiResponse<never> = {
+  if (!user) {
+    return NextResponse.json(
+      {
         success: false,
-        error: { code: 'AGENT_ERROR', message: `Agent returned HTTP ${res.status}` },
-      };
-      return NextResponse.json(body, { status: res.status });
-    }
-
-    const data = (await res.json()) as ApiResponse<AgentStatus>;
-    return NextResponse.json(data);
-  } catch {
-    // Agent is offline — return synthetic offline status rather than an error
-    const offlineStatus: AgentStatus = {
-      status: 'offline',
-      version: 'unknown',
-      chromeConnected: false,
-      lastSeen: 0,
-    };
-    const body: ApiResponse<AgentStatus> = { success: true, data: offlineStatus };
-    return NextResponse.json(body);
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+      },
+      { status: 401 }
+    );
   }
+
+  // 1. Attempt live query to local agent
+  const agentRes = await agentClient.getStatus();
+  if (agentRes.success && agentRes.data) {
+    return NextResponse.json(agentRes);
+  }
+
+  // 2. Fall back to persisted Supabase agent_status
+  try {
+    const { data: statusRow } = await (supabase.from('agent_status') as any)
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (statusRow) {
+      const row = statusRow as any;
+      const lastSeenMs = Date.parse(row.last_seen);
+      const availability = getAgentAvailability(lastSeenMs, Date.now(), row.status);
+
+      const status: AgentStatus = {
+        status: availability.status,
+        version: row.version,
+        chromeConnected: row.chrome_connected,
+        lastSeen: lastSeenMs,
+      };
+
+      const response: ApiResponse<AgentStatus> = {
+        success: true,
+        data: status,
+      };
+      return NextResponse.json(response);
+    }
+  } catch {
+    // Ignore database read errors
+  }
+
+  // 3. Fallback: entirely offline
+  const fallbackStatus: AgentStatus = {
+    status: 'offline',
+    version: '0.1.0',
+    chromeConnected: false,
+    lastSeen: 0,
+  };
+
+  return NextResponse.json({
+    success: true,
+    data: fallbackStatus,
+  });
 }

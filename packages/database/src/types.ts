@@ -9,21 +9,39 @@ export type Database = {
         Row: AgentConfigRow;
         Insert: AgentConfigInsert;
         Update: Partial<AgentConfigInsert>;
+        Relationships: [];
       };
       run_log: {
         Row: RunLogRow;
         Insert: RunLogInsert;
         Update: never;
+        Relationships: [];
       };
       agent_status: {
         Row: AgentStatusRow;
         Insert: AgentStatusInsert;
         Update: Partial<AgentStatusInsert>;
+        Relationships: [];
+      };
+      agent_commands: {
+        Row: AgentCommandRow;
+        Insert: AgentCommandInsert;
+        Update: Partial<AgentCommandInsert>;
+        Relationships: [];
       };
     };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
 };
 
@@ -42,8 +60,8 @@ export interface AgentConfigRow {
   updated_at: string;
 }
 
-export type AgentConfigInsert = Omit<AgentConfigRow, 'updated_at'> & {
-  updated_at?: string;
+export type AgentConfigInsert = Partial<Omit<AgentConfigRow, 'user_id'>> & {
+  user_id: string;
 };
 
 export interface RunLogRow {
@@ -56,9 +74,10 @@ export interface RunLogRow {
   created_at: string;
 }
 
-export type RunLogInsert = Omit<RunLogRow, 'id' | 'created_at'> & {
-  id?: string;
-  created_at?: string;
+export type RunLogInsert = Partial<Omit<RunLogRow, 'user_id' | 'task' | 'success'>> & {
+  user_id: string;
+  task: 'headline-refresh' | 'resume-upload';
+  success: boolean;
 };
 
 export interface AgentStatusRow {
@@ -70,6 +89,22 @@ export interface AgentStatusRow {
   updated_at: string;
 }
 
-export type AgentStatusInsert = Omit<AgentStatusRow, 'updated_at'> & {
-  updated_at?: string;
+export type AgentStatusInsert = Partial<Omit<AgentStatusRow, 'user_id'>> & {
+  user_id: string;
+};
+
+export interface AgentCommandRow {
+  request_id: string;
+  user_id: string;
+  command_type: string;
+  status: 'queued' | 'dispatched' | 'running' | 'succeeded' | 'failed' | 'cancelled';
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AgentCommandInsert = Partial<Omit<AgentCommandRow, 'request_id' | 'user_id' | 'command_type'>> & {
+  request_id: string;
+  user_id: string;
+  command_type: string;
 };

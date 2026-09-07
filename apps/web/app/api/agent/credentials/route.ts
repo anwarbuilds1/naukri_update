@@ -1,67 +1,88 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { agentClient } from '@/lib/agent-client';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-const AGENT_URL = process.env['AGENT_URL'] ?? 'http://127.0.0.1:7842';
-const AGENT_SECRET = process.env['AGENT_SECRET'] ?? '';
-
-/**
- * Credentials payload schema.
- *
- * SECURITY DESIGN:
- * - naukriEmail is non-sensitive and is also written to Supabase agent_config.
- * - naukriPassword is sensitive. It flows:
- *     Browser → HTTPS → Next.js API (server) → HTTP localhost → Agent
- *   The password is NEVER stored in Supabase and NEVER logged here.
- *   The agent stores it in .credentials.enc (AES-256-GCM, machine-bound key).
- *
- * TODO (Phase 2): evaluate end-to-end encryption for the password in transit.
- */
-const CredentialsSchema = z.object({
-  naukriEmail: z.string().email({ message: 'Valid email is required.' }),
-  naukriPassword: z.string().min(1, { message: 'Password is required.' }),
+const CredentialsUpdateSchema = z.object({
+  naukriEmail: z.string().email('Invalid email address format.'),
+  naukriPassword: z.string().min(1, 'Password cannot be empty.'),
 });
 
+/**
+ * POST /api/agent/credentials
+ *
+ * Saves non-sensitive email in Supabase agent_config (user_id = auth.uid()).
+ * Forwards password directly to local agent's machine-bound .credentials.enc.
+ * NEVER writes password to Supabase and NEVER logs password.
+ */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const body = await req.json().catch(() => null);
-  const parsed = CredentialsSchema.safeParse(body);
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!parsed.success) {
+  if (!user) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+      },
+      { status: 401 }
+    );
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Invalid JSON.' },
+      },
+      { status: 400 }
+    );
+  }
+
+  const parse = CredentialsUpdateSchema.safeParse(body);
+  if (!parse.success) {
     return NextResponse.json(
       {
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid credentials payload.',
-          details: parsed.error.flatten(),
+          details: parse.error.flatten(),
         },
       },
       { status: 400 }
     );
   }
 
-  try {
-    // Forward the full body (including password) to the agent.
-    // Password is NOT extracted, logged, or stored here.
-    const res = await fetch(`${AGENT_URL}/api/agent/credentials`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Agent-Secret': AGENT_SECRET,
-      },
-      body: JSON.stringify(parsed.data),
-      signal: AbortSignal.timeout(5000),
-    });
+  const { naukriEmail, naukriPassword } = parse.data;
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'AGENT_UNREACHABLE', message: 'Agent is not running.' },
-      },
-      { status: 503 }
-    );
+  // 1. Update non-sensitive email in Supabase (explicit user ownership)
+  try {
+    await (supabase.from('agent_config') as any)
+      .upsert(
+        {
+          user_id: user.id,
+          naukri_email: naukriEmail,
+        },
+        { onConflict: 'user_id' }
+      );
+  } catch (err: unknown) {
+    console.warn('[credentials] Failed to update email in agent_config:', err);
   }
+
+  // 2. Forward password to local agent (localhost only, AES-256-GCM on agent)
+  const agentRes = await agentClient.sendCredentials({
+    naukriEmail,
+    naukriPassword,
+  });
+
+  return NextResponse.json(agentRes, {
+    status: agentRes.success ? 200 : 503,
+  });
 }

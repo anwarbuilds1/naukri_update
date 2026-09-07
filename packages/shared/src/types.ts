@@ -59,6 +59,72 @@ export interface AgentCommand {
   issuedAt: number; // Unix ms
 }
 
+// Command state machine
+export type CommandStatus =
+  | 'queued'
+  | 'dispatched'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled';
+
+const VALID_COMMAND_TRANSITIONS: Record<CommandStatus, readonly CommandStatus[]> = {
+  queued: ['dispatched', 'cancelled'],
+  dispatched: ['running', 'failed', 'succeeded'],
+  running: ['succeeded', 'failed'],
+  failed: ['queued'], // allows retry
+  succeeded: [], // terminal
+  cancelled: [], // terminal
+};
+
+export function isValidCommandTransition(from: CommandStatus, to: CommandStatus): boolean {
+  return VALID_COMMAND_TRANSITIONS[from]?.includes(to) ?? false;
+}
+
+// Stale threshold: 90 seconds (centralized constant)
+export const AGENT_HEARTBEAT_STALE_MS = 90_000;
+
+export interface AgentAvailability {
+  isOnline: boolean;
+  isStale: boolean;
+  status: AgentStatusValue;
+  lastSeenMs: number;
+}
+
+export function getAgentAvailability(
+  lastSeenMs: number,
+  nowMs: number = Date.now(),
+  reportedStatus: AgentStatusValue = 'idle'
+): AgentAvailability {
+  if (!lastSeenMs || lastSeenMs <= 0) {
+    return {
+      isOnline: false,
+      isStale: true,
+      status: 'offline',
+      lastSeenMs: 0,
+    };
+  }
+
+  const ageMs = nowMs - lastSeenMs;
+  const isStale = ageMs > AGENT_HEARTBEAT_STALE_MS;
+
+  if (isStale) {
+    return {
+      isOnline: false,
+      isStale: true,
+      status: 'offline',
+      lastSeenMs,
+    };
+  }
+
+  return {
+    isOnline: reportedStatus !== 'offline',
+    isStale: false,
+    status: reportedStatus,
+    lastSeenMs,
+  };
+}
+
 // Standard API error format
 export interface ApiError {
   code: string;

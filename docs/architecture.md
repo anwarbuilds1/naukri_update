@@ -21,144 +21,127 @@
          │   (apps/web/app/api)   │
          └──────┬─────────┬───────┘
                 │         │
-                │ Supabase │ Agent Proxy
-                │ Client   │ (HTTP localhost)
+                │ Supabase │ Agent Control Plane
+                │ Client   │ (HTTP localhost:7842)
                 ▼         ▼
      ┌──────────────┐  ┌────────────────────────────────────┐
      │   Supabase   │  │   Local Node Agent  (apps/agent)   │
      │              │  │                                    │
-     │  PostgreSQL  │  │  main.ts  →  poll loop             │
-     │  Auth        │  │  scheduler.ts  →  getDueTasks()    │
-     │  Realtime*   │  │  chrome.ts  →  CDP management      │
+     │  PostgreSQL  │  │  main.ts  →  poll loop & gateway   │
+     │  Auth (SSR)  │  │  scheduler.ts  →  getDueTasks()    │
+     │  RLS secured │  │  chrome.ts  →  CDP management      │
      └──────────────┘  │  automation.ts  →  Playwright      │
-                       │  reporter.ts  →  log + Supabase    │
+                       │  reporter.ts  →  report to Next.js │
                        └────────────────┬───────────────────┘
                                         │ CDP (localhost:9222)
                                         ▼
-                              ┌─────────────────┐
-                              │  Google Chrome  │
-                              │  (persistent    │
-                              │   profile)      │
-                              └────────┬────────┘
-                                       │ HTTPS
-                                       ▼
-                               ┌──────────────┐
-                               │  Naukri.com  │
-                               └──────────────┘
-
-* Realtime is optional, planned for Phase 2
+                               ┌─────────────────┐
+                               │  Google Chrome  │
+                               │  (persistent    │
+                               │   profile)      │
+                               └────────┬────────┘
+                                        │ HTTPS
+                                        ▼
+                                ┌──────────────┐
+                                │  Naukri.com  │
+                                └──────────────┘
 ```
 
 ## Component Ownership
 
 ### Web (`apps/web`)
-**Owns**: UI, API proxy routes, application/business logic  
-**Does NOT own**: automation, Chrome, credentials, resume files, Naukri session
+**Owns**: UI, API control plane gateway, user authentication (Supabase SSR), schedule persistence, command state machine  
+**Does NOT own**: automation execution, Chrome processes, plain password storage, resume storage, Naukri session cookies
 
-- Next.js 15 PWA (installable)
-- React 19 + Tailwind CSS
-- Six pages: Dashboard, Settings, Resume, Logs, Guide, Onboarding
-- Five API routes that proxy to the local agent or query Supabase
-- Supabase client (anon key in browser; service-role key server-only)
+- Next.js 15 PWA (installable, Next.js 15.3.4, React 19, Tailwind CSS)
+- Authenticated pages: Dashboard, Settings, Resume, Logs, Guide, Onboarding, Login, Signup
+- API routes acting as the sole gateway to Supabase and the agent
+- Cookie-based SSR Supabase client (`@supabase/ssr`) enforcing RLS on all user requests
 
 ### Supabase
-**Owns**: Auth, PostgreSQL, optional Realtime  
-**Does NOT own**: NAUKRI_PASSWORD, resume files, Chrome sessions, automation logic
+**Owns**: User Auth, PostgreSQL persistent data (`agent_config`, `run_log`, `agent_status`, `agent_commands`)  
+**Does NOT own**: `NAUKRI_PASSWORD`, resume PDF files, Chrome sessions, automation Playwright execution
 
-| Table | Writer | Reader |
-|-------|--------|--------|
-| `agent_config` | Web (user edits settings) | Agent (reads schedule) |
-| `run_log` | Agent (after each run) | Web (logs page) |
-| `agent_status` | Agent (heartbeat) | Web (dashboard) |
+| Table | Writer | Reader | Security |
+|-------|--------|--------|----------|
+| `agent_config` | Web (user settings) | Agent via Next.js `/api/agent/schedule` | RLS (`auth.uid() = user_id`) |
+| `run_log` | Web `/api/agent/report` | Web (logs page & dashboard) | RLS (`auth.uid() = user_id`) |
+| `agent_status` | Web `/api/agent/report` | Web `/api/agent/status` | RLS (`auth.uid() = user_id`) |
+| `agent_commands` | Web `/api/agent/command` | Web `/api/agent/command` | RLS (`auth.uid() = user_id`) |
 
-**Critical constraint**: `NAUKRI_PASSWORD` is **never** stored in Supabase.
+**Critical security rules**:
+- `NAUKRI_PASSWORD` is **never** stored in Supabase.
+- Resume PDFs are **never** stored in Supabase Storage (Playwright requires local disk access).
+- `SUPABASE_SERVICE_ROLE_KEY` is **never** given to the local agent. Next.js API is the sole control plane gateway.
 
 ### Agent (`apps/agent`)
-**Owns**: Chrome lifecycle, Playwright automation, local credentials, resume PDF, scheduling decisions  
-**Does NOT own**: UI, user authentication, Supabase schema design
+**Owns**: Chrome lifecycle, Playwright automation, local AES-256-GCM credentials, resume PDF, scheduling execution  
+**Does NOT own**: UI, user authentication, Supabase schema or direct Supabase credentials
 
 - Node.js 20+ + TypeScript
-- Persistent poll loop (every 60 seconds)
-- Local HTTP server on `127.0.0.1:7842`
-- AES-256-GCM credential store (machine-bound key)
-- Reads schedule config from Supabase `agent_config` (Phase 2)
-- Writes run results to Supabase `run_log` (Phase 2)
+- Persistent poll loop (every 60 seconds) with schedule synchronization from `/api/agent/schedule`
+- Local HTTP server on `127.0.0.1:7842` authenticated with `X-Agent-Secret`
+- Machine-bound credential store (`.credentials.enc`)
+- Reports run results and heartbeats to Next.js gateway (`POST /api/agent/report`)
+
+---
 
 ## Security Boundaries
 
 | Data | Location | Transport | Rationale |
 |------|----------|-----------|-----------|
 | `NAUKRI_PASSWORD` | Agent local `.credentials.enc` | Browser → Next.js API → Agent HTTP (localhost) | Never in Supabase; machine-bound AES-256-GCM |
-| `NAUKRI_EMAIL` | Supabase `agent_config` | Normal API | Non-sensitive |
-| Resume PDF | Agent `<configDir>/resume/` | Browser → Next.js API → Agent HTTP (localhost) | Playwright requires local filesystem path |
+| `NAUKRI_EMAIL` | Supabase `agent_config` | Normal API | Non-sensitive; tied to user account |
+| Resume PDF | Agent `<configDir>/resume/` | Browser → Next.js API → Agent HTTP (localhost) | Validated (5MB, %PDF header); Playwright needs local file |
 | Chrome session | Agent `.naukri-chrome-profile/` | Never transmitted | Chrome cookies cannot be cloud-managed |
-| `SUPABASE_SERVICE_ROLE_KEY` | Next.js server env only | Never transmitted | Bypasses RLS; must stay server-side |
-| `AGENT_SECRET` | Agent + Next.js server env | Never in browser | Authenticates web→agent requests |
+| `SUPABASE_SERVICE_ROLE_KEY` | Next.js server env only | Never transmitted | Kept strictly on server gateway; not in agent |
+| `AGENT_SECRET` | Agent + Next.js server env | Localhost HTTP header (`X-Agent-Secret`) | Authenticates web ↔ agent requests |
 
-## Data Flows
+---
 
-### Credential Update
-```
-Browser
-  → POST /api/agent/credentials (Next.js API)
-      [validates email format]
-      → POST http://127.0.0.1:7842/api/agent/credentials
-          [agent writes to .credentials.enc]
-          [agent returns { updated: true }]
-      [password NEVER logged, NEVER sent to Supabase]
-```
+## Command State Machine & Idempotency
 
-### Scheduled Automation Run
-```
-Agent poll loop (every 60s)
-  → getDueTasks(scheduleConfig, taskState)
-  → if tasks due:
-      → ensureChromeRunning()  [CDP check → spawn Chrome if needed]
-      → runTask(task, options)
-          → chromium.connectOverCDP('http://127.0.0.1:9222')
-          → updateAndVerifyHeadline()  OR  uploadAndVerifyResume()
-      → reporter.report(result)
-          → local agent-run.log
-          → POST Supabase run_log  [Phase 2]
-```
+All commands sent via `POST /api/agent/command` are tracked in PostgreSQL (`agent_commands` table) with idempotency keyed on `request_id`:
 
-### Manual Trigger from Web
 ```
-Browser
-  → POST /api/agent/command  { type: 'trigger-refresh', requestId: uuid }
-      → Next.js validates with AgentCommandSchema (Zod)
-      → POST http://127.0.0.1:7842/api/agent/command
-          → agent queues task (setImmediate)
-          → returns { queued: true }
-  Browser polls GET /api/agent/status to observe state change
+              ┌───────────────┐
+              │    queued     │◄──────────────┐ (retry)
+              └───────┬───────┘               │
+                      │                       │
+                      ▼                       │
+              ┌───────────────┐               │
+              │  dispatched   │               │
+              └───────┬───────┘               │
+                      │                       │
+                      ▼                       │
+              ┌───────────────┐               │
+              │    running    │               │
+              └───────┬───────┘               │
+                      │                       │
+         ┌────────────┴────────────┐          │
+         ▼                         ▼          │
+  ┌───────────────┐         ┌───────────────┐ │
+  │   succeeded   │         │    failed     ├─┘
+  └───────────────┘         └───────────────┘
+
+  [queued] ──(cancel)──> [cancelled]
 ```
 
-## Agent ↔ Web API Contract
+- **Valid Transitions**:
+  - `queued` → `dispatched`
+  - `dispatched` → `running`
+  - `running` → `succeeded`
+  - `dispatched` → `failed`
+  - `running` → `failed`
+  - `failed` → `queued` (retry allowed)
+  - `queued` → `cancelled`
+- **Invalid Transitions** (e.g. `succeeded` → `running`, `cancelled` → `running`) are strictly rejected with HTTP 409 Conflict.
 
-See [`agent-api.md`](./agent-api.md) for the full API specification.
+---
 
-## Current State (Phase 1)
+## Agent Availability & Heartbeat
 
-The existing Electron app at the repository root is the **production baseline**.
-All automation runs through it. The Phase 1 foundation:
-
-- ✅ Monorepo structure (pnpm workspaces + Turborepo)
-- ✅ `packages/shared` — TypeScript types + Zod validation
-- ✅ `packages/database` — Supabase schema SQL + TypeScript stubs
-- ✅ `apps/agent` — Node.js/TypeScript agent skeleton (stub automation)
-- ✅ `apps/web` — Next.js 15 PWA skeleton (placeholder pages)
-- ✅ Security boundaries documented and enforced
-- ⏳ Phase 2: Full automation migration, Supabase integration, Settings UI
-
-## What Phase 2 Must Implement
-
-1. Port `naukri-profile-refresh.js` → `apps/agent/src/automation.ts` with injectable config
-2. Port `config-service.js` credential store → `apps/agent/src/config.ts`
-3. Read schedule config from Supabase `agent_config`
-4. Write run results to Supabase `run_log`
-5. Agent heartbeat → Supabase `agent_status`
-6. Settings page — full form to save schedule + credentials
-7. Resume page — file upload to agent
-8. Logs page — read from Supabase `run_log`
-9. Supabase Auth — user login/signup
-10. Onboarding wizard — first-run setup flow
+Agent status is determined centrally via `getAgentAvailability(lastSeenMs, nowMs, rawStatus)` with a **90-second stale threshold** (`AGENT_HEARTBEAT_STALE_MS = 90_000`).
+- If `now - lastSeen <= 90s`: reports agent's live status (`idle`, `running`, `chrome-disconnected`, `otp-required`, `error`).
+- If `now - lastSeen > 90s`: automatically transitions to `offline`.
+- Browser status polling observes live agent or persisted Supabase state without writing to `agent_status` on every poll.

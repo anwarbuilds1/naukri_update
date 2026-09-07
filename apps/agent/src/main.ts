@@ -23,12 +23,14 @@ import type { AgentCommandType, AgentStatus, TaskType } from '@naukri-update/sha
 import { runTask } from './automation.js';
 import { checkCDPAvailable, disconnectChrome, ensureChromeRunning } from './chrome.js';
 import { loadAgentConfig } from './config.js';
+import { GatewayClient } from './gateway.js';
 import { Reporter } from './reporter.js';
 import { getDueTasks } from './scheduler.js';
 import { createAgentServer } from './server.js';
 
 let config = loadAgentConfig();
 const reporter = new Reporter(config.configDir);
+const gateway = new GatewayClient(process.env['WEB_GATEWAY_URL'] ?? 'http://127.0.0.1:3000', config.agentSecret);
 
 // ─── Automation Lock Management (30-min stale timeout) ───────────────────────
 
@@ -128,6 +130,7 @@ async function runDueTasks(tasks: TaskType[]): Promise<void> {
 
   isRunning = true;
   currentStatus = 'running';
+  gateway.sendHeartbeat(currentStatus, chromeConnected, config.version).catch(() => {});
 
   try {
     // Reload config dynamically in case credentials or resume file changed
@@ -167,6 +170,7 @@ async function runDueTasks(tasks: TaskType[]): Promise<void> {
     if (currentStatus === 'running') {
       currentStatus = 'idle';
     }
+    gateway.sendHeartbeat(currentStatus, chromeConnected, config.version).catch(() => {});
   }
 }
 
@@ -228,7 +232,7 @@ async function handleCommand(type: string, requestId: string): Promise<void> {
 // ─── Poll Loop ───────────────────────────────────────────────────────────────
 
 async function pollLoop(): Promise<void> {
-  // Check Chrome CDP status
+  // 1. Check Chrome CDP status
   chromeConnected = await checkCDPAvailable(config.cdpEndpoint);
   if (!chromeConnected && currentStatus !== 'running') {
     currentStatus = 'chrome-disconnected';
@@ -236,7 +240,20 @@ async function pollLoop(): Promise<void> {
     currentStatus = 'idle';
   }
 
-  // Check for due tasks
+  // 2. Synchronize schedule from Next.js gateway (backed by Supabase agent_config)
+  try {
+    const remoteSchedule = await gateway.fetchSchedule();
+    if (remoteSchedule) {
+      config.schedule = remoteSchedule;
+    }
+  } catch {
+    // Gateway offline; continue using local schedule
+  }
+
+  // 3. Send periodic heartbeat to gateway
+  gateway.sendHeartbeat(currentStatus, chromeConnected, config.version).catch(() => {});
+
+  // 4. Check for due tasks
   if (!isRunning && !taskState.paused) {
     const tasks = getDueTasks(config.schedule, taskState);
     if (tasks.length > 0) {

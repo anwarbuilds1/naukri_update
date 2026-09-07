@@ -1,59 +1,113 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { agentClient } from '@/lib/agent-client';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-const AGENT_URL = process.env['AGENT_URL'] ?? 'http://127.0.0.1:7842';
-const AGENT_SECRET = process.env['AGENT_SECRET'] ?? '';
+const MAX_PDF_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 /**
- * POST /api/agent/resume/upload
+ * POST /api/agent/resume
  *
- * Accepts a PDF resume upload and streams it to the local agent.
- *
- * RATIONALE: The resume must be stored on the same machine running Chrome.
- * Playwright's fileInput.setInputFiles() requires a local filesystem path.
- * Therefore, resume files are NOT stored in Supabase Storage.
- *
- * The agent stores the file in its local <configDir>/resume/ directory.
+ * Validates and streams resume PDF directly to local agent.
+ * NEVER writes to Supabase Storage (Playwright requires local filesystem access).
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const contentType = req.headers.get('content-type') ?? '';
-  const isMultipart = contentType.startsWith('multipart/form-data');
-  const isOctetStream = contentType.startsWith('application/octet-stream');
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!isMultipart && !isOctetStream) {
+  if (!user) {
     return NextResponse.json(
       {
         success: false,
-        error: {
-          code: 'INVALID_CONTENT_TYPE',
-          message: 'Expected multipart/form-data or application/octet-stream.',
-        },
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
       },
+      { status: 401 }
+    );
+  }
+
+  let arrayBuffer: ArrayBuffer;
+  let filename = 'resume.pdf';
+
+  try {
+    const contentType = req.headers.get('content-type') ?? '';
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData();
+      const file = formData.get('file');
+
+      if (!file || typeof file === 'string') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'No file provided in form-data field "file".' },
+          },
+          { status: 400 }
+        );
+      }
+
+      filename = (file as File).name || 'resume.pdf';
+      arrayBuffer = await (file as File).arrayBuffer();
+    } else {
+      // Raw octet-stream / application/pdf
+      arrayBuffer = await req.arrayBuffer();
+      const headerFilename = req.headers.get('x-filename');
+      if (headerFilename) {
+        filename = decodeURIComponent(headerFilename);
+      }
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: msg } },
       { status: 400 }
     );
   }
 
-  try {
-    const res = await fetch(`${AGENT_URL}/api/agent/resume`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': contentType,
-        'X-Agent-Secret': AGENT_SECRET,
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      body: req.body as any,
-      signal: AbortSignal.timeout(30_000),
-    });
+  const buffer = Buffer.from(arrayBuffer);
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch {
+  // Validate size
+  if (buffer.length === 0) {
+    return NextResponse.json(
+      { success: false, error: { code: 'VALIDATION_ERROR', message: 'Uploaded file is empty.' } },
+      { status: 400 }
+    );
+  }
+
+  if (buffer.length > MAX_PDF_SIZE_BYTES) {
     return NextResponse.json(
       {
         success: false,
-        error: { code: 'AGENT_UNREACHABLE', message: 'Agent is not running.' },
+        error: {
+          code: 'FILE_TOO_LARGE',
+          message: `File exceeds maximum allowed size of 5 MB (size: ${Math.round(buffer.length / 1024)} KB).`,
+        },
       },
-      { status: 503 }
+      { status: 413 }
     );
   }
+
+  // Validate PDF extension
+  if (!filename.toLowerCase().endsWith('.pdf')) {
+    return NextResponse.json(
+      { success: false, error: { code: 'INVALID_FILE_TYPE', message: 'File must be a PDF (.pdf).' } },
+      { status: 400 }
+    );
+  }
+
+  // Validate %PDF magic bytes
+  const header = buffer.subarray(0, 4).toString('utf8');
+  if (header !== '%PDF') {
+    return NextResponse.json(
+      { success: false, error: { code: 'INVALID_FILE_CONTENT', message: 'File is not a valid PDF document.' } },
+      { status: 400 }
+    );
+  }
+
+  // Forward to local agent
+  const agentRes = await agentClient.sendResume(buffer, filename);
+  return NextResponse.json(agentRes, {
+    status: agentRes.success ? 200 : 503,
+  });
 }
