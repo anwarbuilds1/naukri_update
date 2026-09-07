@@ -6,15 +6,24 @@
  * 2. Next.js Agent API gateway (POST /api/agent/report) for persistent Supabase run_log
  */
 
-import { appendFileSync, existsSync, mkdirSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
 import * as http from 'http';
 import * as path from 'path';
 import type { RunResult } from '@naukri-update/shared';
 
+export interface PendingReportItem {
+  id: string;
+  result: RunResult;
+  requestId?: string;
+  enqueuedAt: number;
+}
+
 export class Reporter {
   private logPath: string;
+  private pendingReportsPath: string;
   private webGatewayUrl: string;
   private agentSecret: string;
+  private isFlushing = false;
 
   constructor(
     configDir: string,
@@ -22,11 +31,36 @@ export class Reporter {
     agentSecret: string = process.env['AGENT_SECRET'] ?? ''
   ) {
     this.logPath = path.join(configDir, 'agent-run.log');
+    this.pendingReportsPath = path.join(configDir, 'runtime', 'pending_reports.json');
     this.webGatewayUrl = webGatewayUrl.replace(/\/+$/, '');
     this.agentSecret = agentSecret;
 
     if (!existsSync(configDir)) {
       mkdirSync(configDir, { recursive: true });
+    }
+    const runtimeDir = path.dirname(this.pendingReportsPath);
+    if (!existsSync(runtimeDir)) {
+      mkdirSync(runtimeDir, { recursive: true });
+    }
+  }
+
+  getPendingReports(): PendingReportItem[] {
+    if (!existsSync(this.pendingReportsPath)) return [];
+    try {
+      const raw = readFileSync(this.pendingReportsPath, 'utf8');
+      return JSON.parse(raw) as PendingReportItem[];
+    } catch {
+      return [];
+    }
+  }
+
+  savePendingReports(items: PendingReportItem[]): void {
+    try {
+      const tmpPath = `${this.pendingReportsPath}.tmp.${Date.now()}`;
+      writeFileSync(tmpPath, JSON.stringify(items, null, 2), 'utf8');
+      renameSync(tmpPath, this.pendingReportsPath);
+    } catch (err) {
+      console.error('[reporter] Failed to save pending reports:', err);
     }
   }
 
@@ -42,21 +76,67 @@ export class Reporter {
     const status = result.success ? '✓' : '✗';
     console.log(`[reporter] ${status} ${result.task} (${result.durationMs}ms): ${result.message}`);
 
-    // 2. Report to Next.js gateway on localhost (non-blocking, fire-and-forget)
-    this.reportToGateway(result, requestId).catch(() => {
-      // Gateway offline or unconfigured; local log is preserved
-    });
+    // 2. Add to persistent pending reports queue (durable across restarts)
+    const pending = this.getPendingReports();
+    const item: PendingReportItem = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      result,
+      requestId,
+      enqueuedAt: Date.now(),
+    };
+    pending.push(item);
+    this.savePendingReports(pending);
+
+    // 3. Attempt flush to Next.js gateway
+    this.flushPendingReports().catch(() => {});
   }
 
-  private async reportToGateway(result: RunResult, requestId?: string): Promise<void> {
-    try {
-      const url = new URL('/api/agent/report', this.webGatewayUrl);
-      const payload = JSON.stringify({
-        type: 'run-result',
-        payload: { ...result, requestId },
-      });
+  async flushPendingReports(): Promise<number> {
+    if (this.isFlushing) {
+      for (let i = 0; i < 20 && this.isFlushing; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      if (this.isFlushing) return 0;
+    }
+    this.isFlushing = true;
+    let deliveredCount = 0;
 
-      await new Promise<void>((resolve) => {
+    try {
+      const pending = this.getPendingReports();
+      if (pending.length === 0) return 0;
+
+      const remaining: PendingReportItem[] = [];
+
+      for (let i = 0; i < pending.length; i++) {
+        const item = pending[i]!;
+        const ok = await this.sendToGateway(item.result, item.requestId);
+        if (ok) {
+          deliveredCount++;
+        } else {
+          // Gateway offline or errored; preserve this and remaining items for next retry
+          remaining.push(item);
+          remaining.push(...pending.slice(i + 1));
+          break;
+        }
+      }
+
+      this.savePendingReports(remaining);
+    } finally {
+      this.isFlushing = false;
+    }
+
+    return deliveredCount;
+  }
+
+  private sendToGateway(result: RunResult, requestId?: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        const url = new URL('/api/agent/report', this.webGatewayUrl);
+        const payload = JSON.stringify({
+          type: 'run-result',
+          payload: { ...result, requestId },
+        });
+
         const req = http.request(
           {
             hostname: url.hostname,
@@ -72,20 +152,21 @@ export class Reporter {
           },
           (res) => {
             res.resume();
-            resolve();
+            resolve(res.statusCode === 200);
           }
         );
 
-        req.on('error', () => resolve());
+        req.on('error', () => resolve(false));
         req.on('timeout', () => {
           req.destroy();
-          resolve();
+          resolve(false);
         });
+
         req.write(payload);
         req.end();
-      });
-    } catch {
-      // ignore
-    }
+      } catch {
+        resolve(false);
+      }
+    });
   }
 }

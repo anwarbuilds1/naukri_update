@@ -24,7 +24,9 @@ export class GatewayClient {
   async sendHeartbeat(
     status: AgentStatusValue,
     chromeConnected: boolean,
-    version: string
+    version: string,
+    agentId?: string,
+    uptime?: number
   ): Promise<boolean> {
     return new Promise((resolve) => {
       try {
@@ -35,6 +37,8 @@ export class GatewayClient {
             status,
             chromeConnected,
             version,
+            agentId,
+            uptime,
           },
         });
 

@@ -21,6 +21,7 @@ export interface AgentServerOptions {
   getStatus: () => AgentStatus;
   handleCommand: (type: string, requestId: string) => Promise<void>;
   isBusy?: () => boolean;
+  isDraining?: () => boolean;
 }
 
 function json<T>(res: http.ServerResponse, status: number, body: T): void {
@@ -65,6 +66,16 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
       return;
     }
 
+    // Ensure request comes from loopback address
+    const remoteIp = req.socket.remoteAddress;
+    if (remoteIp && !['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remoteIp)) {
+      json(res, 403, {
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Agent API is only accessible from localhost.' },
+      });
+      return;
+    }
+
     // Authenticate every request (except OPTIONS)
     if (agentSecret) {
       const providedSecret = req.headers['x-agent-secret'];
@@ -99,6 +110,14 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
             json(res, 400, {
               success: false,
               error: { code: 'INVALID_PAYLOAD', message: 'type and requestId are required.' },
+            });
+            return;
+          }
+
+          if (opts.isDraining?.()) {
+            json(res, 503, {
+              success: false,
+              error: { code: 'AGENT_DRAINING', message: 'Agent daemon is currently shutting down.' },
             });
             return;
           }

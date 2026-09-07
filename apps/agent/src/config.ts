@@ -80,6 +80,14 @@ export function getDefaultConfigDir(): string {
   return path.join(xdgConfig, 'NaukriUpdate');
 }
 
+export function getLogsDir(configDir: string = getDefaultConfigDir()): string {
+  return path.join(configDir, 'logs');
+}
+
+export function getRuntimeDir(configDir: string = getDefaultConfigDir()): string {
+  return path.join(configDir, 'runtime');
+}
+
 /**
  * Get machine-unique hardware ID for fallback encryption key.
  * Independent of Electron safeStorage.

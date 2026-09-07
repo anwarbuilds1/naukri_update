@@ -41,6 +41,10 @@ export interface AgentStatus {
   lastRefreshTime?: number; // Unix ms
   lastResumeUploadTime?: number; // Unix ms
   currentTask?: TaskType;
+  agentId?: string; // Persistent UUIDv4
+  uptime?: number; // Uptime in seconds
+  pid?: number; // OS process ID
+  draining?: boolean; // True during graceful shutdown drain
 }
 
 // Commands that the web sends to the agent

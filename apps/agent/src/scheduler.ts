@@ -31,8 +31,16 @@ function isTimeInWindow(now: Date, start: string, end: string): boolean {
   return current >= s || current <= e; // crosses midnight
 }
 
+export const MAX_MISSED_RUN_GRACE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+export const MIN_INTER_RUN_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+
 export function isRefreshDue(config: ScheduleConfig, state: TaskState, now: Date): boolean {
   if (state.paused || config.refreshMode === 'disabled') return false;
+
+  // Enforce minimum inter-run interval to prevent rapid back-to-back executions
+  if (state.lastRefreshTime && now.getTime() - state.lastRefreshTime < MIN_INTER_RUN_INTERVAL_MS) {
+    return false;
+  }
 
   if (config.refreshWindowEnabled) {
     if (!isTimeInWindow(now, config.refreshWindowStart, config.refreshWindowEnd)) return false;
@@ -44,11 +52,14 @@ export function isRefreshDue(config: ScheduleConfig, state: TaskState, now: Date
     return now.getTime() - state.lastRefreshTime >= intervalMs;
   }
 
-  if (config.refreshMode === 'fixed_time') {
+  if (config.refreshMode === 'fixed_time' || (config.refreshMode as string) === 'fixed-time') {
     const [h, m] = config.refreshTime.split(':').map(Number);
     const target = new Date(now);
     target.setHours(h ?? 0, m ?? 0, 0, 0);
-    if (now >= target) {
+
+    const timeDiff = now.getTime() - target.getTime();
+    // Eligible if we are at or after the scheduled time, but strictly within the 15-minute grace window
+    if (timeDiff >= 0 && timeDiff <= MAX_MISSED_RUN_GRACE_WINDOW_MS) {
       return !state.lastRefreshTime || state.lastRefreshTime < target.getTime();
     }
     return false;
@@ -60,11 +71,18 @@ export function isRefreshDue(config: ScheduleConfig, state: TaskState, now: Date
 export function isResumeUploadDue(config: ScheduleConfig, state: TaskState, now: Date): boolean {
   if (state.paused || !config.resumeUpdateEnabled) return false;
 
+  // Enforce minimum inter-run interval
+  if (state.lastResumeUploadTime && now.getTime() - state.lastResumeUploadTime < MIN_INTER_RUN_INTERVAL_MS) {
+    return false;
+  }
+
   const [h, m] = config.resumeUpdateTime.split(':').map(Number);
   const target = new Date(now);
   target.setHours(h ?? 0, m ?? 0, 0, 0);
 
-  if (now >= target) {
+  const timeDiff = now.getTime() - target.getTime();
+  // Eligible if at or after target, within 15-minute grace window
+  if (timeDiff >= 0 && timeDiff <= MAX_MISSED_RUN_GRACE_WINDOW_MS) {
     return !state.lastResumeUploadTime || state.lastResumeUploadTime < target.getTime();
   }
   return false;

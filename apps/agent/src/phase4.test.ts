@@ -20,6 +20,7 @@ import {
   acquireAutomationLock,
   releaseAutomationLock,
 } from './main.js';
+import { isProcessAlive } from './lock.js';
 import { createAgentServer } from './server.js';
 
 describe('Phase 4: Agent Concurrency & 409 Busy Rejection', () => {
@@ -258,19 +259,32 @@ describe('Phase 4: Automation Lock & Failure Recovery', () => {
     }
   });
 
-  test('recovers from stale lockfiles older than 10 minutes', () => {
+  test('reclaims lock from dead PID and refuses to reclaim from live PID even if lease is old', () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'naukri-stale-lock-'));
     try {
       const lockPath = path.join(tempDir, '.automation.lock');
-      // Write a lockfile dated 15 minutes ago with current PID
+
+      // 1. Live process with lease older than 10 minutes: MUST NOT be stolen
       fs.writeFileSync(
         lockPath,
         JSON.stringify({ pid: process.pid, timestamp: Date.now() - 15 * 60 * 1000 }),
         'utf8'
       );
+      const acquiredLive = acquireAutomationLock(tempDir);
+      assert.strictEqual(acquiredLive, false, 'Must NOT reclaim lock if owning process is alive');
 
-      const acquired = acquireAutomationLock(tempDir);
-      assert.strictEqual(acquired, true, 'Should recover and acquire lock if stale (>10 min)');
+      // 2. Dead process: safe to reclaim
+      let deadPid = 9999999;
+      while (isProcessAlive(deadPid) && deadPid > 9900000) {
+        deadPid--;
+      }
+      fs.writeFileSync(
+        lockPath,
+        JSON.stringify({ pid: deadPid, timestamp: Date.now() - 15 * 60 * 1000 }),
+        'utf8'
+      );
+      const acquiredDead = acquireAutomationLock(tempDir);
+      assert.strictEqual(acquiredDead, true, 'Should reclaim lock from confirmed dead PID');
 
       releaseAutomationLock(tempDir);
     } finally {

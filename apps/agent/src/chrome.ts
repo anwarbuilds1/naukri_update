@@ -12,9 +12,11 @@
  */
 
 import { execSync, spawn } from 'child_process';
-import { existsSync, unlinkSync } from 'fs';
+import * as fs from 'fs';
+import { existsSync, mkdirSync, unlinkSync } from 'fs';
 import * as http from 'http';
 import * as path from 'path';
+import { isProcessAlive } from './lock.js';
 
 export interface ChromeManager {
   isAvailable(endpoint?: string): Promise<boolean>;
@@ -79,11 +81,79 @@ export function findChromeExecutable(): string | null {
   return null;
 }
 
+let spawnedChromePid: number | null = null;
+
+export function getSpawnedChromePid(): number | null {
+  return spawnedChromePid;
+}
+
+/**
+ * Verifies that a given PID actually belongs to our dedicated Chrome process
+ * (checking for remote-debugging-port=9222 and the dedicated profile directory).
+ * Protects against killing unrelated Chrome processes or recycled PIDs.
+ */
+export function isDedicatedChromeProcess(pid: number, profileDir?: string): boolean {
+  if (!isProcessAlive(pid)) return false;
+
+  try {
+    if (process.platform === 'linux') {
+      const cmdlinePath = `/proc/${pid}/cmdline`;
+      if (!existsSync(cmdlinePath)) return false;
+      const cmdline = fs.readFileSync(cmdlinePath, 'utf8').replace(/\0/g, ' ');
+      if (!cmdline.includes('--remote-debugging-port=9222')) return false;
+      if (profileDir && !cmdline.includes(path.basename(profileDir))) return false;
+      return true;
+    }
+
+    if (process.platform === 'darwin') {
+      const out = execSync(`ps -p ${pid} -o args=`, { stdio: 'pipe' }).toString();
+      if (!out.includes('--remote-debugging-port=9222')) return false;
+      if (profileDir && !out.includes(path.basename(profileDir))) return false;
+      return true;
+    }
+
+    if (process.platform === 'win32') {
+      const out = execSync(`wmic process where "ProcessId=${pid}" get CommandLine`, { stdio: 'pipe' }).toString();
+      if (!out.includes('--remote-debugging-port=9222')) return false;
+      return true;
+    }
+  } catch {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Checks if the dedicated profile directory is actively held by a running process.
+ */
+export function isProfileActivelyLocked(profileDir: string): boolean {
+  const lockFile = path.join(profileDir, 'SingletonLock');
+  if (!existsSync(lockFile)) return false;
+
+  try {
+    // On Linux/POSIX, SingletonLock is often a symlink to host-pid
+    const target = fs.readlinkSync(lockFile);
+    const match = target.match(/-(\d+)$/);
+    if (match && match[1]) {
+      const pid = parseInt(match[1], 10);
+      if (isProcessAlive(pid) && isDedicatedChromeProcess(pid, profileDir)) {
+        return true;
+      }
+    }
+  } catch {
+    // If not a symlink, check if our recorded PID is alive
+    if (spawnedChromePid && isDedicatedChromeProcess(spawnedChromePid, profileDir)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**
  * Start Chrome with CDP enabled on 127.0.0.1:9222.
  * Returns true when CDP becomes available, false on timeout.
- *
- * Mirrors ensureChromeRunning() in main.js.
  */
 export async function ensureChromeRunning(
   profileDir: string,
@@ -99,9 +169,9 @@ export async function ensureChromeRunning(
     return false;
   }
 
-  // Remove stale SingletonLock
+  // Remove stale SingletonLock only if no live process owns it
   const lockFile = path.join(profileDir, 'SingletonLock');
-  if (existsSync(lockFile)) {
+  if (existsSync(lockFile) && !isProfileActivelyLocked(profileDir)) {
     try {
       unlinkSync(lockFile);
     } catch {
@@ -117,7 +187,19 @@ export async function ensureChromeRunning(
   ];
 
   const proc = spawn(chromePath, chromeArgs, { detached: true, stdio: 'ignore' });
+  spawnedChromePid = proc.pid ?? null;
   proc.unref();
+
+  // Record PID to runtime state
+  try {
+    const runtimeDir = path.join(path.dirname(profileDir), 'runtime');
+    if (!existsSync(runtimeDir)) mkdirSync(runtimeDir, { recursive: true });
+    if (spawnedChromePid) {
+      fs.writeFileSync(path.join(runtimeDir, 'chrome.pid'), String(spawnedChromePid), 'utf8');
+    }
+  } catch {
+    // ignore
+  }
 
   // Poll for CDP availability (up to 30 seconds)
   return new Promise((resolve) => {
@@ -137,20 +219,64 @@ export async function ensureChromeRunning(
 }
 
 /**
- * Disconnects and terminates Chrome processes started with remote-debugging-port=9222.
- * Mirrors disconnectChrome() in main.js.
+ * Safely disconnects and terminates only the dedicated Naukri Chrome instance.
+ * Verifies process command line before termination to protect unrelated Chrome processes.
  */
-export async function disconnectChrome(cdpEndpoint: string = 'http://127.0.0.1:9222'): Promise<void> {
-  try {
-    if (process.platform === 'win32') {
-      execSync('wmic process where "commandline like \'%--remote-debugging-port=9222%\'" call terminate', {
-        stdio: 'ignore',
-      });
-    } else {
-      execSync('pkill -f "remote-debugging-port=9222"', { stdio: 'ignore' });
+export async function disconnectChrome(
+  cdpEndpoint: string = 'http://127.0.0.1:9222',
+  profileDir?: string
+): Promise<void> {
+  let targetPid: number | null = spawnedChromePid;
+
+  if (!targetPid && profileDir) {
+    try {
+      const pidFile = path.join(path.dirname(profileDir), 'runtime', 'chrome.pid');
+      if (existsSync(pidFile)) {
+        const raw = fs.readFileSync(pidFile, 'utf8').trim();
+        targetPid = parseInt(raw, 10) || null;
+      }
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignore process kill failures if none were running
+  }
+
+  if (targetPid && isDedicatedChromeProcess(targetPid, profileDir)) {
+    try {
+      process.kill(targetPid, 'SIGTERM');
+      // Give it up to 2 seconds to close cleanly
+      await new Promise((r) => setTimeout(r, 1000));
+      if (isProcessAlive(targetPid)) {
+        process.kill(targetPid, 'SIGKILL');
+      }
+    } catch {
+      // ignore
+    }
+    spawnedChromePid = null;
+  } else {
+    // Fallback: targeted kill only matching remote-debugging-port=9222 and profileDir
+    try {
+      const profileBase = profileDir ? path.basename(profileDir) : '.naukri-chrome-profile';
+      if (process.platform === 'win32') {
+        execSync(
+          `wmic process where "commandline like '%--remote-debugging-port=9222%' and commandline like '%${profileBase}%'" call terminate`,
+          { stdio: 'ignore' }
+        );
+      } else {
+        execSync(`pkill -f "remote-debugging-port=9222.*${profileBase}"`, { stdio: 'ignore' });
+      }
+    } catch {
+      // ignore if none running
+    }
+  }
+
+  // Clean up runtime pid file
+  if (profileDir) {
+    try {
+      const pidFile = path.join(path.dirname(profileDir), 'runtime', 'chrome.pid');
+      if (existsSync(pidFile)) unlinkSync(pidFile);
+    } catch {
+      // ignore
+    }
   }
 
   // Verify CDP is down (wait up to 5s)
