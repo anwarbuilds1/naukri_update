@@ -13,6 +13,7 @@
     "dist": "electron-builder",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "dev": "turbo run dev"
   },
   "author": {

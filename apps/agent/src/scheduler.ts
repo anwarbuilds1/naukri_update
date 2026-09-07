@@ -41,7 +41,7 @@ export function isRefreshDue(config: ScheduleConfig, state: TaskState, now: Date
   if (config.refreshMode === 'interval') {
     const intervalMs = (config.refreshIntervalHours * 3600 + config.refreshIntervalMinutes * 60) * 1000;
     if (!state.lastRefreshTime) return true;
-    return Date.now() - state.lastRefreshTime >= intervalMs;
+    return now.getTime() - state.lastRefreshTime >= intervalMs;
   }
 
   if (config.refreshMode === 'fixed_time') {

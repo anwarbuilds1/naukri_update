@@ -5,11 +5,10 @@
  * - Finding the Chrome executable
  * - Starting Chrome with CDP on 127.0.0.1:9222
  * - Checking CDP availability
- * - Killing Chrome
+ * - Terminating/disconnecting Chrome
  *
- * Phase 1: ported interface stubs. Full implementation in Phase 2.
- * Logic is derived from main.js (ensureChromeRunning, findChromeExecutable,
- * checkCDPAvailable, disconnectChrome) and scripts/start-naukri-chrome.sh.
+ * All functions are independent of Electron and adhere to the
+ * baseline implementation in main.js and scripts/start-naukri-chrome.sh.
  */
 
 import { execSync, spawn } from 'child_process';
@@ -18,9 +17,9 @@ import * as http from 'http';
 import * as path from 'path';
 
 export interface ChromeManager {
-  isAvailable(): Promise<boolean>;
-  ensureRunning(profileDir: string): Promise<boolean>;
-  disconnect(): Promise<void>;
+  isAvailable(endpoint?: string): Promise<boolean>;
+  ensureRunning(profileDir: string, naukriProfileUrl: string, cdpEndpoint?: string): Promise<boolean>;
+  disconnect(endpoint?: string): Promise<void>;
   findExecutable(): string | null;
 }
 
@@ -29,13 +28,20 @@ export interface ChromeManager {
  */
 export async function checkCDPAvailable(endpoint: string = 'http://127.0.0.1:9222'): Promise<boolean> {
   return new Promise((resolve) => {
-    const url = new URL('/json/version', endpoint);
-    const req = http.get(
-      { hostname: url.hostname, port: url.port, path: url.pathname, timeout: 1500 },
-      (res) => resolve(res.statusCode === 200)
-    );
-    req.on('error', () => resolve(false));
-    req.on('timeout', () => { req.destroy(); resolve(false); });
+    try {
+      const url = new URL('/json/version', endpoint);
+      const req = http.get(
+        { hostname: url.hostname, port: url.port, path: url.pathname, timeout: 1500 },
+        (res) => resolve(res.statusCode === 200)
+      );
+      req.on('error', () => resolve(false));
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(false);
+      });
+    } catch {
+      resolve(false);
+    }
   });
 }
 
@@ -96,7 +102,11 @@ export async function ensureChromeRunning(
   // Remove stale SingletonLock
   const lockFile = path.join(profileDir, 'SingletonLock');
   if (existsSync(lockFile)) {
-    try { unlinkSync(lockFile); } catch { /* ignore */ }
+    try {
+      unlinkSync(lockFile);
+    } catch {
+      // ignore
+    }
   }
 
   const chromeArgs = [
@@ -109,14 +119,45 @@ export async function ensureChromeRunning(
   const proc = spawn(chromePath, chromeArgs, { detached: true, stdio: 'ignore' });
   proc.unref();
 
-  // Poll for CDP availability
+  // Poll for CDP availability (up to 30 seconds)
   return new Promise((resolve) => {
     let attempts = 0;
     const poll = setInterval(async () => {
       attempts++;
       const ready = await checkCDPAvailable(cdpEndpoint);
-      if (ready) { clearInterval(poll); resolve(true); }
-      else if (attempts >= 30) { clearInterval(poll); resolve(false); }
+      if (ready) {
+        clearInterval(poll);
+        resolve(true);
+      } else if (attempts >= 30) {
+        clearInterval(poll);
+        resolve(false);
+      }
     }, 1000);
   });
+}
+
+/**
+ * Disconnects and terminates Chrome processes started with remote-debugging-port=9222.
+ * Mirrors disconnectChrome() in main.js.
+ */
+export async function disconnectChrome(cdpEndpoint: string = 'http://127.0.0.1:9222'): Promise<void> {
+  try {
+    if (process.platform === 'win32') {
+      execSync('wmic process where "commandline like \'%--remote-debugging-port=9222%\'" call terminate', {
+        stdio: 'ignore',
+      });
+    } else {
+      execSync('pkill -f "remote-debugging-port=9222"', { stdio: 'ignore' });
+    }
+  } catch {
+    // ignore process kill failures if none were running
+  }
+
+  // Verify CDP is down (wait up to 5s)
+  const start = Date.now();
+  while (Date.now() - start < 5000) {
+    const isUp = await checkCDPAvailable(cdpEndpoint);
+    if (!isUp) break;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
 }
