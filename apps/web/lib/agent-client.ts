@@ -2,6 +2,8 @@ import type {
   AgentCommand,
   AgentStatus,
   ApiResponse,
+  DiagnosticsResult,
+  ResumeInfo,
   RunResult,
 } from '@naukri-update/shared';
 
@@ -113,6 +115,30 @@ export class AgentClient {
     const params = new URLSearchParams({ limit: String(limit) });
     if (task) params.set('task', task);
     return this.request<{ lines: RunResult[] }>(`/api/agent/logs?${params.toString()}`, {
+      method: 'GET',
+    });
+  }
+
+  async getResumeInfo(): Promise<ApiResponse<ResumeInfo>> {
+    return this.request<ResumeInfo>('/api/agent/resume', {
+      method: 'GET',
+    });
+  }
+
+  async deleteResume(): Promise<ApiResponse<{ deleted: boolean }>> {
+    return this.request<{ deleted: boolean }>('/api/agent/resume', {
+      method: 'DELETE',
+    });
+  }
+
+  async clearCredentials(): Promise<ApiResponse<{ cleared: boolean }>> {
+    return this.request<{ cleared: boolean }>('/api/agent/credentials', {
+      method: 'DELETE',
+    });
+  }
+
+  async getDiagnostics(): Promise<ApiResponse<DiagnosticsResult>> {
+    return this.request<DiagnosticsResult>('/api/agent/diagnostics', {
       method: 'GET',
     });
   }

@@ -133,11 +133,20 @@ export function AgentStatusCard() {
 
       {/* High-visibility OTP/CAPTCHA manual intervention banner */}
       {currentStatus === 'otp-required' && (
-        <div className="rounded-lg border border-rose-500/40 bg-rose-500/15 p-4 text-sm text-rose-300 space-y-1">
+        <div className="rounded-lg border border-rose-500/40 bg-rose-500/15 p-4 text-sm text-rose-300 space-y-2">
           <p className="font-bold flex items-center gap-2">⚠️ Naukri Requires Manual Verification</p>
           <p className="text-xs text-rose-200">
             Please open your dedicated Chrome window and complete the OTP or CAPTCHA challenge manually. The agent cannot automate security challenges by design.
           </p>
+          <div className="pt-1">
+            <button
+              onClick={() => handleCommand('connect-chrome')}
+              disabled={commandLoading !== null}
+              className="rounded bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 text-xs font-semibold transition"
+            >
+              {commandLoading === 'connect-chrome' ? 'Opening Chrome...' : 'Open Naukri Browser to Solve'}
+            </button>
+          </div>
         </div>
       )}
 

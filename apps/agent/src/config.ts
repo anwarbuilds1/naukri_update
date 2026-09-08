@@ -148,6 +148,15 @@ export function readEncryptedPassword(credentialsPath: string): string {
       decrypted += decipher.final('utf8');
       return decrypted;
     }
+
+    if (parsed.type === 'electron_safestorage') {
+      console.warn(
+        `[config] Stored credentials in ${credentialsPath} use Electron safeStorage. ` +
+        'Standalone Agent requires portable machine-bound AES-256-GCM encryption. ' +
+        'Please re-save credentials in the Web UI to enable headless daemon automation.'
+      );
+      return '';
+    }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.warn(`[config] Could not decrypt credentials from ${credentialsPath}: ${message}`);

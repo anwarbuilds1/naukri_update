@@ -86,3 +86,39 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     status: agentRes.success ? 200 : 503,
   });
 }
+
+/**
+ * DELETE /api/agent/credentials
+ *
+ * Clears local encrypted password on local agent and clears email in Supabase.
+ */
+export async function DELETE(): Promise<NextResponse> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+      },
+      { status: 401 }
+    );
+  }
+
+  try {
+    await (supabase.from('agent_config') as any)
+      .update({ naukri_email: null })
+      .eq('user_id', user.id);
+  } catch (err: unknown) {
+    console.warn('[credentials] Failed to clear email in agent_config:', err);
+  }
+
+  const agentRes = await agentClient.clearCredentials();
+  return NextResponse.json(agentRes, {
+    status: agentRes.success ? 200 : 503,
+  });
+}
+

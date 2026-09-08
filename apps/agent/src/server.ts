@@ -10,9 +10,11 @@
 import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
-import type { AgentStatus, ApiResponse } from '@naukri-update/shared';
+import type { AgentStatus, ApiResponse, DiagnosticsResult, ResumeInfo } from '@naukri-update/shared';
 import { cleanupStaleResumes, sanitizeFilename } from './automation.js';
-import { getDefaultConfigDir, saveEncryptedPassword } from './config.js';
+import { checkCDPAvailable, findChromeExecutable } from './chrome.js';
+import { getDefaultConfigDir, readEncryptedPassword, saveEncryptedPassword } from './config.js';
+import { loadTaskState } from './state.js';
 
 export interface AgentServerOptions {
   port: number;
@@ -57,7 +59,7 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
   const server = http.createServer(async (req, res) => {
     // CORS for local web UI
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Agent-Secret');
 
     if (req.method === 'OPTIONS') {
@@ -187,9 +189,13 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
       });
       req.on('end', () => {
         try {
-          const payload = JSON.parse(body) as { naukriEmail?: string; naukriPassword?: string };
-          if (payload.naukriPassword) {
-            const credPath = path.join(configDir, '.credentials.enc');
+          const payload = JSON.parse(body) as { naukriEmail?: string; naukriPassword?: string; clear?: boolean };
+          const credPath = path.join(configDir, '.credentials.enc');
+          if (payload.clear) {
+            if (fs.existsSync(credPath)) {
+              fs.unlinkSync(credPath);
+            }
+          } else if (payload.naukriPassword) {
             saveEncryptedPassword(credPath, payload.naukriPassword);
           }
           json(res, 200, {
@@ -203,6 +209,182 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
             error: { code: 'BAD_REQUEST', message: msg },
           });
         }
+      });
+      return;
+    }
+
+    // DELETE /api/agent/credentials — clears stored encrypted credentials
+    if (req.method === 'DELETE' && url.pathname === '/api/agent/credentials') {
+      const credPath = path.join(configDir, '.credentials.enc');
+      if (fs.existsSync(credPath)) {
+        try {
+          fs.unlinkSync(credPath);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          json(res, 500, {
+            success: false,
+            error: { code: 'CREDENTIALS_DELETE_ERROR', message: msg },
+          });
+          return;
+        }
+      }
+      json(res, 200, {
+        success: true,
+        data: { cleared: true },
+      });
+      return;
+    }
+
+    // GET /api/agent/resume — inspect current active resume
+    if (req.method === 'GET' && url.pathname === '/api/agent/resume') {
+      const resumeDir = path.join(configDir, 'resume');
+      if (!fs.existsSync(resumeDir)) {
+        json(res, 200, {
+          success: true,
+          data: { exists: false } as ResumeInfo,
+        });
+        return;
+      }
+
+      try {
+        const files = fs
+          .readdirSync(resumeDir)
+          .filter((f) => f.toLowerCase().endsWith('.pdf'))
+          .map((f) => {
+            const fullPath = path.join(resumeDir, f);
+            const stat = fs.statSync(fullPath);
+            return {
+              filename: f,
+              path: fullPath,
+              sizeBytes: stat.size,
+              lastModified: stat.mtime.toISOString(),
+              mtimeMs: stat.mtimeMs,
+            };
+          })
+          .sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+        if (files.length === 0) {
+          json(res, 200, {
+            success: true,
+            data: { exists: false } as ResumeInfo,
+          });
+          return;
+        }
+
+        const active = files[0]!;
+        json(res, 200, {
+          success: true,
+          data: {
+            exists: true,
+            filename: active.filename,
+            sizeBytes: active.sizeBytes,
+            lastModified: active.lastModified,
+          } as ResumeInfo,
+        });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        json(res, 500, {
+          success: false,
+          error: { code: 'RESUME_READ_ERROR', message: msg },
+        });
+      }
+      return;
+    }
+
+    // DELETE /api/agent/resume — delete all stored resume PDFs
+    if (req.method === 'DELETE' && url.pathname === '/api/agent/resume') {
+      const resumeDir = path.join(configDir, 'resume');
+      if (fs.existsSync(resumeDir)) {
+        try {
+          const files = fs.readdirSync(resumeDir).filter((f) => f.toLowerCase().endsWith('.pdf'));
+          for (const file of files) {
+            fs.unlinkSync(path.join(resumeDir, file));
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          json(res, 500, {
+            success: false,
+            error: { code: 'RESUME_DELETE_ERROR', message: msg },
+          });
+          return;
+        }
+      }
+      json(res, 200, {
+        success: true,
+        data: { deleted: true },
+      });
+      return;
+    }
+
+    // GET /api/agent/diagnostics — comprehensive local self-test
+    if (req.method === 'GET' && url.pathname === '/api/agent/diagnostics') {
+      const chromePath = findChromeExecutable();
+      const cdpAvailable = await checkCDPAvailable();
+      const profileDir = path.join(configDir, '.naukri-chrome-profile');
+      const profileExists = fs.existsSync(profileDir);
+      const credPath = path.join(configDir, '.credentials.enc');
+      const credExists = fs.existsSync(credPath);
+      let credValid = false;
+      if (credExists) {
+        const pass = readEncryptedPassword(credPath);
+        credValid = Boolean(pass);
+      }
+      const resumeDir = path.join(configDir, 'resume');
+      let resumeExists = false;
+      let resumeFileName: string | undefined;
+      if (fs.existsSync(resumeDir)) {
+        const pdfs = fs.readdirSync(resumeDir).filter((f) => f.toLowerCase().endsWith('.pdf'));
+        if (pdfs.length > 0) {
+          resumeExists = true;
+          resumeFileName = pdfs[0];
+        }
+      }
+      const taskState = loadTaskState(configDir);
+
+      const diagnostics: DiagnosticsResult = {
+        agent: {
+          status: opts.isDraining?.() ? 'warning' : 'ok',
+          message: `Agent daemon running (PID: ${process.pid}, uptime: ${Math.floor(process.uptime())}s).`,
+        },
+        chrome: {
+          status: cdpAvailable ? 'ok' : chromePath ? 'warning' : 'failed',
+          message: cdpAvailable
+            ? 'Chrome CDP is active and responsive on port 9222.'
+            : chromePath
+            ? `Chrome installed at ${chromePath} (not currently running).`
+            : 'Google Chrome executable was not found. Please install Chrome.',
+        },
+        browserProfile: {
+          status: profileExists ? 'ok' : 'warning',
+          message: profileExists
+            ? `Dedicated browser profile initialized at ${profileDir}.`
+            : 'Browser profile not initialized yet. It will be created on first Chrome launch.',
+        },
+        credentials: {
+          status: credValid ? 'ok' : credExists ? 'warning' : 'failed',
+          message: credValid
+            ? 'Encrypted credentials are valid and decryptable.'
+            : credExists
+            ? 'Credentials file exists but could not be decrypted. Please re-enter credentials in Settings.'
+            : 'Naukri credentials not configured.',
+        },
+        resume: {
+          status: resumeExists ? 'ok' : 'warning',
+          message: resumeExists
+            ? `Active resume loaded (${resumeFileName}).`
+            : 'No active resume PDF configured.',
+        },
+        scheduler: {
+          status: taskState.paused ? 'warning' : 'ok',
+          message: taskState.paused
+            ? 'Automation scheduler is currently paused.'
+            : 'Scheduler active and monitoring tasks.',
+        },
+      };
+
+      json(res, 200, {
+        success: true,
+        data: diagnostics,
       });
       return;
     }

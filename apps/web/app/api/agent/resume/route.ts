@@ -111,3 +111,58 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     status: agentRes.success ? 200 : 503,
   });
 }
+
+/**
+ * GET /api/agent/resume
+ *
+ * Retrieves current active resume metadata directly from local agent.
+ */
+export async function GET(): Promise<NextResponse> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+      },
+      { status: 401 }
+    );
+  }
+
+  const agentRes = await agentClient.getResumeInfo();
+  return NextResponse.json(agentRes, {
+    status: agentRes.success ? 200 : 503,
+  });
+}
+
+/**
+ * DELETE /api/agent/resume
+ *
+ * Deletes all active resume PDFs from local agent.
+ */
+export async function DELETE(): Promise<NextResponse> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+      },
+      { status: 401 }
+    );
+  }
+
+  const agentRes = await agentClient.deleteResume();
+  return NextResponse.json(agentRes, {
+    status: agentRes.success ? 200 : 503,
+  });
+}
+

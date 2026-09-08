@@ -140,3 +140,21 @@ export interface ApiError {
 export type ApiResponse<T> =
   | { success: true; data: T }
   | { success: false; error: ApiError };
+
+// Information about active resume on local agent
+export interface ResumeInfo {
+  exists: boolean;
+  filename?: string;
+  sizeBytes?: number;
+  lastModified?: string;
+}
+
+// System diagnostics result
+export interface DiagnosticsResult {
+  agent: { status: 'ok' | 'failed' | 'warning'; message: string };
+  chrome: { status: 'ok' | 'failed' | 'warning'; message: string };
+  browserProfile: { status: 'ok' | 'failed' | 'warning'; message: string };
+  credentials: { status: 'ok' | 'failed' | 'warning'; message: string };
+  resume: { status: 'ok' | 'failed' | 'warning'; message: string };
+  scheduler: { status: 'ok' | 'failed' | 'warning'; message: string };
+}

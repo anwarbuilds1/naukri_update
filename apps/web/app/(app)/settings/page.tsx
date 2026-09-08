@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ScheduleConfigSchema, type ScheduleConfig } from '@naukri-update/shared';
+import { ScheduleConfigSchema, type DiagnosticsResult, type ScheduleConfig } from '@naukri-update/shared';
 import type { AgentConfigRow } from '@naukri-update/database';
 import { createBrowserSupabaseClient } from '@/lib/supabase';
 
@@ -28,6 +28,11 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<FormState>(DEFAULT_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [clearingCreds, setClearingCreds] = useState(false);
+  const [resettingProfile, setResettingProfile] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticsResult | null>(null);
+  const [runningDiagnostics, setRunningDiagnostics] = useState(false);
+  const [copiedPath, setCopiedPath] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -184,6 +189,96 @@ export default function SettingsPage() {
     setSaving(false);
   }
 
+  async function handleClearCredentials() {
+    if (
+      !confirm(
+        'Are you sure you want to clear stored Naukri credentials? Automated logins will stop until reconfigured.'
+      )
+    ) {
+      return;
+    }
+    setClearingCreds(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/agent/credentials', { method: 'DELETE' });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setFormData((prev) => ({ ...prev, naukriEmail: '', naukriPassword: '' }));
+        setMessage({ type: 'success', text: 'Stored credentials cleared successfully.' });
+      } else {
+        setMessage({ type: 'error', text: json.error?.message || 'Failed to clear credentials.' });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setMessage({ type: 'error', text: 'Error: ' + msg });
+    } finally {
+      setClearingCreds(false);
+    }
+  }
+
+  async function handleResetProfile() {
+    if (
+      !confirm(
+        'Are you sure you want to reset the dedicated Chrome browser profile? This will close Chrome, clear stored cookies, and log you out of Naukri.'
+      )
+    ) {
+      return;
+    }
+    setResettingProfile(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/agent/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'reset-browser-profile',
+          requestId: 'reset-' + Date.now(),
+          issuedAt: Date.now(),
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setMessage({
+          type: 'success',
+          text: 'Chrome profile directory reset successfully. You will need to log in again on the next run.',
+        });
+      } else {
+        setMessage({ type: 'error', text: json.error?.message || 'Failed to reset profile.' });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setMessage({ type: 'error', text: 'Error: ' + msg });
+    } finally {
+      setResettingProfile(false);
+    }
+  }
+
+  async function handleRunDiagnostics() {
+    setRunningDiagnostics(true);
+    try {
+      const res = await fetch('/api/agent/diagnostics');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setDiagnostics(json.data);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setRunningDiagnostics(false);
+    }
+  }
+
+  function applyPreset(hours: number) {
+    setFormData((prev) => ({
+      ...prev,
+      refreshMode: 'interval',
+      refreshIntervalHours: hours,
+      refreshIntervalMinutes: 0,
+    }));
+  }
+
   if (loading) {
     return <div className="p-6 text-slate-400">Loading settings...</div>;
   }
@@ -242,11 +337,61 @@ export default function SettingsPage() {
               />
             </div>
           </div>
+
+          <div className="flex justify-between items-center pt-2 border-t border-slate-800/80">
+            <span className="text-xs text-slate-500">Need to remove stored credentials completely?</span>
+            <button
+              type="button"
+              onClick={handleClearCredentials}
+              disabled={clearingCreds}
+              className="rounded border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/20 transition disabled:opacity-40"
+            >
+              {clearingCreds ? 'Clearing...' : 'Clear Credentials'}
+            </button>
+          </div>
         </div>
 
         {/* Headline Refresh Schedule */}
         <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white">Headline Refresh Schedule</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-white">Headline Refresh Schedule</h2>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-400 mr-1">Presets:</span>
+              <button
+                type="button"
+                onClick={() => applyPreset(1)}
+                className={`px-2 py-0.5 rounded text-xs border transition ${
+                  formData.refreshMode === 'interval' && formData.refreshIntervalHours === 1 && formData.refreshIntervalMinutes === 0
+                    ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300 font-medium'
+                    : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:text-white'
+                }`}
+              >
+                1h (Aggressive)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset(3)}
+                className={`px-2 py-0.5 rounded text-xs border transition ${
+                  formData.refreshMode === 'interval' && formData.refreshIntervalHours === 3 && formData.refreshIntervalMinutes === 0
+                    ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300 font-medium'
+                    : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:text-white'
+                }`}
+              >
+                3h (Moderate)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset(6)}
+                className={`px-2 py-0.5 rounded text-xs border transition ${
+                  formData.refreshMode === 'interval' && formData.refreshIntervalHours === 6 && formData.refreshIntervalMinutes === 0
+                    ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300 font-medium'
+                    : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:text-white'
+                }`}
+              >
+                6h (Conservative)
+              </button>
+            </div>
+          </div>
 
           <div className="space-y-4">
             <div>
@@ -391,6 +536,124 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+
+      {/* System Diagnostics */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white">System Diagnostics</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Verify local agent status, Chrome CDP connectivity, browser profile, and credentials.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRunDiagnostics}
+            disabled={runningDiagnostics}
+            className="rounded-md border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-medium text-slate-200 hover:bg-slate-700 transition disabled:opacity-50"
+          >
+            {runningDiagnostics ? 'Running Diagnostics...' : 'Run Diagnostics'}
+          </button>
+        </div>
+
+        {diagnostics && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            {Object.entries(diagnostics).map(([key, value]) => {
+              const statusColors: Record<string, string> = {
+                ok: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400',
+                warning: 'border-amber-500/20 bg-amber-500/10 text-amber-400',
+                failed: 'border-red-500/20 bg-red-500/10 text-red-400',
+              };
+              const dotColors: Record<string, string> = {
+                ok: 'bg-emerald-500',
+                warning: 'bg-amber-500',
+                failed: 'bg-red-500',
+              };
+              const titles: Record<string, string> = {
+                agent: 'Agent Daemon',
+                chrome: 'Google Chrome / CDP',
+                browserProfile: 'Dedicated Profile',
+                credentials: 'Naukri Credentials',
+                resume: 'Active Resume',
+                scheduler: 'Automation Scheduler',
+              };
+              return (
+                <div
+                  key={key}
+                  className={`rounded-lg border p-3.5 space-y-1.5 ${statusColors[value.status] || statusColors['warning']}`}
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider">
+                    <span>{titles[key] || key}</span>
+                    <span className="flex items-center gap-1">
+                      <span className={`h-2 w-2 rounded-full ${dotColors[value.status] || 'bg-slate-500'}`} />
+                      {value.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">{value.message}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Maintenance & Reset */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-white">Maintenance & Recovery</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Reset dedicated browser session or resolve stuck profile issues.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg bg-slate-950/60 border border-slate-800/80 p-4">
+          <div className="space-y-0.5">
+            <h4 className="text-sm font-medium text-white">Reset Dedicated Chrome Profile</h4>
+            <p className="text-xs text-slate-400">
+              Closes running Chrome processes and purges the local profile directory. Useful if Naukri cookies expire or session enters a loop.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleResetProfile}
+            disabled={resettingProfile}
+            className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-medium text-amber-400 hover:bg-amber-500/20 transition disabled:opacity-40 shrink-0"
+          >
+            {resettingProfile ? 'Resetting...' : 'Reset Browser Profile'}
+          </button>
+        </div>
+      </div>
+
+      {/* Local Storage Information */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-white">Local Configuration & Data</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            All passwords, session cookies, and candidate resume PDFs remain strictly on your local computer.
+          </p>
+        </div>
+
+        <div className="rounded-lg bg-slate-950/80 border border-slate-800/80 p-4 space-y-2">
+          <div className="text-xs text-slate-400 font-medium uppercase">Active Storage Directory:</div>
+          <div className="flex items-center justify-between gap-2 bg-slate-900 px-3 py-2 rounded border border-slate-800 font-mono text-xs text-indigo-300">
+            <span>~/.config/NaukriUpdate</span>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText('~/.config/NaukriUpdate');
+                setCopiedPath(true);
+                setTimeout(() => setCopiedPath(false), 2000);
+              }}
+              className="text-xs text-slate-400 hover:text-white transition"
+            >
+              {copiedPath ? '✓ Copied' : 'Copy'}
+            </button>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed pt-1">
+            Contains: <code>config.json</code>, <code>.credentials.enc</code> (machine AES-256-GCM), <code>resume/</code>, <code>.naukri-chrome-profile/</code>, and <code>logs/</code>.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
