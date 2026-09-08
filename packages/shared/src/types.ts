@@ -157,4 +157,6 @@ export interface DiagnosticsResult {
   credentials: { status: 'ok' | 'failed' | 'warning'; message: string };
   resume: { status: 'ok' | 'failed' | 'warning'; message: string };
   scheduler: { status: 'ok' | 'failed' | 'warning'; message: string };
+  supabase?: { status: 'ok' | 'failed' | 'warning'; message: string };
 }
+

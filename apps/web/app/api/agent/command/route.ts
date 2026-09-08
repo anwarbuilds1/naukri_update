@@ -20,6 +20,19 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'SUPABASE_UNAVAILABLE',
+          message: 'Supabase control plane is unconfigured. Command persistence requires an active Supabase database.',
+        },
+      },
+      { status: 503 }
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

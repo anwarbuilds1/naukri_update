@@ -12,6 +12,19 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'SUPABASE_UNAVAILABLE',
+          message: 'Supabase control plane is unconfigured. Log query requires Supabase authentication.',
+        },
+      },
+      { status: 503 }
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

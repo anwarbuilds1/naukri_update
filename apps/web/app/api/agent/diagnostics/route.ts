@@ -10,22 +10,52 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  */
 export async function GET(): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let supabaseStatus: { status: 'ok' | 'failed' | 'warning'; message: string };
 
-  if (!user) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
-      },
-      { status: 401 }
-    );
+  if (!supabase) {
+    supabaseStatus = {
+      status: 'failed',
+      message: 'Supabase URL/Key is unconfigured in web control plane.',
+    };
+  } else {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+        },
+        { status: 401 }
+      );
+    }
+
+    supabaseStatus = {
+      status: 'ok',
+      message: 'Supabase authentication and database connection active.',
+    };
   }
 
   const agentRes = await agentClient.getDiagnostics();
-  return NextResponse.json(agentRes, {
-    status: agentRes.success ? 200 : 503,
-  });
+  if (agentRes.success) {
+    const mergedData = {
+      ...agentRes.data,
+      supabase: supabaseStatus,
+    };
+    return NextResponse.json({
+      success: true,
+      data: mergedData,
+    });
+  }
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: agentRes.error,
+      details: { supabase: supabaseStatus },
+    },
+    { status: 503 }
+  );
 }

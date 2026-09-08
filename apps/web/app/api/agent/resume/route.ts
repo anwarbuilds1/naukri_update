@@ -13,6 +13,19 @@ const MAX_PDF_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'SUPABASE_UNAVAILABLE',
+          message: 'Supabase control plane is unconfigured. Resume upload requires Supabase authentication.',
+        },
+      },
+      { status: 503 }
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -119,6 +132,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
  */
 export async function GET(): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'SUPABASE_UNAVAILABLE',
+          message: 'Supabase control plane is unconfigured. Resume management requires Supabase authentication.',
+        },
+      },
+      { status: 503 }
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -146,6 +172,19 @@ export async function GET(): Promise<NextResponse> {
  */
 export async function DELETE(): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'SUPABASE_UNAVAILABLE',
+          message: 'Supabase control plane is unconfigured. Resume management requires Supabase authentication.',
+        },
+      },
+      { status: 503 }
+    );
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

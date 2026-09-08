@@ -12,6 +12,23 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  */
 export async function GET(): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    // Supabase unconfigured: fall back to live agent status directly
+    const agentRes = await agentClient.getStatus();
+    if (agentRes.success && agentRes.data) {
+      return NextResponse.json(agentRes);
+    }
+    return NextResponse.json({
+      success: true,
+      data: {
+        status: 'offline',
+        version: '0.1.0',
+        chromeConnected: false,
+        lastSeen: 0,
+      },
+    });
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
