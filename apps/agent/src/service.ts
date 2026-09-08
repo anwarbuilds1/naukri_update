@@ -8,6 +8,7 @@
  */
 
 import { execSync } from 'child_process';
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -17,6 +18,64 @@ export interface ServicePaths {
   repoDir: string;
   configDir: string;
   logsDir: string;
+}
+
+export interface AgentEnvResult {
+  envFilePath: string;
+  secret: string;
+  created: boolean;
+}
+
+export function getAgentEnvFilePath(configDir: string): string {
+  return path.join(configDir, 'agent.env');
+}
+
+/**
+ * Ensures a user-owned agent.env exists outside the repository with restrictive permissions (chmod 600).
+ * Preserves existing secrets across reinstall/restart and generates a cryptographically secure random
+ * secret only when no secret currently exists.
+ */
+export function ensureAgentEnvFile(configDir: string): AgentEnvResult {
+  const envFilePath = getAgentEnvFilePath(configDir);
+
+  if (fs.existsSync(envFilePath)) {
+    try {
+      const content = fs.readFileSync(envFilePath, 'utf8');
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('AGENT_SECRET=')) {
+          const secret = trimmed.slice('AGENT_SECRET='.length).trim().replace(/^['"]|['"]$/g, '');
+          if (secret) {
+            try {
+              fs.chmodSync(envFilePath, 0o600);
+            } catch {
+              // ignore on non-POSIX filesystems
+            }
+            return { envFilePath, secret, created: false };
+          }
+        }
+      }
+    } catch {
+      // Fall through to creation if reading corrupted file
+    }
+  }
+
+  // Preserve existing secret from process.env if provided, otherwise generate cryptographically secure 256-bit hex secret
+  const existingSecret = process.env['AGENT_SECRET']?.trim();
+  const secret = existingSecret || crypto.randomBytes(32).toString('hex');
+
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+
+  fs.writeFileSync(envFilePath, `AGENT_SECRET=${secret}\n`, { encoding: 'utf8', mode: 0o600 });
+  try {
+    fs.chmodSync(envFilePath, 0o600);
+  } catch {
+    // ignore on non-POSIX filesystems
+  }
+
+  return { envFilePath, secret, created: true };
 }
 
 export function resolveServicePaths(configDir: string): ServicePaths {
@@ -48,6 +107,7 @@ ExecStart=${paths.nodeBin} ${paths.entrypoint}
 Restart=always
 RestartSec=10
 Environment=NODE_ENV=production
+EnvironmentFile=%h/.config/NaukriUpdate/agent.env
 StandardOutput=journal
 StandardError=journal
 
@@ -112,6 +172,9 @@ export function installService(configDir: string): { success: boolean; message: 
   const platform = process.platform;
 
   try {
+    // Ensure user-owned agent.env exists with restrictive permissions and valid secret
+    const envResult = ensureAgentEnvFile(configDir);
+
     if (platform === 'linux') {
       const serviceFile = getSystemdServicePath();
       const dir = path.dirname(serviceFile);
@@ -122,7 +185,11 @@ export function installService(configDir: string): { success: boolean; message: 
       execSync('systemctl --user enable naukri-agent.service', { stdio: 'pipe' });
       execSync('systemctl --user restart naukri-agent.service', { stdio: 'pipe' });
 
-      return { success: true, message: `Systemd user service installed and started at ${serviceFile}` };
+      const secretNote = envResult.created ? 'generated new secret in' : 'preserved existing secret in';
+      return {
+        success: true,
+        message: `Systemd user service installed and started at ${serviceFile} (${secretNote} ${envResult.envFilePath})`,
+      };
     }
 
     if (platform === 'darwin') {

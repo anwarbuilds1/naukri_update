@@ -375,6 +375,8 @@ describe('Phase 5: OS Service Generation Verification', () => {
     assert.ok(systemd.includes('Restart=always'));
     assert.ok(systemd.includes(`WorkingDirectory=${dummyPaths.repoDir}`));
     assert.ok(systemd.includes('WantedBy=default.target'));
+    assert.ok(systemd.includes('Environment=NODE_ENV=production'));
+    assert.ok(systemd.includes('EnvironmentFile=%h/.config/NaukriUpdate/agent.env'));
   });
 
   test('generates valid macOS LaunchAgent plist definition', () => {

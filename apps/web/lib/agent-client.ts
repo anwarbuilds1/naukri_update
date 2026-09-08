@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import type {
   AgentCommand,
   AgentStatus,
@@ -11,13 +14,54 @@ export interface AgentAuthProvider {
   getHeaders(): Record<string, string>;
 }
 
+/**
+ * Resolves AGENT_SECRET on the server side:
+ * 1. process.env['AGENT_SECRET']
+ * 2. User-owned ~/.config/NaukriUpdate/agent.env (server-side only)
+ */
+export function resolveAgentSecret(): string {
+  if (process.env['AGENT_SECRET']) {
+    return process.env['AGENT_SECRET'];
+  }
+
+  try {
+    const configDir =
+      process.env['NAUKRI_CONFIG_DIR'] ||
+      (process.platform === 'win32'
+        ? path.join(process.env['APPDATA'] || path.join(os.homedir(), 'AppData', 'Roaming'), 'NaukriUpdate')
+        : process.platform === 'darwin'
+          ? path.join(os.homedir(), 'Library', 'Application Support', 'NaukriUpdate')
+          : path.join(process.env['XDG_CONFIG_HOME'] || path.join(os.homedir(), '.config'), 'NaukriUpdate'));
+
+    const envFile = path.join(configDir, 'agent.env');
+    if (fs.existsSync(envFile)) {
+      const content = fs.readFileSync(envFile, 'utf8');
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('AGENT_SECRET=')) {
+          const secret = trimmed.slice('AGENT_SECRET='.length).trim().replace(/^['"]|['"]$/g, '');
+          if (secret) {
+            process.env['AGENT_SECRET'] = secret;
+            return secret;
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return '';
+}
+
 export class SharedSecretAuthProvider implements AgentAuthProvider {
-  constructor(private secret: string) {}
+  constructor(private secret?: string) {}
 
   getHeaders(): Record<string, string> {
-    if (!this.secret) return {};
+    const secret = this.secret || resolveAgentSecret();
+    if (!secret) return {};
     return {
-      'X-Agent-Secret': this.secret,
+      'X-Agent-Secret': secret,
     };
   }
 }
@@ -28,9 +72,7 @@ export class AgentClient {
 
   constructor(
     baseUrl: string = process.env['AGENT_URL'] ?? 'http://127.0.0.1:7842',
-    authProvider: AgentAuthProvider = new SharedSecretAuthProvider(
-      process.env['AGENT_SECRET'] ?? ''
-    )
+    authProvider: AgentAuthProvider = new SharedSecretAuthProvider()
   ) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
     this.authProvider = authProvider;

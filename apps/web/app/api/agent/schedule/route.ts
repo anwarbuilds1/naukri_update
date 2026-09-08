@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@naukri-update/database';
 import type { ScheduleConfig } from '@naukri-update/shared';
+import { resolveAgentSecret } from '@/lib/agent-client';
 
 function getAdminSupabase() {
   const url = process.env['SUPABASE_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? '';
@@ -21,7 +22,7 @@ function getAdminSupabase() {
  * to the authenticated local agent.
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const expectedSecret = process.env['AGENT_SECRET'];
+  const expectedSecret = resolveAgentSecret();
   if (expectedSecret) {
     const provided = req.headers.get('x-agent-secret');
     if (provided !== expectedSecret) {

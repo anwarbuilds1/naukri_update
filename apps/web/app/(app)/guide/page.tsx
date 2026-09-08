@@ -42,10 +42,10 @@ export default function GuidePage() {
           <div className="rounded-lg bg-slate-950/80 border border-slate-800 p-4 space-y-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-indigo-400">Linux (systemd user service)</h3>
             <p className="text-xs text-slate-400">
-              Run the built-in generator or create <code>~/.config/systemd/user/naukri-agent.service</code>:
+              Run the built-in generator to create <code>~/.config/systemd/user/naukri-agent.service</code> and <code>~/.config/NaukriUpdate/agent.env</code> (mode <code>0600</code>):
             </p>
             <pre className="rounded bg-slate-900 p-3 text-xs font-mono text-slate-300 overflow-x-auto">
-{`# 1. Generate service unit
+{`# 1. Install service unit & initialize agent.env
 node apps/agent/dist/main.js --service-install
 
 # 2. Reload and enable service

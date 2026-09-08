@@ -208,8 +208,35 @@ export function saveEncryptedPassword(credentialsPath: string, password: string)
 }
 
 /**
- * Load full agent configuration.
+ * Resolves AGENT_SECRET from environment or from user-owned agent.env file.
  */
+export function loadAgentSecret(configDir: string = getDefaultConfigDir()): string {
+  if (process.env['AGENT_SECRET']) {
+    return process.env['AGENT_SECRET'];
+  }
+
+  const envFile = path.join(configDir, 'agent.env');
+  if (fs.existsSync(envFile)) {
+    try {
+      const lines = fs.readFileSync(envFile, 'utf8').split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('AGENT_SECRET=')) {
+          const secret = trimmed.slice('AGENT_SECRET='.length).trim().replace(/^['"]|['"]$/g, '');
+          if (secret) {
+            process.env['AGENT_SECRET'] = secret;
+            return secret;
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return '';
+}
+
 export function loadAgentConfig(): AgentConfig {
   const configDir = process.env['NAUKRI_CONFIG_DIR'] ?? getDefaultConfigDir();
   const jsonPath = path.join(configDir, 'config.json');
@@ -327,7 +354,7 @@ export function loadAgentConfig(): AgentConfig {
     naukriEmail,
     naukriPassword,
     resumeUploadTimeoutMs,
-    agentSecret: process.env['AGENT_SECRET'] ?? '',
+    agentSecret: loadAgentSecret(configDir),
     schedule,
     version: '0.1.0',
   };

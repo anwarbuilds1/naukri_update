@@ -95,7 +95,20 @@
 | Resume PDF | Agent `<configDir>/resume/` | Browser → Next.js API → Agent HTTP (localhost) | Validated (5MB, %PDF header); Playwright needs local file |
 | Chrome session | Agent `.naukri-chrome-profile/` | Never transmitted | Chrome cookies cannot be cloud-managed |
 | `SUPABASE_SERVICE_ROLE_KEY` | Next.js server env only | Never transmitted | Kept strictly on server gateway; not in agent |
-| `AGENT_SECRET` | Agent + Next.js server env | Localhost HTTP header (`X-Agent-Secret`) | Authenticates web ↔ agent requests |
+| `AGENT_SECRET` | Agent (`~/.config/NaukriUpdate/agent.env`) + Next.js server | Localhost HTTP header (`X-Agent-Secret`) | Authenticates web ↔ agent requests; stored in `chmod 0600` file outside repo |
+
+### Local Agent Secret & Service Environment File
+
+The local Agent daemon (`apps/agent`) requires authentication via the `X-Agent-Secret` HTTP header to prevent unauthorized local processes from triggering automations or accessing credentials.
+
+- **Storage Location**: `~/.config/NaukriUpdate/agent.env` (outside the repository in user configuration directory).
+- **Format**: `AGENT_SECRET=<hex_encoded_256_bit_secret>`
+- **File Permissions**: Restrictive `0600` (`-rw-------`, user read/write only).
+- **Systemd Integration**: Loaded natively via `EnvironmentFile=%h/.config/NaukriUpdate/agent.env` in `naukri-agent.service` alongside `Environment=NODE_ENV=production`.
+- **Next.js Web Gateway Integration**: The server-side API gateway (`apps/web`) dynamically resolves the secret from `process.env.AGENT_SECRET` or falls back to reading `~/.config/NaukriUpdate/agent.env` on localhost. The secret is strictly server-side and never exposed to browser/client code.
+- **Idempotent Service Installation**: Running `node apps/agent/dist/main.js --service-install` guarantees:
+  - If `agent.env` exists, the existing secret is preserved without rotation.
+  - If `agent.env` is missing, a 256-bit cryptographically secure random secret is generated and persisted with mode `0600`.
 
 ---
 

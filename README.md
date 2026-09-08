@@ -810,6 +810,18 @@ npm run setup
 | `pnpm test` | Run full test suite across workspace |
 | `pnpm typecheck` | Run TypeScript type checks across all workspaces |
 
+### Background Agent Service (Linux / macOS / Windows)
+
+To install the agent as a background OS service:
+```bash
+# Install service unit & initialize ~/.config/NaukriUpdate/agent.env (chmod 0600)
+node apps/agent/dist/main.js --service-install
+
+# Check service status
+node apps/agent/dist/main.js --service-status
+```
+On Linux, the service loads its `AGENT_SECRET` via `EnvironmentFile=%h/.config/NaukriUpdate/agent.env`.
+
 ---
 
 # Architecture

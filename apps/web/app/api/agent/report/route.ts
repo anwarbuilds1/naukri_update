@@ -1,13 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@naukri-update/database';
+import { resolveAgentSecret } from '@/lib/agent-client';
 
 /**
  * Helper to get an admin Supabase client ONLY on the server for the local agent gateway.
  * Never exposed to browser or client bundles.
  */
-function getAdminSupabase() {
+function getAdminSupabase(): SupabaseClient<Database> | null {
   const url = process.env['SUPABASE_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? '';
   const serviceKey = process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? '';
 
@@ -29,7 +30,7 @@ function getAdminSupabase() {
  * Any user_id provided in the request body is strictly IGNORED.
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const expectedSecret = process.env['AGENT_SECRET'];
+  const expectedSecret = resolveAgentSecret();
   if (expectedSecret) {
     const provided = req.headers.get('x-agent-secret');
     if (provided !== expectedSecret) {
