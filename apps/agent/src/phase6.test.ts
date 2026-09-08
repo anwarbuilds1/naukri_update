@@ -10,8 +10,72 @@ import { getDefaultConfigDir, readEncryptedPassword, saveEncryptedPassword } fro
 import { createAgentServer } from './server.js';
 
 const require = createRequire(import.meta.url);
-const SecureStoreService = require('../../../secure-store.js');
-const ConfigService = require('../../../config-service.js');
+let SecureStoreService: any = null;
+let ConfigService: any = null;
+
+try {
+  SecureStoreService = require('../../../secure-store.js');
+  ConfigService = require('../../../config-service.js');
+} catch {
+  // Legacy files retired in Phase 7F. Fall back to baseline specification logic to verify ongoing compatibility.
+  SecureStoreService = class BaselineLegacySecureStore {
+    configDir: string;
+    credentialsPath: string;
+    constructor(configDir: string) {
+      this.configDir = configDir;
+      this.credentialsPath = path.join(configDir, '.credentials.enc');
+    }
+    getMachineId(): string {
+      try {
+        if (process.platform === 'linux') {
+          if (fs.existsSync('/etc/machine-id')) return fs.readFileSync('/etc/machine-id', 'utf8').trim();
+          if (fs.existsSync('/var/lib/dbus/machine-id')) return fs.readFileSync('/var/lib/dbus/machine-id', 'utf8').trim();
+        }
+      } catch { }
+      const userInfo = process.env.USER || process.env.USERNAME || 'default_user';
+      const homeDir = process.env.HOME || process.env.USERPROFILE || 'default_home';
+      const crypto = require('crypto');
+      return crypto.createHash('sha256').update(`${userInfo}:${homeDir}:naukri_update_seed`).digest('hex');
+    }
+    getDerivedKey(): Buffer {
+      const crypto = require('crypto');
+      return crypto.pbkdf2Sync(this.getMachineId(), 'naukri_secure_salt_v1', 100000, 32, 'sha256');
+    }
+    getPassword(): string | null {
+      if (!fs.existsSync(this.credentialsPath)) return null;
+      try {
+        const raw = JSON.parse(fs.readFileSync(this.credentialsPath, 'utf8'));
+        if (raw.type === 'machine_aes_gcm') {
+          const crypto = require('crypto');
+          const decipher = crypto.createDecipheriv('aes-256-gcm', this.getDerivedKey(), Buffer.from(raw.iv, 'hex'));
+          decipher.setAuthTag(Buffer.from(raw.authTag, 'hex'));
+          let dec = decipher.update(raw.data, 'hex', 'utf8');
+          dec += decipher.final('utf8');
+          return dec;
+        }
+      } catch { }
+      return null;
+    }
+    atomicWrite(data: string): void {
+      const tmpPath = `${this.credentialsPath}.tmp.${Date.now()}`;
+      fs.writeFileSync(tmpPath, data, 'utf8');
+      fs.renameSync(tmpPath, this.credentialsPath);
+    }
+  };
+
+  ConfigService = {
+    getAppConfigDir(): string {
+      const home = os.homedir();
+      if (process.platform === 'win32') {
+        return path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'NaukriUpdate');
+      }
+      if (process.platform === 'darwin') {
+        return path.join(home, 'Library', 'Application Support', 'NaukriUpdate');
+      }
+      return path.join(process.env.XDG_CONFIG_HOME || path.join(home, '.config'), 'NaukriUpdate');
+    }
+  };
+}
 
 describe('Phase 6: Electron Migration & Bidirectional Compatibility', () => {
   describe('Bidirectional Credential Storage Compatibility', () => {

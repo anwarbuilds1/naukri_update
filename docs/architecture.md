@@ -145,3 +145,14 @@ Agent status is determined centrally via `getAgentAvailability(lastSeenMs, nowMs
 - If `now - lastSeen <= 90s`: reports agent's live status (`idle`, `running`, `chrome-disconnected`, `otp-required`, `error`).
 - If `now - lastSeen > 90s`: automatically transitions to `offline`.
 - Browser status polling observes live agent or persisted Supabase state without writing to `agent_status` on every poll.
+
+---
+
+## Rollback & Baseline Preservation
+
+The legacy Electron application was permanently retired in Phase 7F following full validation of all 10 Phase 7E criteria.
+The complete, working legacy baseline is tagged at:
+- **Git Tag**: `v1.0-electron-baseline`
+- **Commit**: `55b7bef0702c8c77c05720cded4a54304ecbb1e8`
+- **Restoration Guide**: Refer to [`docs/rollback.md`](./rollback.md) for instructions on checking out and launching the legacy Electron desktop application.
+

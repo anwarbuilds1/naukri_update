@@ -805,31 +805,34 @@ npm run setup
 
 | Command | Description |
 | :--- | :--- |
-| `npm run setup` | One-command setup bootstrapper and launcher |
-| `npm start` | Launch Electron application directly |
-| `npm run refresh` | Run automation Playwright core script via CLI |
-| `npm run pack` | Package app directory into unpacked build |
-| `npm run dist` | Build production installer binaries (`.exe`, `.dmg`, `.AppImage`, `.deb`) |
+| `pnpm dev` | Run monorepo development servers (Next.js web + Agent daemon) |
+| `pnpm build` | Build all monorepo packages and apps (`apps/web`, `apps/agent`, `packages/*`) |
+| `pnpm test` | Run full test suite across workspace |
+| `pnpm typecheck` | Run TypeScript type checks across all workspaces |
 
 ---
 
 # Architecture
 
+The system operates as a distributed local-first architecture:
+- **Next.js PWA (`apps/web`)**: Web UI and secure API control plane gateway.
+- **Node.js Local Agent (`apps/agent`)**: Dedicated background execution daemon managing Chrome CDP and Playwright automation.
+- **Shared Packages (`packages/*`)**: Shared types, schemas, validation rules, and Supabase client bindings.
+
 ```
 naukri_update/
-├── main.js                   # Electron main process (IPC handlers, tray, OS scheduler)
-├── preload.js                # Secure ContextBridge IPC bridge (contextIsolation: true)
-├── config-service.js         # Central config loader, validator, diagnostics & permissions
-├── config.js                 # Automation wrapper for environment variables
-├── naukri-profile-refresh.js # Playwright browser automation core engine
-├── renderer/
-│   ├── index.html            # Main GUI layout & First-Run setup wizard
-│   ├── style.css             # UI design system & responsive styling
-│   └── app.js                # Frontend state management & IPC event handlers
-└── scripts/
-    ├── setup.js              # One-command developer bootstrap script
-    └── scheduler.js          # CLI helper for OS background scheduler tasks
+├── apps/
+│   ├── web/                      # Next.js 15 PWA control plane (Dashboard, Settings, Logs)
+│   └── agent/                    # Node.js background agent (CDP, Playwright, Scheduler)
+├── packages/
+│   ├── shared/                   # Common types, schemas, and diagnostics
+│   └── database/                 # Supabase client bindings and state models
+└── docs/
+    ├── architecture.md           # Deep-dive architecture design & security model
+    └── rollback.md               # Guide for checking out v1.0-electron-baseline
 ```
+
+> **Note on Legacy Electron Baseline**: The legacy Electron application was retired in Phase 7F. Its complete, verified baseline is preserved immutably at Git tag `v1.0-electron-baseline` (commit `55b7bef0702c8c77c05720cded4a54304ecbb1e8`). See [docs/rollback.md](docs/rollback.md) for full checkout and restoration procedures.
 
 ---
 

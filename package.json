@@ -4,13 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "description": "Automate your Naukri profile updates — keep your profile active and visible to recruiters.",
-  "main": "main.js",
   "scripts": {
-    "setup": "node scripts/setup.js",
-    "start": "electron main.js --no-sandbox",
-    "refresh": "node naukri-profile-refresh.js",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
@@ -21,62 +15,7 @@
     "email": "anwarbuilds1@gmail.com"
   },
   "license": "ISC",
-  "dependencies": {
-    "electron-updater": "^6.8.9",
-    "playwright-core": "^1.61.1"
-  },
   "devDependencies": {
-    "electron": "^41.7.1",
-    "electron-builder": "^26.15.3",
     "turbo": "^2.1.3"
-  },
-  "build": {
-    "appId": "com.naukri.update",
-    "productName": "Naukri Update",
-    "publish": {
-      "provider": "github",
-      "owner": "anwarbuilds1",
-      "repo": "naukri_update"
-    },
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "preload.js",
-      "config.js",
-      "config-service.js",
-      "secure-store.js",
-      "auto-updater-service.js",
-      "naukri-profile-refresh.js",
-      "renderer/**/*",
-      "scripts/**/*",
-      "assets/**/*"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns",
-      "identity": null
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "icon": "assets/icon.png",
-      "category": "Utility",
-      "maintainer": "Ankit Baghel <anwarbuilds1@gmail.com>",
-      "executableName": "naukri-update"
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "anwarbuilds1",
-      "repo": "naukri_update",
-      "releaseType": "release"
-    }
   }
 }
