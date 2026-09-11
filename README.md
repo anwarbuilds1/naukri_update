@@ -350,7 +350,8 @@ Dashboard Main View
 
 Naukri Update runs locally on your machine. Here is how its components interface:
 
-- **Desktop Dashboard (GUI):** Built with Electron. Allows you to configure schedules, view logs, trigger manual updates, and monitor connection status.
+- **Next.js PWA Control Plane:** Web application (`apps/web`) running on Next.js 15 + React 19. Provides the user interface for configuring schedules, viewing real-time logs, triggering manual actions, and checking agent health.
+- **Node.js Local Agent:** Background daemon (`apps/agent`) running locally on `127.0.0.1:7842`. Manages scheduled automation runs, credentials, and Chrome CDP connections.
 - **Dedicated Chrome Profile:** Launches Google Chrome using a isolated user directory (`.naukri-chrome-profile`) located in your AppData directory. It does not touch your personal daily Chrome profile, cookies, or saved passwords.
 - **Playwright Core Engine:** Connects to the local Chrome instance via Chrome DevTools Protocol (CDP) on port `9222` to perform page navigation, text filling, and file uploads.
 - **System Tray Integration:** When you close the main window, the app stays running in your system tray (notification area). Clicking the tray icon opens the dashboard or lets you pause/resume automation.
@@ -844,7 +845,7 @@ naukri_update/
     └── rollback.md               # Guide for checking out v1.0-electron-baseline
 ```
 
-> **Note on Legacy Electron Baseline**: The legacy Electron application was retired in Phase 7F. Its complete, verified baseline is preserved immutably at Git tag `v1.0-electron-baseline` (commit `55b7bef0702c8c77c05720cded4a54304ecbb1e8`). See [docs/rollback.md](docs/rollback.md) for full checkout and restoration procedures.
+> **Note on Legacy Electron Baseline**: The legacy Electron application was retired in Phase 10. Its complete, verified baseline is preserved immutably at Git tag `v1.0-electron-baseline` (commit `55b7bef0702c8c77c05720cded4a54304ecbb1e8`). See [docs/rollback.md](docs/rollback.md) for full checkout and restoration procedures.
 
 ---
 

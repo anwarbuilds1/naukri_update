@@ -163,9 +163,45 @@ Agent status is determined centrally via `getAgentAvailability(lastSeenMs, nowMs
 
 ## Rollback & Baseline Preservation
 
-The legacy Electron application was permanently retired in Phase 7F following full validation of all 10 Phase 7E criteria.
+The legacy Electron application was permanently retired in Phase 10 following full migration verification.
 The complete, working legacy baseline is tagged at:
 - **Git Tag**: `v1.0-electron-baseline`
 - **Commit**: `55b7bef0702c8c77c05720cded4a54304ecbb1e8`
 - **Restoration Guide**: Refer to [`docs/rollback.md`](./rollback.md) for instructions on checking out and launching the legacy Electron desktop application.
+
+---
+
+## Current Verification & Runtime Status (Phase 8 Final Stage)
+
+### Verification Matrix
+```
+Next.js PWA                 PASS
+Supabase/Auth               PASS
+Next.js -> Agent             PASS
+Agent heartbeat             PASS
+Agent daemon/service         PASS
+Agent persistence/reboot     PASS
+Agent lock                   PASS
+Agent -> Chrome CDP           CURRENT ISSUE
+Chrome CDP :9222             DISCONNECTED
+Naukri automation            Previously validated, currently blocked by Chrome/CDP
+Electron retirement         COMPLETE
+```
+
+### Categorized Status
+- **VERIFIED:**
+  - Next.js PWA frontend & Supabase Auth SSR session management.
+  - Next.js API gateway routes (`/api/agent/*`) ↔ local Agent HTTP bridge (`127.0.0.1:7842`).
+  - Systemd user service `naukri-agent.service` (daemon operational, reboot-persistent, single-instance locked, reporting heartbeats).
+  - Automation engine logic (previously validated: headline update, dated resume upload, duplicate detection, DOM verification).
+  - Complete workspace build and test suite (`93/93` tests passing, `0` TypeScript errors).
+- **CURRENTLY BLOCKED:**
+  - Chrome CDP endpoint at `http://127.0.0.1:9222` is unavailable (`Chrome CDP Disconnected`). Agent reports: `"Naukri Chrome is not running and could not be started. CDP endpoint unavailable at http://127.0.0.1:9222."`
+- **UNKNOWN / NOT YET VERIFIED:**
+  - Multi-month long-term unattended operation across OS sleep/wake cycles.
+  - Future unannounced Naukri.com DOM modifications.
+
+### Next Step
+Diagnose why Chrome/CDP on `127.0.0.1:9222` is unavailable and restore Chrome CDP connectivity so automated tasks can resume.
+
 
