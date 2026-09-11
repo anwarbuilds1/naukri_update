@@ -33,7 +33,7 @@ export default function ResumePage() {
   }, []);
 
   async function handleDeleteResume() {
-    if (!confirm('Are you sure you want to delete the active resume from your local agent?')) {
+    if (!confirm('Are you sure you want to delete your authoritative resume from cloud storage?')) {
       return;
     }
     setDeleting(true);
@@ -43,7 +43,7 @@ export default function ResumePage() {
       const res = await fetch('/api/agent/resume', { method: 'DELETE' });
       const json = await res.json();
       if (res.ok && json.success) {
-        setResult({ type: 'success', message: 'Active resume deleted successfully from local agent.' });
+        setResult({ type: 'success', message: 'Authoritative resume deleted successfully from Supabase Storage.' });
         await fetchResumeInfo();
       } else {
         setResult({ type: 'error', message: json.error?.message || 'Failed to delete resume.' });
@@ -86,14 +86,14 @@ export default function ResumePage() {
       if (res.ok && json.success) {
         setResult({
           type: 'success',
-          message: `Resume uploaded to local agent successfully as "${json.data?.filename || file.name}".`,
+          message: `Authoritative resume uploaded successfully to Supabase Storage as "${json.data?.filename || file.name}".`,
         });
         setFile(null);
         await fetchResumeInfo();
       } else {
         setResult({
           type: 'error',
-          message: json.error?.message || 'Failed to upload resume to local agent.',
+          message: json.error?.message || 'Failed to upload resume to Supabase Storage.',
         });
       }
     } catch (err: unknown) {
@@ -109,7 +109,7 @@ export default function ResumePage() {
       <div>
         <h1 className="text-2xl font-bold text-white">Resume Management</h1>
         <p className="text-slate-400 mt-1">
-          Upload candidate resume PDF directly to your local agent for daily Naukri uploads.
+          Upload candidate resume PDF to your secure cloud storage. Your local agent automatically reconciles and syncs the resume cache for scheduled Naukri updates.
         </p>
       </div>
 
@@ -125,23 +125,31 @@ export default function ResumePage() {
         </div>
       )}
 
-      {/* Active Resume Status Card */}
+      {/* Authoritative Cloud Resume Status Card */}
       <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-white">Active Resume</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Current PDF used for scheduled daily uploads on your agent.</p>
+            <h2 className="text-lg font-semibold text-white">Authoritative Cloud Resume</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Stored securely in Supabase Storage with user Row Level Security (RLS).</p>
           </div>
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-              resumeInfo?.exists
-                ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-            }`}
-          >
-            <span className={`h-1.5 w-1.5 rounded-full ${resumeInfo?.exists ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-            {loadingInfo ? 'Checking...' : resumeInfo?.exists ? 'Configured' : 'Not configured'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                resumeInfo?.cloudConfigured
+                  ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                  : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+              }`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${resumeInfo?.cloudConfigured ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              {loadingInfo ? 'Checking...' : resumeInfo?.cloudConfigured ? 'Cloud Configured' : 'Not Configured'}
+            </span>
+
+            {resumeInfo?.syncStatus && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                Cache: {resumeInfo.syncStatus}
+              </span>
+            )}
+          </div>
         </div>
 
         {resumeInfo?.exists ? (
@@ -150,9 +158,10 @@ export default function ResumePage() {
               <div className="text-sm font-semibold text-white flex items-center gap-2">
                 <span>📄</span> {resumeInfo.filename}
               </div>
-              <div className="text-xs text-slate-400">
+              <div className="text-xs text-slate-400 font-mono">
                 Size: {resumeInfo.sizeBytes ? `${Math.round(resumeInfo.sizeBytes / 1024)} KB` : 'Unknown'} ·
                 Uploaded: {resumeInfo.lastModified ? new Date(resumeInfo.lastModified).toLocaleString() : 'Unknown'}
+                {resumeInfo.sha256 && ` · SHA-256: ${resumeInfo.sha256.slice(0, 12)}...`}
               </div>
             </div>
             <button
@@ -161,12 +170,12 @@ export default function ResumePage() {
               disabled={deleting}
               className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/20 transition disabled:opacity-40"
             >
-              {deleting ? 'Deleting...' : 'Delete Resume'}
+              {deleting ? 'Deleting...' : 'Delete Cloud Resume'}
             </button>
           </div>
         ) : (
           <p className="text-xs text-slate-500 italic">
-            No resume file currently loaded on your agent. Upload a PDF below to enable automated resume updates.
+            No resume file currently stored in cloud storage. Upload a PDF below from any device to configure automated resume updates.
           </p>
         )}
       </div>
@@ -175,7 +184,7 @@ export default function ResumePage() {
         <div>
           <h2 className="text-lg font-semibold text-white">Upload Authoritative Resume</h2>
           <p className="text-xs text-slate-400 mt-1">
-            Playwright requires a physical file on the local machine where Chrome executes. Your resume stays on your machine and is never stored in cloud databases.
+            Resumes are stored in your private Supabase Storage bucket. Your local background agent will automatically fetch and cache the active PDF when executing daily profile updates.
           </p>
         </div>
 
@@ -219,7 +228,7 @@ export default function ResumePage() {
               disabled={!file || uploading}
               className="rounded-md bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-40"
             >
-              {uploading ? 'Sending to Agent...' : 'Upload to Agent'}
+              {uploading ? 'Uploading to Storage...' : 'Upload to Supabase Storage'}
             </button>
           </div>
         </form>

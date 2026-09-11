@@ -228,7 +228,15 @@ export async function ensureChromeRunning(
     naukriProfileUrl,
   ];
 
-  let proc = spawn(chromePath, chromeArgs, { detached: true, stdio: 'ignore', env: spawnEnv });
+  let chromeStderrBuffer = '';
+  let proc = spawn(chromePath, chromeArgs, { detached: true, stdio: ['ignore', 'ignore', 'pipe'], env: spawnEnv });
+  proc.stderr?.on('data', (chunk) => {
+    chromeStderrBuffer += chunk.toString('utf8');
+    if (chromeStderrBuffer.length > 8192) {
+      chromeStderrBuffer = chromeStderrBuffer.slice(-4096);
+    }
+  });
+
   spawnedChromePid = proc.pid ?? null;
   proc.unref();
 
@@ -262,6 +270,9 @@ export async function ensureChromeRunning(
         const initialPidAlive = spawnedChromePid ? isProcessAlive(spawnedChromePid) : false;
         if (!initialPidAlive) {
           console.log('[chrome] GUI Chrome process exited; attempting headless Chrome fallback on port 9222...');
+          if (chromeStderrBuffer) {
+            console.log(`[chrome] GUI startup stderr output: ${chromeStderrBuffer.trim()}`);
+          }
           const headlessArgs = [
             '--remote-debugging-port=9222',
             '--remote-debugging-address=127.0.0.1',
@@ -269,7 +280,10 @@ export async function ensureChromeRunning(
             `--user-data-dir=${profileDir}`,
             naukriProfileUrl,
           ];
-          const fallbackProc = spawn(chromePath, headlessArgs, { detached: true, stdio: 'ignore', env: spawnEnv });
+          const fallbackProc = spawn(chromePath, headlessArgs, { detached: true, stdio: ['ignore', 'ignore', 'pipe'], env: spawnEnv });
+          fallbackProc.stderr?.on('data', (chunk) => {
+            chromeStderrBuffer += chunk.toString('utf8');
+          });
           spawnedChromePid = fallbackProc.pid ?? null;
           fallbackProc.unref();
         }
@@ -277,6 +291,10 @@ export async function ensureChromeRunning(
 
       if (attempts >= 30) {
         clearInterval(poll);
+        const lockExists = existsSync(path.join(profileDir, 'SingletonLock'));
+        console.error(
+          `[chrome] CDP endpoint ${cdpEndpoint} unreachable after 30s. Diagnostics: path=${chromePath}, profile=${profileDir}, lockExists=${lockExists}, DISPLAY=${spawnEnv['DISPLAY'] ?? 'unset'}, XAUTHORITY=${spawnEnv['XAUTHORITY'] ?? 'unset'}. Stderr: ${chromeStderrBuffer.trim() || 'none'}`
+        );
         resolve(false);
       }
     }, 1000);

@@ -71,6 +71,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     refreshWindowEnd: configRow.refresh_window_end,
     resumeUpdateEnabled: configRow.resume_update_enabled,
     resumeUpdateTime: configRow.resume_update_time,
+    resumeFilename: configRow.resume_filename ?? null,
+    resumeStoragePath: configRow.resume_storage_path ?? null,
+    resumeSizeBytes: configRow.resume_size_bytes ?? null,
+    resumeUpdatedAt: configRow.resume_updated_at ?? null,
+    resumeSha256: configRow.resume_sha256 ?? null,
   };
 
   return NextResponse.json({

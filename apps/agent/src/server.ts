@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
 import type { AgentStatus, ApiResponse, DiagnosticsResult, ResumeInfo } from '@naukri-update/shared';
-import { cleanupStaleResumes, sanitizeFilename } from './automation.js';
+import { cleanupStaleResumes, reconcileResumeCache, sanitizeFilename } from './automation.js';
 import { checkCDPAvailable, findChromeExecutable } from './chrome.js';
 import { getDefaultConfigDir, readEncryptedPassword, saveEncryptedPassword } from './config.js';
 import { loadTaskState } from './state.js';
@@ -475,6 +475,29 @@ export function createAgentServer(opts: AgentServerOptions): http.Server {
           });
         }
       });
+      return;
+    }
+
+    // POST /api/agent/resume/sync — trigger immediate resume cache reconciliation
+    if (req.method === 'POST' && url.pathname === '/api/agent/resume/sync') {
+      try {
+        const result = await reconcileResumeCache(
+          configDir,
+          process.env['WEB_GATEWAY_URL'],
+          agentSecret,
+          getStatus().agentId
+        );
+        json(res, 200, {
+          success: true,
+          data: result,
+        });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        json(res, 500, {
+          success: false,
+          error: { code: 'RECONCILIATION_ERROR', message: msg },
+        });
+      }
       return;
     }
 

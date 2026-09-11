@@ -59,27 +59,28 @@
 - Cookie-based SSR Supabase client (`@supabase/ssr`) enforcing RLS on all user requests
 
 ### Supabase
-**Owns**: User Auth, PostgreSQL persistent data (`agent_config`, `run_log`, `agent_status`, `agent_commands`)  
-**Does NOT own**: `NAUKRI_PASSWORD`, resume PDF files, Chrome sessions, automation Playwright execution
+**Owns**: User Auth, PostgreSQL persistent data (`agent_config`, `run_log`, `agent_status`, `agent_commands`), **Authoritative Resume Storage** (`resumes` bucket with per-user RLS).  
+**Does NOT own**: `NAUKRI_PASSWORD`, Chrome sessions, Playwright execution context.
 
-| Table | Writer | Reader | Security |
-|-------|--------|--------|----------|
+| Resource | Writer | Reader | Security |
+|---|---|---|---|
 | `agent_config` | Web (user settings) | Agent via Next.js `/api/agent/schedule` | RLS (`auth.uid() = user_id`) |
+| `resumes` Bucket | Web `/api/agent/resume` | Web & Agent `/api/agent/resume/download` | RLS (`bucket_id = 'resumes' AND auth.uid()::text = (storage.foldername(name))[1]`) |
 | `run_log` | Web `/api/agent/report` | Web (logs page & dashboard) | RLS (`auth.uid() = user_id`) |
 | `agent_status` | Web `/api/agent/report` | Web `/api/agent/status` | RLS (`auth.uid() = user_id`) |
 | `agent_commands` | Web `/api/agent/command` | Web `/api/agent/command` | RLS (`auth.uid() = user_id`) |
 
 **Critical security rules**:
 - `NAUKRI_PASSWORD` is **never** stored in Supabase.
-- Resume PDFs are **never** stored in Supabase Storage (Playwright requires local disk access).
+- Authoritative Resume PDF is stored in private Supabase Storage (`resumes/{user_id}/resume.pdf`). Local agent syncs to execution cache (`~/.config/NaukriUpdate/resume/cached_resume.pdf`).
 - `SUPABASE_SERVICE_ROLE_KEY` is **never** given to the local agent. Next.js API is the sole control plane gateway.
 
 ### Agent (`apps/agent`)
-**Owns**: Chrome lifecycle, Playwright automation, local AES-256-GCM credentials, resume PDF, scheduling execution  
+**Owns**: Chrome lifecycle, Playwright automation, local AES-256-GCM credentials, local resume execution cache, scheduling execution  
 **Does NOT own**: UI, user authentication, Supabase schema or direct Supabase credentials
 
 - Node.js 20+ + TypeScript
-- Persistent poll loop (every 60 seconds) with schedule synchronization from `/api/agent/schedule`
+- Persistent poll loop (every 60 seconds) with schedule & resume SHA-256 synchronization from `/api/agent/schedule`
 - Local HTTP server on `127.0.0.1:7842` authenticated with `X-Agent-Secret`
 - Machine-bound credential store (`.credentials.enc`)
 - Reports run results and heartbeats to Next.js gateway (`POST /api/agent/report`)
@@ -90,9 +91,9 @@
 
 | Data | Location | Transport | Rationale |
 |------|----------|-----------|-----------|
-| `NAUKRI_PASSWORD` | Agent local `.credentials.enc` | Browser → Next.js API → Agent HTTP (localhost) | Never in Supabase; machine-bound AES-256-GCM |
+| `NAUKRI_PASSWORD` | Agent local `.credentials.enc` | Localhost HTTP (`127.0.0.1:7842`) only | Never in Supabase; machine-bound AES-256-GCM |
 | `NAUKRI_EMAIL` | Supabase `agent_config` | Normal API | Non-sensitive; tied to user account |
-| Resume PDF | Agent `<configDir>/resume/` | Browser → Next.js API → Agent HTTP (localhost) | Validated (5MB, %PDF header); Playwright needs local file |
+| Resume PDF | Supabase Storage (`resumes` bucket) | Browser ➔ Next.js API ➔ Supabase Storage; Agent downloads to local cache | Authoritative cloud source; 5MB limit, %PDF header validation, per-user RLS |
 | Chrome session | Agent `.naukri-chrome-profile/` | Never transmitted | Chrome cookies cannot be cloud-managed |
 | `SUPABASE_SERVICE_ROLE_KEY` | Next.js server env only | Never transmitted | Kept strictly on server gateway; not in agent |
 | `AGENT_SECRET` | Agent (`~/.config/NaukriUpdate/agent.env`) + Next.js server | Localhost HTTP header (`X-Agent-Secret`) | Authenticates web ↔ agent requests; stored in `chmod 0600` file outside repo |

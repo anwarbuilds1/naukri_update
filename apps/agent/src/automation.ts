@@ -12,7 +12,10 @@
  * - Playwright connection over CDP (chromium.connectOverCDP)
  */
 
+import * as crypto from 'crypto';
 import * as fs from 'fs';
+import * as http from 'http';
+import * as https from 'https';
 import * as path from 'path';
 import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
 import type { RunResult, TaskType } from '@naukri-update/shared';
@@ -389,6 +392,155 @@ export async function updateAndVerifyHeadline(
 
 // ─── Resume Automation & File Utilities ──────────────────────────────────────
 
+export async function reconcileResumeCache(
+  configDir: string,
+  gatewayUrl?: string,
+  agentSecret?: string,
+  agentId?: string,
+  logger: Logger = console.log
+): Promise<{ status: 'synced' | 'no_resume_configured' | 'offline_cache_used'; cachePath: string | null }> {
+  const resumeDir = path.join(configDir, 'resume');
+  if (!fs.existsSync(resumeDir)) {
+    fs.mkdirSync(resumeDir, { recursive: true });
+  }
+
+  const cachedFilePath = path.join(resumeDir, 'cached_resume.pdf');
+  const targetGateway = gatewayUrl || process.env['WEB_GATEWAY_URL'] || 'http://localhost:3000';
+
+  let remoteSchedule: any = null;
+  try {
+    const url = new URL('/api/agent/schedule', targetGateway);
+    const client = url.protocol === 'https:' ? https : http;
+    const reqHeaders: Record<string, string> = {};
+    if (agentSecret) reqHeaders['X-Agent-Secret'] = agentSecret;
+    if (agentId) reqHeaders['X-Agent-ID'] = agentId;
+
+    remoteSchedule = await new Promise<any>((resolve) => {
+      const req = client.get(url, { headers: reqHeaders, timeout: 5000 }, (res) => {
+        let body = '';
+        res.on('data', (chunk) => (body += chunk));
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(body);
+            if (json.success && json.data) resolve(json.data);
+            else resolve(null);
+          } catch {
+            resolve(null);
+          }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(null);
+      });
+    });
+  } catch {
+    remoteSchedule = null;
+  }
+
+  // Case 1: Cloud is reachable and reports NO resume storage path (Resume Deleted)
+  if (remoteSchedule && remoteSchedule.schedule && !remoteSchedule.schedule.resumeStoragePath) {
+    logger('[reconciliation] Cloud database explicitly reports no active resume storage path.');
+    if (fs.existsSync(cachedFilePath)) {
+      try {
+        fs.unlinkSync(cachedFilePath);
+        logger('[reconciliation] Removed obsolete local resume cache.');
+      } catch {
+        // ignore
+      }
+    }
+    return { status: 'no_resume_configured', cachePath: null };
+  }
+
+  // Compute local cache SHA-256 if cached file exists
+  let localSha256: string | null = null;
+  if (fs.existsSync(cachedFilePath)) {
+    try {
+      const stat = fs.statSync(cachedFilePath);
+      if (stat.isFile() && stat.size > 0) {
+        const fileBuf = fs.readFileSync(cachedFilePath);
+        if (fileBuf.subarray(0, 4).toString('utf8') === '%PDF') {
+          localSha256 = crypto.createHash('sha256').update(fileBuf).digest('hex');
+        }
+      }
+    } catch {
+      localSha256 = null;
+    }
+  }
+
+  const expectedSha256 = remoteSchedule?.schedule?.resumeSha256;
+
+  // Case 2: Local cache is valid and matches remote SHA-256
+  if (localSha256 && expectedSha256 && localSha256 === expectedSha256) {
+    logger('[reconciliation] Local resume cache is up-to-date (SHA-256 match).');
+    return { status: 'synced', cachePath: cachedFilePath };
+  }
+
+  // Case 3: Cloud is unreachable, but valid local cache exists
+  if (!remoteSchedule) {
+    if (localSha256) {
+      logger('[reconciliation] Cloud gateway unreachable; proceeding with verified local resume cache.');
+      return { status: 'offline_cache_used', cachePath: cachedFilePath };
+    }
+    logger('[reconciliation] Cloud gateway unreachable and no valid local resume cache exists.');
+    return { status: 'no_resume_configured', cachePath: null };
+  }
+
+  // Case 4: Cloud reports active resume, download is required
+  logger('[reconciliation] Downloading authoritative resume from cloud storage...');
+  const downloadUrl = new URL('/api/agent/resume/download', targetGateway);
+  const client = downloadUrl.protocol === 'https:' ? https : http;
+  const reqHeaders: Record<string, string> = {};
+  if (agentSecret) reqHeaders['X-Agent-Secret'] = agentSecret;
+  if (agentId) reqHeaders['X-Agent-ID'] = agentId;
+
+  const downloadBuffer = await new Promise<Buffer | null>((resolve) => {
+    const req = client.get(downloadUrl, { headers: reqHeaders, timeout: 30000 }, (res) => {
+      if (res.statusCode !== 200) {
+        resolve(null);
+        return;
+      }
+      const chunks: Buffer[] = [];
+      res.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+      res.on('end', () => resolve(Buffer.concat(chunks)));
+    });
+    req.on('error', () => resolve(null));
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(null);
+    });
+  });
+
+  if (!downloadBuffer || downloadBuffer.length === 0) {
+    if (localSha256) {
+      logger('[reconciliation] Download failed; falling back to existing local resume cache.');
+      return { status: 'offline_cache_used', cachePath: cachedFilePath };
+    }
+    throw new Error('Failed to download authoritative resume from cloud storage.');
+  }
+
+  // Validate %PDF header
+  if (downloadBuffer.subarray(0, 4).toString('utf8') !== '%PDF') {
+    throw new Error('Downloaded resume object is not a valid PDF document.');
+  }
+
+  // Write to temporary file, fsync, and atomic rename
+  const tmpPath = `${cachedFilePath}.tmp.${Date.now()}`;
+  fs.writeFileSync(tmpPath, downloadBuffer);
+  try {
+    const fd = fs.openSync(tmpPath, 'r+');
+    fs.fsyncSync(fd);
+    fs.closeSync(fd);
+  } catch {
+    // ignore
+  }
+
+  fs.renameSync(tmpPath, cachedFilePath);
+  logger('[reconciliation] Authoritative resume downloaded and atomically cached successfully.');
+  return { status: 'synced', cachePath: cachedFilePath };
+}
+
 export function findAuthoritativeResume(
   resumeDir: string,
   rawResumeFile?: string,
@@ -593,7 +745,19 @@ export async function uploadAndVerifyResume(
   options: AutomationOptions,
   logger: Logger = console.log
 ): Promise<string> {
-  logger('Step 1: Locate resume upload section...');
+  logger('Step 1: Reconciling resume cache with cloud storage...');
+  const reconciliation = await reconcileResumeCache(
+    options.configDir,
+    process.env['WEB_GATEWAY_URL'],
+    undefined,
+    undefined,
+    logger
+  );
+
+  if (reconciliation.status === 'no_resume_configured') {
+    throw new Error('No active resume configured in cloud storage.');
+  }
+
   const resumeDir = path.resolve(options.resumeDir ?? path.join(options.configDir, 'resume'));
 
   // Find authoritative source resume

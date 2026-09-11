@@ -26,6 +26,11 @@ CREATE TABLE IF NOT EXISTS public.agent_config (
   resume_update_time        TEXT    NOT NULL DEFAULT '07:00'
                               CHECK (resume_update_time ~ '^([0-1][0-9]|2[0-3]):[0-5][0-9]$'),
   naukri_email    TEXT,       -- email only; password NEVER stored here
+  resume_filename     TEXT,
+  resume_storage_path TEXT,
+  resume_size_bytes   INTEGER CHECK (resume_size_bytes IS NULL OR (resume_size_bytes > 0 AND resume_size_bytes <= 5242880)),
+  resume_updated_at   TIMESTAMPTZ,
+  resume_sha256       TEXT,
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

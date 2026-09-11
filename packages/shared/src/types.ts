@@ -11,7 +11,7 @@ export interface RunResult {
   screenshotPath?: string; // local path if error screenshot was taken
 }
 
-// Schedule configuration (mirrors existing .env config keys)
+// Schedule configuration (mirrors existing .env config keys and cloud resume metadata)
 export interface ScheduleConfig {
   refreshMode: 'interval' | 'fixed_time' | 'disabled';
   refreshIntervalHours: number;
@@ -22,6 +22,11 @@ export interface ScheduleConfig {
   refreshWindowEnd: string; // HH:MM
   resumeUpdateEnabled: boolean;
   resumeUpdateTime: string; // HH:MM
+  resumeFilename?: string | null;
+  resumeStoragePath?: string | null;
+  resumeSizeBytes?: number | null;
+  resumeUpdatedAt?: string | null;
+  resumeSha256?: string | null;
 }
 
 // Agent status reported to web/Supabase
@@ -141,12 +146,16 @@ export type ApiResponse<T> =
   | { success: true; data: T }
   | { success: false; error: ApiError };
 
-// Information about active resume on local agent
+// Information about active resume on Supabase Storage & local agent cache
 export interface ResumeInfo {
   exists: boolean;
   filename?: string;
   sizeBytes?: number;
   lastModified?: string;
+  sha256?: string;
+  storagePath?: string;
+  cloudConfigured: boolean;
+  syncStatus?: 'synced' | 'local_only' | 'cloud_only' | 'missing' | 'stale';
 }
 
 // System diagnostics result
