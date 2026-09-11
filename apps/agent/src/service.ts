@@ -108,6 +108,7 @@ Restart=always
 RestartSec=10
 Environment=NODE_ENV=production
 EnvironmentFile=%h/.config/NaukriUpdate/agent.env
+PassEnvironment=DISPLAY XAUTHORITY WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS
 StandardOutput=journal
 StandardError=journal
 

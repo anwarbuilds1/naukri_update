@@ -41,11 +41,9 @@ Naukri.com
 | **Phase 5** | Connect Agent ↔ API | **COMPLETED** | Authenticated localhost HTTP bridge on `127.0.0.1:7842` with `X-Agent-Secret`, secret synchronization (`~/.config/NaukriUpdate/agent.env`), heartbeat reporting. |
 | **Phase 6** | Scheduling & Automation | **COMPLETED** | Schedule synchronization from `/api/agent/schedule`, interval/fixed-time task execution, state commitment, `naukri-agent.service` systemd unit installation. |
 | **Phase 7** | Dashboard + Logs + Diagnostics | **COMPLETED** | Next.js PWA Dashboard UI (`AgentStatusCard`), live status polling, structured execution logs view, system diagnostics route. |
-| **Phase 8** | PWA + Installation UX | **IN PROGRESS** | **CURRENT STAGE:** Final Phase 8 verification and end-to-end installation/runtime validation. |
+| **Phase 8** | PWA + Installation UX | **COMPLETED** | **FINAL VERIFICATION COMPLETED:** End-to-end PWA ↔ Agent ↔ Chrome CDP ↔ Naukri execution validated in production systemd daemon. |
 | **Phase 9** | Security + Reliability | **COMPLETED** | Machine-bound AES-256-GCM encryption, strict RLS enforcement, single-agent file lock, process failure recovery. |
 | **Phase 10** | Remove Electron + Release | **COMPLETED** | Electron framework retired. Legacy baseline immutably tagged at `v1.0-electron-baseline`. |
-
-> **Roadmap Note:** Phases 0 through 7, Phase 9, and Phase 10 are completed. Phase 8 is the single active remaining phase, currently undergoing final verification.
 
 ---
 
@@ -59,9 +57,9 @@ Agent heartbeat             PASS
 Agent daemon/service         PASS
 Agent persistence/reboot     PASS
 Agent lock                   PASS
-Agent -> Chrome CDP           CURRENT ISSUE
-Chrome CDP :9222             DISCONNECTED
-Naukri automation            Previously validated, currently blocked by Chrome/CDP
+Agent -> Chrome CDP           PASS
+Chrome CDP :9222             PASS
+Naukri automation            PASS (Real headline refresh & resume upload verified)
 Electron retirement         COMPLETE
 ```
 
@@ -71,21 +69,32 @@ Electron retirement         COMPLETE
 - **Next.js PWA & Auth:** Supabase Auth login, session cookies, dashboard UI, settings management, and all API gateway routes (`/api/agent/*`) are 100% operational.
 - **Next.js ↔ Agent Connectivity:** Secret synchronization between `~/.config/NaukriUpdate/agent.env` and `apps/web/.env.local` is verified. Next.js API routes successfully authenticate with local Agent on `127.0.0.1:7842`.
 - **Agent Service Daemon:** `naukri-agent.service` systemd user service is active (running), survives reboots, maintains persistent identity (`agentId: 239de3e1-6360-4a1d-a2b8-838de5480178`), enforces single-agent lock, and reports live heartbeats (`Last Heartbeat: Just now`, `Version: v0.1.0`).
-- **Automation Engine Logic:** Previous automation runs were validated and succeeded: headline refresh updated headline text on Naukri.com, resume upload succeeded with dynamic date-stamping, duplicate upload protection passed, and DOM verification succeeded.
+- **Chrome CDP Lifecycle & Recovery:** Agent automatically spawns and manages Chrome on `127.0.0.1:9222` with environment-aware display resolution and headless fallback. Disconnect/reconnect commands (`disconnect-chrome` & `connect-chrome`) cleanly terminate and restore Chrome CDP sessions.
+- **Real End-to-End Automation:**
+  - **Headline Refresh:** Verified live execution on Naukri.com (`OK: headline dot removed and verified from Naukri`).
+  - **Resume Upload:** Verified live execution on Naukri.com (`OK: Resume uploaded, saved, and verified from Naukri. New filename: Anwar_Rizwan_Resume_12-09-2026.pdf`).
+  - **Duplicate Protection & Cleanup:** Temporary dated files and stale duplicate PDFs are cleaned up automatically.
 - **Electron Retirement:** Electron dependency has been fully removed from the active stack.
 
 #### CURRENTLY BLOCKED
-- **Chrome CDP Connection (127.0.0.1:9222):** The dashboard currently displays **Chrome CDP Disconnected**. Recent manual and scheduled automation attempts report:
-  > `"Naukri Chrome is not running and could not be started. CDP endpoint unavailable at http://127.0.0.1:9222."`
-  *Note:* The local Agent service itself is healthy and communicating with Next.js; the current failure is strictly isolated to Chrome/CDP availability at port 9222.
+- **None.** All system components and end-to-end automation workflows are fully operational.
 
 #### UNKNOWN / NOT YET VERIFIED
-- **Multi-Month Long-Term Unattended Stability:** Needs continuous multi-month observation across OS sleep/wake cycles and network disruptions once Chrome CDP connection is resolved.
-- **Future Naukri DOM Changes:** Naukri.com frontend layout updates could occur outside the project's control.
+- **Multi-Month Long-Term Unattended Stability:** Needs continuous multi-month observation across OS sleep/wake cycles.
+- **Future Naukri DOM Changes:** Unannounced Naukri.com frontend layout changes could occur outside project control.
 
 ---
 
-## 4. Test & Build Status
+## 4. Chrome CDP Root Cause & Production Fix
+
+- **Root Cause:** When `naukri-agent.service` ran as a systemd user service in a background daemon environment, GUI session environment variables (`DISPLAY`, `XAUTHORITY`) were not inherited. Spawning `/usr/bin/google-chrome` without explicit display resolution caused Chrome to exit immediately with `Missing X server or $DISPLAY`, preventing CDP on port 9222 from starting.
+- **Fix Implemented:**
+  1. **`apps/agent/src/chrome.ts`**: Added `resolveChromeEnvironment()` to dynamically resolve `DISPLAY` (from systemd user environment or fallback targets `:1`/`:0`) and `XAUTHORITY` (`/run/user/<uid>/gdm/Xauthority` or `~/.Xauthority`), and added an automatic fallback to `--headless=new` if Chrome cannot connect to an X display.
+  2. **`apps/agent/src/service.ts`**: Updated `getSystemdServiceContent()` to include `PassEnvironment=DISPLAY XAUTHORITY WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS` in `naukri-agent.service`.
+
+---
+
+## 5. Test & Build Status
 
 - **Unit Test Suite:** `93/93` tests passing (100% green across 36 test suites).
 - **TypeScript:** `0 errors` across all workspace packages (`@naukri-update/web`, `@naukri-update/agent`, `@naukri-update/shared`, `@naukri-update/database`).
@@ -96,15 +105,9 @@ Electron retirement         COMPLETE
 
 ---
 
-## 5. Legacy Electron Baseline & Rollback Reference
+## 6. Legacy Electron Baseline & Rollback Reference
 
 The legacy Electron application was permanently retired in Phase 10 following full migration verification.
 - **Git Baseline Tag:** `v1.0-electron-baseline`
 - **Baseline Commit:** `55b7bef0702c8c77c05720cded4a54304ecbb1e8`
 - **Rollback Instructions:** Refer to [`docs/rollback.md`](docs/rollback.md) for checkout and execution instructions.
-
----
-
-## 6. Next Step
-
-- **Immediate Task:** Diagnose why Chrome/CDP on `127.0.0.1:9222` is unavailable and resolve the Chrome launcher / CDP connection state so automation tasks can resume execution.

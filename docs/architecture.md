@@ -182,9 +182,9 @@ Agent heartbeat             PASS
 Agent daemon/service         PASS
 Agent persistence/reboot     PASS
 Agent lock                   PASS
-Agent -> Chrome CDP           CURRENT ISSUE
-Chrome CDP :9222             DISCONNECTED
-Naukri automation            Previously validated, currently blocked by Chrome/CDP
+Agent -> Chrome CDP           PASS
+Chrome CDP :9222             PASS
+Naukri automation            PASS (Real headline refresh & resume upload verified)
 Electron retirement         COMPLETE
 ```
 
@@ -193,15 +193,22 @@ Electron retirement         COMPLETE
   - Next.js PWA frontend & Supabase Auth SSR session management.
   - Next.js API gateway routes (`/api/agent/*`) ↔ local Agent HTTP bridge (`127.0.0.1:7842`).
   - Systemd user service `naukri-agent.service` (daemon operational, reboot-persistent, single-instance locked, reporting heartbeats).
-  - Automation engine logic (previously validated: headline update, dated resume upload, duplicate detection, DOM verification).
+  - Chrome CDP lifecycle & display environment resolution (`apps/agent/src/chrome.ts`, `apps/agent/src/service.ts`).
+  - Real end-to-end headline refresh on Naukri.com (`OK: headline dot removed and verified from Naukri`).
+  - Real end-to-end resume upload on Naukri.com (`OK: Resume uploaded, saved, and verified from Naukri. New filename: Anwar_Rizwan_Resume_12-09-2026.pdf`).
+  - Disconnect / reconnect recovery (`disconnect-chrome` & `connect-chrome`).
   - Complete workspace build and test suite (`93/93` tests passing, `0` TypeScript errors).
 - **CURRENTLY BLOCKED:**
-  - Chrome CDP endpoint at `http://127.0.0.1:9222` is unavailable (`Chrome CDP Disconnected`). Agent reports: `"Naukri Chrome is not running and could not be started. CDP endpoint unavailable at http://127.0.0.1:9222."`
+  - None.
 - **UNKNOWN / NOT YET VERIFIED:**
   - Multi-month long-term unattended operation across OS sleep/wake cycles.
   - Future unannounced Naukri.com DOM modifications.
 
-### Next Step
-Diagnose why Chrome/CDP on `127.0.0.1:9222` is unavailable and restore Chrome CDP connectivity so automated tasks can resume.
+### Chrome CDP Resolution Summary
+- **Root Cause:** In the systemd user service daemon environment, session GUI environment variables (`DISPLAY`, `XAUTHORITY`) were missing. Spawning `/usr/bin/google-chrome` without explicit display environment resolution caused Chrome to exit immediately with `Missing X server or $DISPLAY`, preventing CDP port 9222 from opening.
+- **Fix Implemented:**
+  1. `apps/agent/src/chrome.ts`: Added `resolveChromeEnvironment()` to resolve `DISPLAY` and `XAUTHORITY` when spawning Chrome on Linux, with `--headless=new` fallback if Chrome cannot connect to an X display.
+  2. `apps/agent/src/service.ts`: Added `PassEnvironment=DISPLAY XAUTHORITY WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS` to `naukri-agent.service`.
+
 
 

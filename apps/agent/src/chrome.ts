@@ -152,6 +152,46 @@ export function isProfileActivelyLocked(profileDir: string): boolean {
 }
 
 /**
+ * Resolves environment variables needed to launch Chrome on Linux desktop/systemd environments.
+ */
+export function resolveChromeEnvironment(): Record<string, string> {
+  const env: Record<string, string> = { ...process.env } as Record<string, string>;
+
+  if (process.platform === 'linux') {
+    if (!env['DISPLAY']) {
+      try {
+        const sysEnv = execSync('systemctl --user show-environment', { stdio: 'pipe' }).toString();
+        for (const line of sysEnv.split('\n')) {
+          const parts = line.trim().split('=', 2);
+          if (parts.length === 2 && parts[0] && parts[1] && !env[parts[0]]) {
+            env[parts[0]] = parts[1];
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (!env['DISPLAY']) {
+      env['DISPLAY'] = ':1';
+    }
+    if (!env['XAUTHORITY'] && env['HOME']) {
+      const uid = process.getuid ? process.getuid() : 1000;
+      const gdmAuth = `/run/user/${uid}/gdm/Xauthority`;
+      if (existsSync(gdmAuth)) {
+        env['XAUTHORITY'] = gdmAuth;
+      } else {
+        const homeAuth = path.join(env['HOME'], '.Xauthority');
+        if (existsSync(homeAuth)) {
+          env['XAUTHORITY'] = homeAuth;
+        }
+      }
+    }
+  }
+
+  return env;
+}
+
+/**
  * Start Chrome with CDP enabled on 127.0.0.1:9222.
  * Returns true when CDP becomes available, false on timeout.
  */
@@ -179,6 +219,8 @@ export async function ensureChromeRunning(
     }
   }
 
+  const spawnEnv = resolveChromeEnvironment();
+
   const chromeArgs = [
     '--remote-debugging-port=9222',
     '--remote-debugging-address=127.0.0.1',
@@ -186,7 +228,7 @@ export async function ensureChromeRunning(
     naukriProfileUrl,
   ];
 
-  const proc = spawn(chromePath, chromeArgs, { detached: true, stdio: 'ignore' });
+  let proc = spawn(chromePath, chromeArgs, { detached: true, stdio: 'ignore', env: spawnEnv });
   spawnedChromePid = proc.pid ?? null;
   proc.unref();
 
@@ -201,16 +243,39 @@ export async function ensureChromeRunning(
     // ignore
   }
 
-  // Poll for CDP availability (up to 30 seconds)
+  // Poll for CDP availability (up to 30 seconds, with headless fallback if process dies)
   return new Promise((resolve) => {
     let attempts = 0;
+    let fallbackAttempted = false;
     const poll = setInterval(async () => {
       attempts++;
       const ready = await checkCDPAvailable(cdpEndpoint);
       if (ready) {
         clearInterval(poll);
         resolve(true);
-      } else if (attempts >= 30) {
+        return;
+      }
+
+      // If after 5 attempts CDP is not ready and process exited or failed to connect X display, try headless fallback
+      if (attempts === 5 && !fallbackAttempted) {
+        fallbackAttempted = true;
+        const initialPidAlive = spawnedChromePid ? isProcessAlive(spawnedChromePid) : false;
+        if (!initialPidAlive) {
+          console.log('[chrome] GUI Chrome process exited; attempting headless Chrome fallback on port 9222...');
+          const headlessArgs = [
+            '--remote-debugging-port=9222',
+            '--remote-debugging-address=127.0.0.1',
+            '--headless=new',
+            `--user-data-dir=${profileDir}`,
+            naukriProfileUrl,
+          ];
+          const fallbackProc = spawn(chromePath, headlessArgs, { detached: true, stdio: 'ignore', env: spawnEnv });
+          spawnedChromePid = fallbackProc.pid ?? null;
+          fallbackProc.unref();
+        }
+      }
+
+      if (attempts >= 30) {
         clearInterval(poll);
         resolve(false);
       }
