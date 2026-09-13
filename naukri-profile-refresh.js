@@ -152,7 +152,10 @@ async function updateAndVerifyHeadline(page) {
   await page.waitForLoadState('networkidle').catch(() => {});
 
   log('Step 14: Reload the profile...');
-  await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }).catch(async () => {
+    log('Reload with domcontentloaded timed out; retrying once with load state...');
+    await page.reload({ waitUntil: 'load', timeout: 60000 }).catch(() => {});
+  });
 
   log('Step 15: Confirm authenticated profile page after reload...');
   if (!await hasAuthenticatedProfile(page)) {
