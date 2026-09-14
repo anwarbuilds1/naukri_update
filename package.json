@@ -4,7 +4,8 @@
   "description": "Keeps a Naukri profile fresh by toggling a trailing dot on the resume headline",
   "main": "naukri-profile-refresh.js",
   "scripts": {
-    "refresh": "node naukri-profile-refresh.js"
+    "refresh": "node naukri-profile-refresh.js",
+    "apply": "node job-auto-apply/naukri-apply.js"
   },
   "author": "Ankit Baghel",
   "license": "ISC",

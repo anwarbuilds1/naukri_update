@@ -11,14 +11,16 @@ if (-not $isAdmin) {
 
 $ErrorActionPreference = 'Stop'
 
-$taskName = 'NaukriProfileRefresh'
+$taskNames = @('NaukriProfileRefresh', 'NaukriJobApply')
 
-$task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-if ($task) {
-    Enable-ScheduledTask -TaskName $taskName | Out-Null
-    Write-Host "Scheduled task '$taskName' enabled."
-    Start-ScheduledTask -TaskName $taskName
-    Write-Host 'Triggered an immediate run (safe no-op if nothing is due).'
-} else {
-    Write-Host "Scheduled task '$taskName' not found. Did it get deleted?"
+foreach ($taskName in $taskNames) {
+    $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if ($task) {
+        Enable-ScheduledTask -TaskName $taskName | Out-Null
+        Write-Host "Scheduled task '$taskName' enabled."
+        Start-ScheduledTask -TaskName $taskName
+        Write-Host 'Triggered an immediate run (safe no-op if nothing is due).'
+    } else {
+        Write-Host "Scheduled task '$taskName' not found. Did it get deleted?"
+    }
 }

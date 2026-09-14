@@ -13,14 +13,16 @@ if (-not $isAdmin) {
 
 $ErrorActionPreference = 'Stop'
 
-$taskName = 'NaukriProfileRefresh'
+$taskNames = @('NaukriProfileRefresh', 'NaukriJobApply')
 
-$task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-if ($task) {
-    Disable-ScheduledTask -TaskName $taskName | Out-Null
-    Write-Host "Scheduled task '$taskName' disabled. No more automatic refreshes."
-} else {
-    Write-Host "Scheduled task '$taskName' not found; nothing to disable."
+foreach ($taskName in $taskNames) {
+    $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+    if ($task) {
+        Disable-ScheduledTask -TaskName $taskName | Out-Null
+        Write-Host "Scheduled task '$taskName' disabled. No more automatic runs."
+    } else {
+        Write-Host "Scheduled task '$taskName' not found; nothing to disable."
+    }
 }
 
 $closed = 0
