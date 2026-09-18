@@ -191,6 +191,8 @@ export function resolveChromeEnvironment(): Record<string, string> {
   return env;
 }
 
+let inFlightChromeLaunchPromise: Promise<boolean> | null = null;
+
 /**
  * Start Chrome with CDP enabled on 127.0.0.1:9222.
  * Returns true when CDP becomes available, false on timeout.
@@ -200,105 +202,128 @@ export async function ensureChromeRunning(
   naukriProfileUrl: string,
   cdpEndpoint: string = 'http://127.0.0.1:9222'
 ): Promise<boolean> {
-  const available = await checkCDPAvailable(cdpEndpoint);
-  if (available) return true;
-
-  const chromePath = findChromeExecutable();
-  if (!chromePath) {
-    console.error('[chrome] Chrome executable not found.');
-    return false;
+  if (inFlightChromeLaunchPromise) {
+    return inFlightChromeLaunchPromise;
   }
 
-  // Remove stale SingletonLock only if no live process owns it
-  const lockFile = path.join(profileDir, 'SingletonLock');
-  if (existsSync(lockFile) && !isProfileActivelyLocked(profileDir)) {
+  inFlightChromeLaunchPromise = (async () => {
     try {
-      unlinkSync(lockFile);
-    } catch {
-      // ignore
-    }
-  }
+      const available = await checkCDPAvailable(cdpEndpoint);
+      if (available) return true;
 
-  const spawnEnv = resolveChromeEnvironment();
-
-  const chromeArgs = [
-    '--remote-debugging-port=9222',
-    '--remote-debugging-address=127.0.0.1',
-    `--user-data-dir=${profileDir}`,
-    naukriProfileUrl,
-  ];
-
-  let chromeStderrBuffer = '';
-  let proc = spawn(chromePath, chromeArgs, { detached: true, stdio: ['ignore', 'ignore', 'pipe'], env: spawnEnv });
-  proc.stderr?.on('data', (chunk) => {
-    chromeStderrBuffer += chunk.toString('utf8');
-    if (chromeStderrBuffer.length > 8192) {
-      chromeStderrBuffer = chromeStderrBuffer.slice(-4096);
-    }
-  });
-
-  spawnedChromePid = proc.pid ?? null;
-  proc.unref();
-
-  // Record PID to runtime state
-  try {
-    const runtimeDir = path.join(path.dirname(profileDir), 'runtime');
-    if (!existsSync(runtimeDir)) mkdirSync(runtimeDir, { recursive: true });
-    if (spawnedChromePid) {
-      fs.writeFileSync(path.join(runtimeDir, 'chrome.pid'), String(spawnedChromePid), 'utf8');
-    }
-  } catch {
-    // ignore
-  }
-
-  // Poll for CDP availability (up to 30 seconds, with headless fallback if process dies)
-  return new Promise((resolve) => {
-    let attempts = 0;
-    let fallbackAttempted = false;
-    const poll = setInterval(async () => {
-      attempts++;
-      const ready = await checkCDPAvailable(cdpEndpoint);
-      if (ready) {
-        clearInterval(poll);
-        resolve(true);
-        return;
-      }
-
-      // If after 5 attempts CDP is not ready and process exited or failed to connect X display, try headless fallback
-      if (attempts === 5 && !fallbackAttempted) {
-        fallbackAttempted = true;
-        const initialPidAlive = spawnedChromePid ? isProcessAlive(spawnedChromePid) : false;
-        if (!initialPidAlive) {
-          console.log('[chrome] GUI Chrome process exited; attempting headless Chrome fallback on port 9222...');
-          if (chromeStderrBuffer) {
-            console.log(`[chrome] GUI startup stderr output: ${chromeStderrBuffer.trim()}`);
+      // Prevent duplicate launches if an active Chrome process already holds the profile lock
+      if (isProfileActivelyLocked(profileDir)) {
+        console.log('[chrome] Profile is actively locked by an existing Chrome process; waiting for CDP port...');
+        for (let i = 0; i < 10; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          if (await checkCDPAvailable(cdpEndpoint)) {
+            return true;
           }
-          const headlessArgs = [
-            '--remote-debugging-port=9222',
-            '--remote-debugging-address=127.0.0.1',
-            '--headless=new',
-            `--user-data-dir=${profileDir}`,
-            naukriProfileUrl,
-          ];
-          const fallbackProc = spawn(chromePath, headlessArgs, { detached: true, stdio: ['ignore', 'ignore', 'pipe'], env: spawnEnv });
-          fallbackProc.stderr?.on('data', (chunk) => {
-            chromeStderrBuffer += chunk.toString('utf8');
-          });
-          spawnedChromePid = fallbackProc.pid ?? null;
-          fallbackProc.unref();
         }
       }
 
-      if (attempts >= 30) {
-        clearInterval(poll);
-        const lockExists = existsSync(path.join(profileDir, 'SingletonLock'));
-        console.error(
-          `[chrome] CDP endpoint ${cdpEndpoint} unreachable after 30s. Diagnostics: path=${chromePath}, profile=${profileDir}, lockExists=${lockExists}, DISPLAY=${spawnEnv['DISPLAY'] ?? 'unset'}, XAUTHORITY=${spawnEnv['XAUTHORITY'] ?? 'unset'}. Stderr: ${chromeStderrBuffer.trim() || 'none'}`
-        );
-        resolve(false);
+      const chromePath = findChromeExecutable();
+      if (!chromePath) {
+        console.error('[chrome] Chrome executable not found.');
+        return false;
       }
-    }, 1000);
-  });
+
+      // Remove stale SingletonLock only if no live process owns it
+      const lockFile = path.join(profileDir, 'SingletonLock');
+      if (existsSync(lockFile) && !isProfileActivelyLocked(profileDir)) {
+        try {
+          unlinkSync(lockFile);
+        } catch {
+          // ignore
+        }
+      }
+
+      const spawnEnv = resolveChromeEnvironment();
+
+      const chromeArgs = [
+        '--remote-debugging-port=9222',
+        '--remote-debugging-address=127.0.0.1',
+        `--user-data-dir=${profileDir}`,
+        naukriProfileUrl,
+      ];
+
+      let chromeStderrBuffer = '';
+      let proc = spawn(chromePath, chromeArgs, { detached: true, stdio: ['ignore', 'ignore', 'pipe'], env: spawnEnv });
+      proc.stderr?.on('data', (chunk) => {
+        chromeStderrBuffer += chunk.toString('utf8');
+        if (chromeStderrBuffer.length > 8192) {
+          chromeStderrBuffer = chromeStderrBuffer.slice(-4096);
+        }
+      });
+
+      spawnedChromePid = proc.pid ?? null;
+      proc.unref();
+
+      // Record PID to runtime state
+      try {
+        const runtimeDir = path.join(path.dirname(profileDir), 'runtime');
+        if (!existsSync(runtimeDir)) mkdirSync(runtimeDir, { recursive: true });
+        if (spawnedChromePid) {
+          fs.writeFileSync(path.join(runtimeDir, 'chrome.pid'), String(spawnedChromePid), 'utf8');
+        }
+      } catch {
+        // ignore
+      }
+
+      // Poll for CDP availability (up to 30 seconds, with headless fallback if process dies)
+      return new Promise<boolean>((resolve) => {
+        let attempts = 0;
+        let fallbackAttempted = false;
+        const poll = setInterval(async () => {
+          attempts++;
+          const ready = await checkCDPAvailable(cdpEndpoint);
+          if (ready) {
+            clearInterval(poll);
+            resolve(true);
+            return;
+          }
+
+          // If after 5 attempts CDP is not ready and process exited or failed to connect X display, try headless fallback
+          if (attempts === 5 && !fallbackAttempted) {
+            fallbackAttempted = true;
+            const initialPidAlive = spawnedChromePid ? isProcessAlive(spawnedChromePid) : false;
+            if (!initialPidAlive) {
+              console.log('[chrome] GUI Chrome process exited; attempting headless Chrome fallback on port 9222...');
+              if (chromeStderrBuffer) {
+                console.log(`[chrome] GUI startup stderr output: ${chromeStderrBuffer.trim()}`);
+              }
+              const headlessArgs = [
+                '--remote-debugging-port=9222',
+                '--remote-debugging-address=127.0.0.1',
+                '--headless=new',
+                `--user-data-dir=${profileDir}`,
+                naukriProfileUrl,
+              ];
+              const fallbackProc = spawn(chromePath, headlessArgs, { detached: true, stdio: ['ignore', 'ignore', 'pipe'], env: spawnEnv });
+              fallbackProc.stderr?.on('data', (chunk) => {
+                chromeStderrBuffer += chunk.toString('utf8');
+              });
+              spawnedChromePid = fallbackProc.pid ?? null;
+              fallbackProc.unref();
+            }
+          }
+
+          if (attempts >= 30) {
+            clearInterval(poll);
+            const lockExists = existsSync(path.join(profileDir, 'SingletonLock'));
+            console.error(
+              `[chrome] CDP endpoint ${cdpEndpoint} unreachable after 30s. Diagnostics: path=${chromePath}, profile=${profileDir}, lockExists=${lockExists}, DISPLAY=${spawnEnv['DISPLAY'] ?? 'unset'}, XAUTHORITY=${spawnEnv['XAUTHORITY'] ?? 'unset'}. Stderr: ${chromeStderrBuffer.trim() || 'none'}`
+            );
+            resolve(false);
+          }
+        }, 1000);
+      });
+    } finally {
+      inFlightChromeLaunchPromise = null;
+    }
+  })();
+
+  return inFlightChromeLaunchPromise;
 }
 
 /**
