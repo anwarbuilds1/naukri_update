@@ -1,0 +1,42 @@
+[
+    {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Teckvalley India",
+        "link": "https://www.naukri.com/job-listings-python-developer-teckvalley-india-kolkata-3-to-8-years-100926923697",
+        "location": "Remote",
+        "punePreferred": false,
+        "experience": "3 - 8 Yrs",
+        "salary": "",
+        "postedDays": 3,
+        "postedText": "3 days ago",
+        "score": 8,
+        "matchedSkills": [
+            "Python",
+            "Django",
+            "FastAPI",
+            "React",
+            "CI/CD"
+        ],
+        "jdSnippet": "Python Developer Teckvalley India Posted by Teckvalley India 3-8 Yrs Remote The ideal candidate should be comfortable working independently, taking ownership of te... FastAPIPythonDSADjangoCI/CDReact.jsFlaskSQL 3 days ago Save"
+    },
+    {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Capgemini",
+        "link": "https://www.naukri.com/job-listings-python-developer-capgemini-technology-services-india-limited-navi-mumbai-1-to-6-years-110926909172",
+        "location": "Navi Mumbai",
+        "punePreferred": false,
+        "experience": "1 - 6 Yrs",
+        "salary": "",
+        "postedDays": 2,
+        "postedText": "2 days ago",
+        "score": 6,
+        "matchedSkills": [
+            "Python",
+            "Azure",
+            "Git"
+        ],
+        "jdSnippet": "Python Developer Capgemini 3.6 56901 Reviews 1-6 Yrs Navi Mumbai Knowledge of Linux scripting, Git / GitHub, and cloud fundamentals (Azure preferred). .... ApisAutomationAzureParsingGithubDebuggingPython DeveloperProgramming 2 days ago Save"
+    }
+]

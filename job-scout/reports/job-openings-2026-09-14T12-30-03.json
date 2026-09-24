@@ -1,0 +1,1966 @@
+{
+  "generatedAt": "2026-09-14T12:30:03.724Z",
+  "source": {
+    "buckets": [
+      {
+        "label": "1 (0-5 days)",
+        "days": "0-5"
+      },
+      {
+        "label": "2 (6-10 days)",
+        "days": "6-10"
+      },
+      {
+        "label": "3 (11-15 days)",
+        "days": "11-15"
+      }
+    ],
+    "maxDaysAgo": 15
+  },
+  "keywords": [
+    "Python Developer",
+    "Python Django Developer",
+    "Django REST Framework Developer",
+    "Backend Developer (Python)",
+    "Full Stack Developer (Python/React)",
+    "Software Development Engineer (SDE) - Python",
+    "Python Backend Engineer"
+  ],
+  "summary": {
+    "totalJobs": 63,
+    "punePreferred": 7,
+    "byBucket": {
+      "1": 24,
+      "2": 31,
+      "3": 8
+    },
+    "byKeyword": {
+      "Python Developer": 19,
+      "Software Development Engineer (SDE) - Python": 9,
+      "Python Backend Engineer": 7,
+      "Django REST Framework Developer": 5,
+      "Full Stack Developer (Python/React)": 14,
+      "Python Django Developer": 8,
+      "Backend Developer (Python)": 1
+    }
+  },
+  "buckets": {
+    "1 (0-5 days)": [
+      {
+        "keyword": "Python Developer",
+        "title": "Python developer (Female's Preferred)",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-developer-female-s-preferred-infosys-hyderabad-pune-bengaluru-2-to-5-years-240826031542",
+        "location": "Hyderabad, Bengaluru, Pune",
+        "punePreferred": true,
+        "experience": "2 - 5 Yrs",
+        "salary": "",
+        "postedDays": 2,
+        "postedText": "2 days ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "Django"
+        ],
+        "jdSnippet": "Python developer (Female's Preferred) Infosys 3.5 51673 Reviews 2-5 Yrs Hyderabad, Bengaluru, Pune Roles & ResponsibilitiesDesign, develop, and maintain Python-based applications and sof... DjangoPythonFlaskRestDjango Rest APIPython FrameworkPandasDjango Framework 2 days ago Save"
+      },
+      {
+        "keyword": "Django REST Framework Developer",
+        "title": "Python Fullstack Developer",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-fullstack-developer-infosys-hyderabad-pune-bengaluru-5-to-8-years-130926004220",
+        "location": "Hyderabad, Bengaluru, Pune",
+        "punePreferred": true,
+        "experience": "5 - 8 Yrs",
+        "salary": "rs . ",
+        "postedDays": 1,
+        "postedText": "1 day ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "PostgreSQL",
+          "CI/CD"
+        ],
+        "jdSnippet": "Python Fullstack Developer Infosys 3.5 51673 Reviews 5-8 Yrs Hyderabad, Bengaluru, Pune Experience: 5 to 8 years . PythonUnit TestingGithubPostgresqlFast APIHTMLCi/CdAngular 1 day ago Save"
+      },
+      {
+        "keyword": "Django REST Framework Developer",
+        "title": "Python Backend & Python Full Stack Developer",
+        "company": "Tech Mahindra",
+        "link": "https://www.naukri.com/job-listings-python-backend-python-full-stack-developer-tech-mahindra-hyderabad-3-to-8-years-140926015939",
+        "location": "Hybrid - Hyderabad",
+        "punePreferred": false,
+        "experience": "3 - 8 Yrs",
+        "salary": "",
+        "postedDays": 0,
+        "postedText": "",
+        "score": 7,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Backend",
+          "Full Stack"
+        ],
+        "jdSnippet": "Python Backend & Python Full Stack Developer Tech Mahindra 3.3 45855 Reviews 3-8 Yrs Hybrid - Hyderabad Role & responsibilities Contribute to the development, testing, deployment, and suppor... Python DevelopmentPython FrameworkDjango Rest ApiDjango FrameworkFlask Web FrameworkFlaskAPIBackend Just now Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Bizinso",
+        "link": "https://www.naukri.com/job-listings-python-developer-bizinso-mumbai-2-to-4-years-110926503938",
+        "location": "Mumbai",
+        "punePreferred": false,
+        "experience": "2 - 4 Yrs",
+        "salary": "",
+        "postedDays": 3,
+        "postedText": "3 days ago",
+        "score": 7,
+        "matchedSkills": [
+          "Python",
+          "Docker",
+          "CI/CD",
+          "Backend"
+        ],
+        "jdSnippet": "Python Developer Bizinso 3.6 7 Reviews 2-4 Yrs Mumbai 2 to 4 years of hands-on experience in backend Python development . Strong experience w... ci/cd pipelineserpmessage queuesbackend developerfintechdockermicroservicescontainerization 3 days ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "R S Patel & Co",
+        "link": "https://www.naukri.com/job-listings-python-developer-r-s-patel-co-ahmedabad-1-to-4-years-100926027258",
+        "location": "Ahmedabad",
+        "punePreferred": false,
+        "experience": "1 - 4 Yrs",
+        "salary": "",
+        "postedDays": 4,
+        "postedText": "4 days ago",
+        "score": 7,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "Docker",
+          "AWS"
+        ],
+        "jdSnippet": "Python Developer R S Patel & Co 2.4 67 Reviews 1-4 Yrs Ahmedabad Experience with AWS / GCP, Docker, Jenkins, Kubernetes & GitHub1 3 years experience1 3 ... NumpyPandasJavascriptAWSPythonCSSPython FrameworkHTML 4 days ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Fullstack Developer",
+        "company": "T&M services",
+        "link": "https://www.naukri.com/job-listings-fullstack-developer-t-m-mumbai-mumbai-suburban-1-to-3-years-090926011202",
+        "location": "Mumbai, Mumbai Suburban",
+        "punePreferred": false,
+        "experience": "1 - 3 Yrs",
+        "salary": "rs 1-4 Lacs",
+        "postedDays": 5,
+        "postedText": "5 days ago",
+        "score": 7,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "Node.js",
+          "React",
+          "PostgreSQL",
+          "MongoDB",
+          "Full Stack"
+        ],
+        "jdSnippet": "Fullstack Developer T&M services Posted by T&m 1-3 Yrs 1-4 Lacs PA Mumbai, Mumbai Suburban Ltd. is seeking a skilled and motivated Full Stack Developer with 1 2 years of hands-on... Full Stack DeveloperPostgresqlFast APIJavascriptNode.jsMongoDBReact.jsPython 5 days ago Save"
+      },
+      {
+        "keyword": "Django REST Framework Developer",
+        "title": "Senior Python Developer",
+        "company": "Destm Technologies",
+        "link": "https://www.naukri.com/job-listings-senior-python-developer-destm-technologies-mohali-4-to-8-years-161225021183",
+        "location": "Remote",
+        "punePreferred": false,
+        "experience": "4 - 8 Yrs",
+        "salary": "",
+        "postedDays": 0,
+        "postedText": "",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "Django",
+          "MongoDB",
+          "Apache Kafka"
+        ],
+        "jdSnippet": "Senior Python Developer Destm Technologies 4.9 36 Reviews 4-8 Yrs Remote We are looking for a talented and motivated Python Developer who has strong experience ... API IntegrationDjangoKafkaMongoDBPythonDjango Rest APIMySQLJavascript Just now Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Python Django Developer - INF (2 To 9) YRS",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-django-developer-inf-2-to-9-yrs-infosys-hyderabad-chennai-bengaluru-2-to-7-years-200826033092",
+        "location": "Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "2 - 7 Yrs",
+        "salary": "",
+        "postedDays": 1,
+        "postedText": "1 day ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django"
+        ],
+        "jdSnippet": "Python Django Developer - INF (2 To 9) YRS Infosys 3.5 51673 Reviews 2-7 Yrs Hyderabad, Bengaluru, Chennai Role & responsibilities . Job description . Job Title: Python Developer (Django) . Job ... DjangoPythonDjango Rest APIDjango FrameworkDjango Web FrameworkAPIPython DevelopmentWeb technologies Prefers women 1 day ago Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Python Django Developer - INF",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-django-developer-inf-infosys-hyderabad-chennai-bengaluru-2-to-5-years-130726032080",
+        "location": "Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "2 - 5 Yrs",
+        "salary": "",
+        "postedDays": 1,
+        "postedText": "1 day ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django"
+        ],
+        "jdSnippet": "Python Django Developer - INF Infosys 3.5 51673 Reviews 2-5 Yrs Hyderabad, Bengaluru, Chennai Job descriptionJob Title: Python Developer (Django)Job SummaryWe are looking for a ski... DjangoPythonPython DevelopmentDevelopment Prefers women 1 day ago Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Python and Django Developer-S",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-and-django-developer-s-infosys-hyderabad-chennai-bengaluru-2-to-3-years-120826000158",
+        "location": "Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "2 - 3 Yrs",
+        "salary": "",
+        "postedDays": 2,
+        "postedText": "2 days ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "PostgreSQL",
+          "Nginx"
+        ],
+        "jdSnippet": "Python and Django Developer-S Infosys 3.5 51673 Reviews 2-3 Yrs Hyderabad, Bengaluru, Chennai Required SkillsPreferred Skills 2-3 years of experience in Python developmentStrong exp... Restfull APIDjango Rest APIDjangoMySQLPythonNginxGithubPostgresql Prefers women 2 days ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Mpiric Web Service",
+        "link": "https://www.naukri.com/job-listings-python-developer-mpiric-software-ahmedabad-2-to-5-years-140926501023",
+        "location": "Ahmedabad",
+        "punePreferred": false,
+        "experience": "2 - 5 Yrs",
+        "salary": "",
+        "postedDays": 0,
+        "postedText": "",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "Django"
+        ],
+        "jdSnippet": "Python Developer Mpiric Web Service 5.0 7 Reviews 2-5 Yrs Ahmedabad Design, develop, and test software applications using Python. Collaborate with cross-f... emerging technologiespythonversion controldata processingpython developercode qualitydatabase managementdjango Just now Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Python/Django Developer",
+        "company": "Extromind Technologies",
+        "link": "https://www.naukri.com/job-listings-python-django-developer-extromind-technologies-namakkal-1-to-2-years-140926500988",
+        "location": "Namakkal",
+        "punePreferred": false,
+        "experience": "1 - 2 Yrs",
+        "salary": "",
+        "postedDays": 0,
+        "postedText": "",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Backend"
+        ],
+        "jdSnippet": "Python/Django Developer Extromind Technologies 1-2 Yrs Namakkal Design, develop, and maintain scalable back-end services using Python/Django. Collabor... django frameworkpythondjangosoftware developmentversion controlarticulateagileagile development Just now Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Fullstack Developer",
+        "company": "Computer Enterprises",
+        "link": "https://www.naukri.com/job-listings-fullstack-developer-computer-enterprises-hyderabad-4-to-9-years-090926011092",
+        "location": "Hyderabad",
+        "punePreferred": false,
+        "experience": "4 - 9 Yrs",
+        "salary": "rs 10-20 Lacs",
+        "postedDays": 5,
+        "postedText": "5 days ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "React",
+          "PostgreSQL",
+          "Full Stack"
+        ],
+        "jdSnippet": "Fullstack Developer Computer Enterprises 4.5 36 Reviews 4-9 Yrs 10-20 Lacs PA Hyderabad Also, the candidate should be able to guide team and help resolve and debug issues alon... PostgresqlJavascriptReact.JsPythonDevelopmentFullstack DevelopmentFull Stack 5 days ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Full Stack Developer",
+        "company": "Mpiric Web Service",
+        "link": "https://www.naukri.com/job-listings-full-stack-developer-mpiric-software-ahmedabad-2-to-6-years-140926501053",
+        "location": "Ahmedabad",
+        "punePreferred": false,
+        "experience": "2 - 6 Yrs",
+        "salary": "",
+        "postedDays": 0,
+        "postedText": "",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "React",
+          "Full Stack"
+        ],
+        "jdSnippet": "Full Stack Developer Mpiric Web Service 5.0 7 Reviews 2-6 Yrs Ahmedabad Design, develop, and test software applications using various programming languages. C... pythonsoftware developmentfull stack developerreactprogramming languagescode qualityrubyangular Just now Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Full Stack Developer",
+        "company": "Beyondata Solutions",
+        "link": "https://www.naukri.com/job-listings-full-stack-developer-beyondata-mumbai-ahmedabad-4-to-9-years-140926503683",
+        "location": "Mumbai, Ahmedabad",
+        "punePreferred": false,
+        "experience": "4 - 9 Yrs",
+        "salary": "",
+        "postedDays": 0,
+        "postedText": "",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "Full Stack"
+        ],
+        "jdSnippet": "Full Stack Developer Beyondata Solutions 4.2 28 Reviews 4-9 Yrs Mumbai, Ahmedabad The ideal candidate should have a strong foundation in modern web technologies, an anal... Product engineeringFront endAnalyticalEmployee engagementJavascriptWellnessTeam buildingPython Just now Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Clear Quant",
+        "link": "https://www.naukri.com/job-listings-python-developer-clear-quant-ahmedabad-1-to-5-years-110926020135",
+        "location": "Ahmedabad(Gota)",
+        "punePreferred": false,
+        "experience": "1 - 5 Yrs",
+        "salary": "rs 5-10 Lacs",
+        "postedDays": 3,
+        "postedText": "3 days ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python"
+        ],
+        "jdSnippet": "Python Developer Clear Quant 5.0 2 Reviews 1-5 Yrs 5-10 Lacs PA Ahmedabad(Gota) Experience: 1- 5 years . To Apply fill in the Microsoft form: https://forms.cloud.micro... LinuxAPIPythonOOPSFinancial DataNumpySQLPipeline 3 days ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer in Hyderabad",
+        "company": "Tata Consultancy Services",
+        "link": "https://www.naukri.com/job-listings-python-developer-in-hyderabad-tata-consultancy-services-hyderabad-4-to-9-years-110926017083",
+        "location": "Hyderabad",
+        "punePreferred": false,
+        "experience": "4 - 9 Yrs",
+        "salary": "rs. ",
+        "postedDays": 3,
+        "postedText": "3 days ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python"
+        ],
+        "jdSnippet": "Python Developer in Hyderabad Tata Consultancy Services 3.2 120526 Reviews 4-9 Yrs Hyderabad Experience : 4-10 years. Job Summary : An experienced Python Developer / Lead to design... PythoncloudAlgorithmsData StructuresDevelopmentData 3 days ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Full Stack Developer",
+        "company": "Csrhat",
+        "link": "https://www.naukri.com/job-listings-full-stack-developer-csrhat-mumbai-1-to-3-years-110926501386",
+        "location": "Mumbai",
+        "punePreferred": false,
+        "experience": "1 - 3 Yrs",
+        "salary": "",
+        "postedDays": 3,
+        "postedText": "3 days ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "React",
+          "Full Stack"
+        ],
+        "jdSnippet": "Full Stack Developer Csrhat 1-3 Yrs Mumbai Design, develop, and test software applications using multiple programming languages... pythonrestfulfull stack developerreactprogramming languagesrubyspringangular 3 days ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Full Stack Developer",
+        "company": "Devant It Solutions",
+        "link": "https://www.naukri.com/job-listings-full-stack-developer-devant-it-solutions-pvt-ltd-kolkata-siliguri-asansol-durgapur-haldia-2-to-7-years-100926504717",
+        "location": "Kolkata, Siliguri, Asansol, Durgapur, Haldia",
+        "punePreferred": false,
+        "experience": "2 - 7 Yrs",
+        "salary": "",
+        "postedDays": 3,
+        "postedText": "3 days ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "React",
+          "Full Stack"
+        ],
+        "jdSnippet": "Full Stack Developer Devant It Solutions 3.3 35 Reviews 2-7 Yrs Kolkata, Siliguri, Asansol, Durgapur, Haldia Job Summary We Are Searching For Another Talented Full Stack Web Developer To Joi... s3laravelpythonit servicesserver sidefull stack developerjsreact 3 days ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Full-Stack Developer",
+        "company": "Gator Creative Studio",
+        "link": "https://www.naukri.com/job-listings-full-stack-developer-gator-creative-studio-ahmedabad-2-to-4-years-100926500885",
+        "location": "Ahmedabad",
+        "punePreferred": false,
+        "experience": "2 - 4 Yrs",
+        "salary": "",
+        "postedDays": 4,
+        "postedText": "4 days ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "React",
+          "Full Stack"
+        ],
+        "jdSnippet": "Full-Stack Developer Gator Creative Studio 2-4 Yrs Ahmedabad Design, develop, and test software applications using various programming languages.... angularpythonjavasoftware developmentreactcommunication and interpersonal skillsfront-end developmentfull-stack development 4 days ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python AI Developer-S",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-ai-developer-s-infosys-hyderabad-chennai-bengaluru-3-to-5-years-110826000096",
+        "location": "Hybrid - Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "3 - 5 Yrs",
+        "salary": "",
+        "postedDays": 2,
+        "postedText": "2 days ago",
+        "score": 3,
+        "matchedSkills": [
+          "Python",
+          "Django"
+        ],
+        "jdSnippet": "Python AI Developer-S Infosys 3.5 51673 Reviews 3-5 Yrs Hybrid - Hyderabad, Bengaluru, Chennai ResponsibilitiesA day in the life of an Infoscion • As part of the Infosys delivery te... generative aiLLMDjangoRAGPythonTensorflowLangchainArtificial Intelligence 2 days ago Save"
+      },
+      {
+        "keyword": "Python Backend Engineer",
+        "title": "Backend Engineer",
+        "company": "Csrhat",
+        "link": "https://www.naukri.com/job-listings-backend-engineer-csrhat-mumbai-suburban-0-to-1-years-110926500868",
+        "location": "Mumbai Suburban",
+        "punePreferred": false,
+        "experience": "0 - 1 Yrs",
+        "salary": "",
+        "postedDays": 3,
+        "postedText": "3 days ago",
+        "score": 3,
+        "matchedSkills": [
+          "Python",
+          "Backend"
+        ],
+        "jdSnippet": "Backend Engineer Csrhat 0-1 Yrs Mumbai Suburban Design, develop, and test backend systems to ensure high performance and reliability... pythonsoftware developmentautomated testingcloud platformsprogramming languagescode qualitynosqlruby 3 days ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "SDE (Platform Engineer)",
+        "company": "Loadshare Networks",
+        "link": "https://www.naukri.com/job-listings-sde-platform-engineer-loadshare-networks-chennai-bengaluru-4-to-8-years-090926018444",
+        "location": "Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "4 - 8 Yrs",
+        "salary": "",
+        "postedDays": 5,
+        "postedText": "5 days ago",
+        "score": 2,
+        "matchedSkills": [
+          "Docker",
+          "CI/CD"
+        ],
+        "jdSnippet": "SDE (Platform Engineer) Loadshare Networks 3.5 495 Reviews 4-8 Yrs Bengaluru, Chennai Founded in 2017, we ve grown to become a pan-India, multi-category last-mile network wi... OrchestrationElkProgrammingCi/CdSonarqubeGrafanaCloud InfrastructureDocker 5 days ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "SDE-AI Engineer",
+        "company": "Leading Client",
+        "link": "https://www.naukri.com/job-listings-sde-ai-engineer-zorba-consulting-india-pvt-ltd-hyderabad-bengaluru-delhi-ncr-3-to-8-years-100926915793",
+        "location": "Hyderabad, Bengaluru, Delhi / NCR",
+        "punePreferred": false,
+        "experience": "3 - 8 Yrs",
+        "salary": "",
+        "postedDays": 4,
+        "postedText": "4 days ago",
+        "score": 1,
+        "matchedSkills": [
+          "Docker"
+        ],
+        "jdSnippet": "SDE-AI Engineer Leading Client Posted by Zorba Consulting 3-8 Yrs Hyderabad, Bengaluru, Delhi / NCR Candidate AvailabilityBENCH / Immediate / Short Notice OnlyRole OverviewWe are looking ... ai engineerrdskubernetesmicroservicesdockerlambdajavaautomation 4 days ago Save"
+      }
+    ],
+    "2 (6-10 days)": [
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Tata Consultancy Services",
+        "link": "https://www.naukri.com/job-listings-python-developer-tata-consultancy-services-pune-chennai-mumbai-all-areas-4-to-8-years-070926031993",
+        "location": "Mumbai (All Areas), Pune, Chennai",
+        "punePreferred": true,
+        "experience": "4 - 8 Yrs",
+        "salary": "rs 10-20 Lacs",
+        "postedDays": 6,
+        "postedText": "6 days ago",
+        "score": 7,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "PostgreSQL",
+          "CI/CD"
+        ],
+        "jdSnippet": "Python Developer Tata Consultancy Services 3.2 120526 Reviews 4-8 Yrs 10-20 Lacs PA Mumbai (All Areas), Pune, Chennai Role : Python developerLocation : Mumbai, Pune, Chennai, Bangalore, Indore, Kolkata EXP... DjangoPostgresqlAi PlatformPythonsqlFast APICi/CdAPI 6 days ago Save"
+      },
+      {
+        "keyword": "Python Backend Engineer",
+        "title": "Backend AI Engineer",
+        "company": "Cirruslabs",
+        "link": "https://www.naukri.com/job-listings-backend-ai-engineer-cirruslabs-hyderabad-pune-bengaluru-6-to-11-years-010926014630",
+        "location": "Hybrid - Hyderabad, Bengaluru, Pune",
+        "punePreferred": true,
+        "experience": "6 - 11 Yrs",
+        "salary": "rs 20-35 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "LLM",
+          "Azure",
+          "Backend"
+        ],
+        "jdSnippet": "Backend AI Engineer Cirruslabs 3.7 38 Reviews 6-11 Yrs 20-35 Lacs PA Hybrid - Hyderabad, Bengaluru, Pune Hands-on AI / ML engineering experience with LLM systems in productionPreferred / Plus ... Agentic AIpythonfast apiRAGAZureGCPAWSArtificial Intelligence 1 week ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "Software Development Engineer + AI",
+        "company": "Futran Tech Solutions",
+        "link": "https://www.naukri.com/job-listings-software-development-engineer-ai-futran-tech-solutions-pune-5-to-14-years-010926015345",
+        "location": "Pune",
+        "punePreferred": true,
+        "experience": "5 - 14 Yrs",
+        "salary": "rs 20-28 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 2,
+        "matchedSkills": [
+          "Python",
+          "CI/CD"
+        ],
+        "jdSnippet": "Software Development Engineer + AI Futran Tech Solutions 5-14 Yrs 20-28 Lacs PA Pune Experience with CI / CD pipelines and modern SDLC practices: automated testing, quality... JavaC SeleniumPythonAPI IntegrationLangchainArtificial IntelligenceCi/CdSpring Boot 1 week ago Save"
+      },
+      {
+        "keyword": "Django REST Framework Developer",
+        "title": "Python (Programming Language) Backend Accnture",
+        "company": "Cloudxtreme",
+        "link": "https://www.naukri.com/job-listings-python-programming-language-backend-accnture-cloudxtreme-hyderabad-bengaluru-2-to-5-years-040926923036",
+        "location": "Hyderabad, Bengaluru",
+        "punePreferred": false,
+        "experience": "2 - 5 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 10,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "FastAPI",
+          "Apache Kafka",
+          "Docker",
+          "Azure",
+          "CI/CD",
+          "Backend"
+        ],
+        "jdSnippet": "Python (Programming Language) Backend Accnture Cloudxtreme 3.6 6 Reviews 2-5 Yrs Hyderabad, Bengaluru The ideal candidate will have more years of experience in backend development with stro... PythonAWS/GCP/AzureRabbitMQ/KafkaOAuth2 & JWT.GitCI/CD pipelinesDjango/Flask/FastAPIDocker 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Bacancy Technology",
+        "link": "https://www.naukri.com/job-listings-python-developer-bacancy-technology-work-from-anywhere-ahmedabad-3-to-5-years-020926501610",
+        "location": "Ahmedabad",
+        "punePreferred": false,
+        "experience": "3 - 5 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 9,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Redis",
+          "LLM",
+          "RAG",
+          "Backend"
+        ],
+        "jdSnippet": "Python Developer Bacancy Technology 3.9 304 Reviews 3-5 Yrs Ahmedabad Experience with Generative AI, LLM applications, RAG, or AI Agents. . Redis, message qu... System architectureBackendCodingDatabase designDjangoSystem designTroubleshootingDistribution system 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Tenacious Hr Solution",
+        "link": "https://www.naukri.com/job-listings-python-developer-tenacious-hr-solution-bengaluru-delhi-ncr-mumbai-all-areas-2-to-7-years-010926006913",
+        "location": "Mumbai (All Areas), Bengaluru, Delhi / NCR",
+        "punePreferred": false,
+        "experience": "2 - 7 Yrs",
+        "salary": "rs 6-16 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 8,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "Node.js",
+          "React",
+          "Full Stack"
+        ],
+        "jdSnippet": "Python Developer Tenacious Hr Solution Posted by Tenacious Hr Solution 2-7 Yrs 6-16 Lacs PA Mumbai (All Areas), Bengaluru, Delhi / NCR We are looking for a Python Developer with around 2-7 years of hands-on experience to ... PythonJavaFullstack DevelopmentJavascriptFull StackNode.jsJava FullstackReact.js 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Cloudxtreme",
+        "link": "https://www.naukri.com/job-listings-python-developer-cloudxtreme-hyderabad-4-to-6-years-040926928230",
+        "location": "Hybrid - Hyderabad",
+        "punePreferred": false,
+        "experience": "4 - 6 Yrs",
+        "salary": "rs 14-17 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 7,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "React",
+          "Azure"
+        ],
+        "jdSnippet": "Python Developer Cloudxtreme 4-6 Yrs 14-17 Lacs PA Hybrid - Hyderabad Preferred candidate profile Notice period: Immediate to 15Days or serving notice period... pythonAzureDjangoAPIFlaskCSSAIreact 1 week ago Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Python and Django Developer",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-and-django-developer-infosys-hyderabad-chennai-bengaluru-2-to-7-years-300826005150",
+        "location": "Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "2 - 7 Yrs",
+        "salary": "",
+        "postedDays": 6,
+        "postedText": "6 days ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "PostgreSQL",
+          "Nginx"
+        ],
+        "jdSnippet": "Python and Django Developer Infosys 3.5 51673 Reviews 2-7 Yrs Hyderabad, Bengaluru, Chennai Required SkillsPreferred Skills 2-3 years of experience in Python developmentStrong exp... Restfull APIDjango Rest APIDjangoMySQLPythonNginxGithubPostgresql Prefers women 6 days ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Cloudxtreme",
+        "link": "https://www.naukri.com/job-listings-python-developer-cloudxtreme-hyderabad-bengaluru-2-to-4-years-040926923801",
+        "location": "Hyderabad, Bengaluru",
+        "punePreferred": false,
+        "experience": "2 - 4 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Azure"
+        ],
+        "jdSnippet": "Python Developer Cloudxtreme 3.6 6 Reviews 2-4 Yrs Hyderabad, Bengaluru Project Role : Custom Software EngineerProject Role Description : Develop custom soft... DjangoRest ApiPython DevelopmentPythonFlaskGITGCPMicrosoft Azure 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Innovationm",
+        "link": "https://www.naukri.com/job-listings-python-developer-innovationm-noida-gurugram-delhi-ncr-3-to-7-years-040926008818",
+        "location": "Gurugram, Noida, Delhi / NCR",
+        "punePreferred": false,
+        "experience": "3 - 7 Yrs",
+        "salary": "rs 6-15 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "PostgreSQL"
+        ],
+        "jdSnippet": "Python Developer Innovationm 3.8 312 Reviews 3-7 Yrs 6-15 Lacs PA Gurugram, Noida, Delhi / NCR Preferred Skills: Python, Django, Flask, Pandas, Database (PostgreSQL or MySQL), REST A... PythonDjangoPostgresqlPandasNumpyFlaskDevelopmentPython Development 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Cloud Xtreme Technologies",
+        "link": "https://www.naukri.com/job-listings-python-developer-cloudxtreme-hyderabad-4-to-7-years-040926925404",
+        "location": "Hyderabad",
+        "punePreferred": false,
+        "experience": "4 - 7 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Azure"
+        ],
+        "jdSnippet": "Python Developer Cloud Xtreme Technologies Posted by Cloudxtreme 4-7 Yrs Hyderabad Must have solid experience in building and consuming Web APIs. Note : Candidate must ha... Azure CloudDjangoPythonCSSAzure Web AppsAzure Blob StorageHTMLAPI Development 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer-Hyderabad",
+        "company": "Cloudxtreme",
+        "link": "https://www.naukri.com/job-listings-python-developer-hyderabad-cloudxtreme-hyderabad-4-to-8-years-040926927867",
+        "location": "Hyderabad",
+        "punePreferred": false,
+        "experience": "4 - 8 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Azure"
+        ],
+        "jdSnippet": "Python Developer-Hyderabad Cloudxtreme 3.6 6 Reviews 4-8 Yrs Hyderabad 3+ years of hand-on experience with Python server-side scripting and API development.3+... Azure CloudDjangoAngularPythonFlaskgenerative aiArtificial IntelligenceCloud 1 week ago Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Job Title: Python / Django Developer",
+        "company": "Musketsoft",
+        "link": "https://www.naukri.com/job-listings-title-python-django-developer-musketsoft-gurugram-5-to-9-years-070926009789",
+        "location": "Gurugram",
+        "punePreferred": false,
+        "experience": "5 - 9 Yrs",
+        "salary": "rs 2-7 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Django REST Framework",
+          "PostgreSQL"
+        ],
+        "jdSnippet": "Job Title: Python / Django Developer Musketsoft 5-9 Yrs 2-7 Lacs PA Gurugram Required Skills: . Strong experience in Python and Django / Django REST FrameworkExperi... DjangoPythonPostgresqlMySQLDevelopment 1 week ago Save"
+      },
+      {
+        "keyword": "Backend Developer (Python)",
+        "title": "Back End Developer (Python) | Gurugram -work from office",
+        "company": "Resource recruiter",
+        "link": "https://www.naukri.com/job-listings-back-end-developer-python-gurugram-work-from-office-resource-recruiter-gurugram-3-to-6-years-030926034539",
+        "location": "Gurugram",
+        "punePreferred": false,
+        "experience": "3 - 6 Yrs",
+        "salary": "rs 6-9 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "MongoDB",
+          "Backend"
+        ],
+        "jdSnippet": "Back End Developer (Python) | Gurugram -work from office Resource recruiter Posted by Resource Recruiter 3-6 Yrs 6-9 Lacs PA Gurugram Good working experience with MongoDB Experience developing REST APIs Good debugging, pr... DjangoDjango FrameworkMongoDBRest API DevelopmentPythonMySQLAWSBackend Development 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Python Developer",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-developer-infosys-limited-hyderabad-2-to-3-years-070926917236",
+        "location": "Hyderabad",
+        "punePreferred": false,
+        "experience": "2 - 3 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "Azure"
+        ],
+        "jdSnippet": "Python Developer Infosys 3.5 51673 Reviews 2-3 Yrs Hyderabad Kubernetes (preferred) Preferred Skills. Technology->Open System->Open System- ALL->Python AlgorithmsAutomationAzureComplianceCloud ServicesGithubApisData Structures 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "GenAI with Python Developer",
+        "company": "PwC India",
+        "link": "https://www.naukri.com/job-listings-genai-with-python-developer-pwc-india-kolkata-4-to-9-years-070926028549",
+        "location": "Hybrid - Kolkata",
+        "punePreferred": false,
+        "experience": "4 - 9 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "Azure"
+        ],
+        "jdSnippet": "GenAI with Python Developer PwC India 3.3 13745 Reviews 4-9 Yrs Hybrid - Kolkata BE / BTech / MCA/ ME/ M.TECH/ MBA/ PGDM All qualifications should be in regular full-ti... LangChainLLM APILangGraphGenAI with Python DeveloperRAG pipelinesCrewAIAWS BedrockCloud AI - Azure OpenAI 1 week ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Full Stack Developer",
+        "company": "Tenacious Hr Solution",
+        "link": "https://www.naukri.com/job-listings-full-stack-developer-tenacious-hr-solution-bengaluru-delhi-ncr-mumbai-all-areas-2-to-7-years-070926001858",
+        "location": "Mumbai (All Areas), Bengaluru, Delhi / NCR",
+        "punePreferred": false,
+        "experience": "2 - 7 Yrs",
+        "salary": "rs 6-16 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 5,
+        "matchedSkills": [
+          "JavaScript",
+          "Node.js",
+          "React",
+          "Full Stack"
+        ],
+        "jdSnippet": "Full Stack Developer Tenacious Hr Solution Posted by Tenacious Hr Solution 2-7 Yrs 6-16 Lacs PA Mumbai (All Areas), Bengaluru, Delhi / NCR We are looking for a Full Stack Developer with around 2-7 years of hands-on experience... React.jsJavaFullstack DevelopmentJavascriptFull StackNode.jsJava FullstackAngular 1 week ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Full Stack Developer",
+        "company": "Leading Client",
+        "link": "https://www.naukri.com/job-listings-full-stack-developer-radiant-systems-inc-hyderabad-chennai-bengaluru-4-to-6-years-040926923721",
+        "location": "Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "4 - 6 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "React",
+          "Redux",
+          "Full Stack"
+        ],
+        "jdSnippet": "Full Stack Developer Leading Client Posted by Radiant Systems 4-6 Yrs Hyderabad, Bengaluru, Chennai Required Qualifications: . Experience building chat interfaces or state-heavy dashboards Full Stack DevelopmentVue.jsJavaReduxOWASPZustandReact.jsPython 1 week ago Save"
+      },
+      {
+        "keyword": "Python Backend Engineer",
+        "title": "Back End Engineer",
+        "company": "Tanisha Systems",
+        "link": "https://www.naukri.com/job-listings-back-end-engineer-tanisha-systems-hyderabad-6-to-10-years-020926036383",
+        "location": "Hybrid - Hyderabad",
+        "punePreferred": false,
+        "experience": "6 - 10 Yrs",
+        "salary": "rs 20-35 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "PostgreSQL",
+          "Backend"
+        ],
+        "jdSnippet": "Back End Engineer Tanisha Systems 2.8 116 Reviews 6-10 Yrs 20-35 Lacs PA Hybrid - Hyderabad Role: Backend EngineerHyderabad (3 Days Onsite)Fulltime Required Qualifications (Must ... GCPDjangoPostgresqlVertex AiPythonERP SystemERP ImplementationAPI 1 week ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Analyst-Python Developer",
+        "company": "JPMorgan Chase Bank",
+        "link": "https://www.naukri.com/job-listings-analyst-python-developer-jp-morgan-and-chase-mumbai-3-to-8-years-010926504698",
+        "location": "Mumbai",
+        "punePreferred": false,
+        "experience": "3 - 8 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python"
+        ],
+        "jdSnippet": "Analyst-Python Developer JPMorgan Chase Bank 3.8 8218 Reviews 3-8 Yrs Mumbai Required Qualifications, Capabilities, and Skills: . 3+ years of software development e... Front endCodingDebuggingWorkflowApplication securityTroubleshootingInternshipMonitoring 1 week ago Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Python and Django Developer",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-and-django-developer-infosys-hyderabad-chennai-bengaluru-3-to-5-years-070926917888",
+        "location": "Hybrid - Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "3 - 5 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "Django"
+        ],
+        "jdSnippet": "Python and Django Developer Infosys 3.5 51673 Reviews 3-5 Yrs Hybrid - Hyderabad, Bengaluru, Chennai Bachelors degree in Computer Science, Information Technology, or a related fieldThe can... Python FrameworkDjangoPython DevelopmentRest API ServicesFast APIDjango FrameworkPythonAPI 1 week ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Fullstack Developer",
+        "company": "Geekay Infotech",
+        "link": "https://www.naukri.com/job-listings-fullstack-developer-geekay-infotech-mumbai-2-to-4-years-010926036989",
+        "location": "Mumbai(Ghatkopar East)",
+        "punePreferred": false,
+        "experience": "2 - 4 Yrs",
+        "salary": "rs 7-10 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "Node.js",
+          "React",
+          "Backend"
+        ],
+        "jdSnippet": "Fullstack Developer Geekay Infotech 3.2 68 Reviews 2-4 Yrs 7-10 Lacs PA Mumbai(Ghatkopar East) Required Skills & Experience 2 3 years of hands-on experience in backend developmentPre... generative aiNodeNode.jsReact.jsPythonArtificial IntelligenceDevelopmentFullstack Development Prefers women 1 week ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Fullstack Developer",
+        "company": "CGI",
+        "link": "https://www.naukri.com/job-listings-fullstack-developer-cgi-hyderabad-chennai-bengaluru-4-to-8-years-010926023547",
+        "location": "Hybrid - Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "4 - 8 Yrs",
+        "salary": "rs 9.5-18 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 4,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "React",
+          "Full Stack"
+        ],
+        "jdSnippet": "Fullstack Developer CGI 4.0 5772 Reviews 4-8 Yrs 9.5-18 Lacs PA Hybrid - Hyderabad, Bengaluru, Chennai Hiring: Full Stack Developer Angular + Python Location: Bangalore / Hyderabad / Chennai... AngularjsJavascriptAWSPythonFull StackReact.jsAngularStack 1 week ago Save"
+      },
+      {
+        "keyword": "Python Backend Engineer",
+        "title": "Back End Engineer",
+        "company": "Creditsafe",
+        "link": "https://www.naukri.com/job-listings-back-end-engineer-creditsafe-hyderabad-3-to-8-years-040926020053",
+        "location": "Hybrid - Hyderabad(HITEC City)",
+        "punePreferred": false,
+        "experience": "3 - 8 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 3,
+        "matchedSkills": [
+          "Python",
+          "Backend"
+        ],
+        "jdSnippet": "Back End Engineer Creditsafe 3.4 30 Reviews 3-8 Yrs Hybrid - Hyderabad(HITEC City) Backend Engineer Python + AWSExperience: 3–8 Years Job Type: Full-Time Department: Pro... AWSPythonFlaskEndBackend 1 week ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "Software Development Engineer",
+        "company": "Astranova Mobility",
+        "link": "https://www.naukri.com/job-listings-software-development-engineer-astranova-mobility-gurugram-3-to-7-years-110826038994",
+        "location": "Hybrid - Gurugram",
+        "punePreferred": false,
+        "experience": "3 - 7 Yrs",
+        "salary": "",
+        "postedDays": 6,
+        "postedText": "6 days ago",
+        "score": 2,
+        "matchedSkills": [
+          "Python",
+          "Docker"
+        ],
+        "jdSnippet": "Software Development Engineer Astranova Mobility 3.1 7 Reviews 3-7 Yrs Hybrid - Gurugram Core Skills Strong proficiency in Python (preferred) or Java, a solid grasp of both low... JavaPythonNoSQLDockerKubernetesSoftwareSoftware developmentDevelopment 6 days ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": ".net fullstack developer",
+        "company": "Cloudxtreme",
+        "link": "https://www.naukri.com/job-listings-net-fullstack-developer-cloudxtreme-indore-hyderabad-jaipur-3-to-8-years-040926923742",
+        "location": "Hyderabad, Indore, Jaipur",
+        "punePreferred": false,
+        "experience": "3 - 8 Yrs",
+        "salary": "rs 5-15 Lacs",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 2,
+        "matchedSkills": [
+          "React",
+          "Azure"
+        ],
+        "jdSnippet": ".net fullstack developer Cloudxtreme 3.6 6 Reviews 3-8 Yrs 5-15 Lacs PA Hyderabad, Indore, Jaipur Project Role : Custom Software EngineerProject Role Description : Develop custom softw... AzureArtificial Intelligence.net fullstackReact.jsAngularGcpAimlAzure Ai 1 week ago Save"
+      },
+      {
+        "keyword": "Python Backend Engineer",
+        "title": "AI and Backend Engineers",
+        "company": "Thoughts2Binary",
+        "link": "https://www.naukri.com/job-listings-ai-and-backend-engineers-thoughts2binary-gurugram-0-to-2-years-040926015122",
+        "location": "Gurugram",
+        "punePreferred": false,
+        "experience": "0 - 2 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 2,
+        "matchedSkills": [
+          "Backend"
+        ],
+        "jdSnippet": "AI and Backend Engineers Thoughts2Binary 4.6 77 Reviews 0-2 Yrs Gurugram Passionate about building quality products and solving real-world problems. Good to Hav... Application ProgrammingGithubProgrammingRest ApiSoftware DevelopmentAWS LambdaOOPSJSON 1 week ago Save"
+      },
+      {
+        "keyword": "Python Backend Engineer",
+        "title": "Backend Engineer",
+        "company": "Algoworks",
+        "link": "https://www.naukri.com/job-listings-backend-engineer-algoworks-technologies-pvt-ltd-noida-8-to-13-years-040926503290",
+        "location": "Noida",
+        "punePreferred": false,
+        "experience": "8 - 13 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 2,
+        "matchedSkills": [
+          "Backend"
+        ],
+        "jdSnippet": "Backend Engineer Algoworks 3.1 238 Reviews 8-13 Yrs Noida Job Summary Role: Backend Engineer Location: Remote, India Experience: 8+ Years Role ov... SASData modelingCodingDatabase designDebuggingApplication developmentStored proceduresMiddleware 1 week ago Save"
+      },
+      {
+        "keyword": "Django REST Framework Developer",
+        "title": "Senior Analyst",
+        "company": "eClerx",
+        "link": "https://www.naukri.com/job-listings-senior-analyst-eclerx-navi-mumbai-2-to-4-years-140726036750",
+        "location": "Navi Mumbai",
+        "punePreferred": false,
+        "experience": "2 - 4 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 1,
+        "matchedSkills": [
+          "Docker"
+        ],
+        "jdSnippet": "Senior Analyst eClerx 3.0 6737 Reviews 2-4 Yrs Navi Mumbai Bachelor s degree in Computer Science / IT / related field . 5+ years of experience (de... TroubleshootingMachine LearningOptimizationSoftware Development Life CycleData ScienceRestNoSQLDocker 1 week ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "PC - SDE - North",
+        "company": "CavinKare",
+        "link": "https://www.naukri.com/job-listings-pc-sde-north-cavinkare-pvt-ltd-kanpur-0-to-5-years-010926500397",
+        "location": "Kanpur",
+        "punePreferred": false,
+        "experience": "0 - 5 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 1,
+        "matchedSkills": [
+          "Python"
+        ],
+        "jdSnippet": "PC - SDE - North CavinKare 3.9 1776 Reviews 0-5 Yrs Kanpur Design, develop, and test software applications using various programming languages an... c#algorithmsrestcsspythonc++software developmentdbms 1 week ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "Software Development Engineer",
+        "company": "Health Catalyst",
+        "link": "https://www.naukri.com/job-listings-software-development-engineer-health-catalyst-hyderabad-2-to-4-years-010926504558",
+        "location": "Hyderabad",
+        "punePreferred": false,
+        "experience": "2 - 4 Yrs",
+        "salary": "",
+        "postedDays": 7,
+        "postedText": "1 week ago",
+        "score": 0,
+        "matchedSkills": [],
+        "jdSnippet": "Software Development Engineer Health Catalyst 4.1 13 Reviews 2-4 Yrs Hyderabad Bachelor s degree in Computer Science. ., Information Technology, Engineering, or a rel... Cloud ServicesCloudData qualityAWSInformation technologyDistribution systemOperationsSQL 1 week ago Save"
+      }
+    ],
+    "3 (11-15 days)": [
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "SDE AI Engineer Generative AI AWS Bedrock RAG Python",
+        "company": "Quess Corp",
+        "link": "https://www.naukri.com/job-listings-sde-ai-engineer-generative-ai-aws-bedrock-rag-python-quess-hyderabad-pune-bengaluru-6-to-10-years-280826004131",
+        "location": "Hyderabad, Bengaluru, Pune",
+        "punePreferred": true,
+        "experience": "6 - 10 Yrs",
+        "salary": "",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 7,
+        "matchedSkills": [
+          "Python",
+          "RAG",
+          "AWS",
+          "Backend"
+        ],
+        "jdSnippet": "SDE AI Engineer Generative AI AWS Bedrock RAG Python Quess Corp Posted by Quess IT Solutions 6-10 Yrs Hyderabad, Bengaluru, Pune Key ResponsibilitiesDesign and develop scalable backend applications using Python and m... Pythongenerative aiLLMArtificial IntelligenceSdeAWS 2 weeks ago Save"
+      },
+      {
+        "keyword": "Python Developer",
+        "title": "Analyst Python Developer",
+        "company": "Hackajob",
+        "link": "https://www.naukri.com/job-listings-analyst-python-developer-hackajob-pune-bengaluru-mumbai-all-areas-4-to-9-years-310826014378",
+        "location": "Hybrid - Mumbai (All Areas), Bengaluru, Pune",
+        "punePreferred": true,
+        "experience": "4 - 9 Yrs",
+        "salary": "rs 15-30 Lacs",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "CI/CD"
+        ],
+        "jdSnippet": "Analyst Python Developer Hackajob Posted by Hackajob 4-9 Yrs 15-30 Lacs PA Hybrid - Mumbai (All Areas), Bengaluru, Pune JOB DESCRIPTIONAs a Python Developer (Analyst) within our team, you will contribute to ... PythonJavaGithubFast APICi/CdJIRAData BricksSQL 2 weeks ago Save"
+      },
+      {
+        "keyword": "Python Django Developer",
+        "title": "Python + Django Developer (2-3yrs)",
+        "company": "Infosys",
+        "link": "https://www.naukri.com/job-listings-python-django-developer-2-3yrs-infosys-hyderabad-chennai-bengaluru-2-to-3-years-200826031990",
+        "location": "Hybrid - Hyderabad, Bengaluru, Chennai",
+        "punePreferred": false,
+        "experience": "2 - 3 Yrs",
+        "salary": "",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 6,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Django REST Framework",
+          "Azure"
+        ],
+        "jdSnippet": "Python + Django Developer (2-3yrs) Infosys 3.5 51673 Reviews 2-3 Yrs Hybrid - Hyderabad, Bengaluru, Chennai Job Title: Python + Django DeveloperExperience: 2-3 Years Location: PAN India Notice P... Django REST FrameworkDjangoPythonREST APIMicrosoft AzureAWSSQLMicrosoft 2 weeks ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "fullstack developer (node+react)",
+        "company": "IBU Consulting",
+        "link": "https://www.naukri.com/job-listings-fullstack-developer-node-react-ibu-consulting-mumbai-2-to-6-years-310826505232",
+        "location": "Mumbai",
+        "punePreferred": false,
+        "experience": "2 - 6 Yrs",
+        "salary": "",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 5,
+        "matchedSkills": [
+          "Python",
+          "JavaScript",
+          "Node.js",
+          "React"
+        ],
+        "jdSnippet": "fullstack developer (node+react) IBU Consulting 3.9 30 Reviews 2-6 Yrs Mumbai The ideal candidate will have deep expertise in Node.js / Python, React.js, MySQL, and ... Web application developmentquery optimizationArchitectureDatabase designMySQLCloudJavascriptDeployment 2 weeks ago Save"
+      },
+      {
+        "keyword": "Python Backend Engineer",
+        "title": "Backend AI Engineer",
+        "company": "Cirruslabs",
+        "link": "https://www.naukri.com/job-listings-backend-ai-engineer-cirruslabs-hyderabad-bengaluru-6-to-11-years-310826003458",
+        "location": "Hybrid - Hyderabad, Bengaluru",
+        "punePreferred": false,
+        "experience": "6 - 11 Yrs",
+        "salary": "rs 17-32 Lacs",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 5,
+        "matchedSkills": [
+          "LLM",
+          "Docker",
+          "CI/CD",
+          "Backend"
+        ],
+        "jdSnippet": "Backend AI Engineer Cirruslabs 3.7 38 Reviews 6-11 Yrs 17-32 Lacs PA Hybrid - Hyderabad, Bengaluru Hands-on AI / ML engineering experience with LLM systems in productionRequired Skills a... Agentic AIVectorAWSKubernetesGITDockerCi/CdLLM 2 weeks ago Save"
+      },
+      {
+        "keyword": "Full Stack Developer (Python/React)",
+        "title": "Fullstack Developer",
+        "company": "Fatakpay Digital",
+        "link": "https://www.naukri.com/job-listings-fullstack-developer-fatakpay-digital-mumbai-4-to-6-years-310826018012",
+        "location": "Mumbai(Andheri)",
+        "punePreferred": false,
+        "experience": "4 - 6 Yrs",
+        "salary": "rs 8-18 Lacs",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 3,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "Full Stack"
+        ],
+        "jdSnippet": "Fullstack Developer Fatakpay Digital 3.0 30 Reviews 4-6 Yrs 8-18 Lacs PA Mumbai(Andheri) Looking for a Full Stack Developer responsible for developing, testing, and maintaining... Fullstack DevelopmentDjangoFull StackPythonStackDevelopment 2 weeks ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "Software Development Engineer - Fullstack",
+        "company": "Fatakpay Digital",
+        "link": "https://www.naukri.com/job-listings-software-development-engineer-fullstack-fatakpay-digital-mumbai-1-to-6-years-120626013780",
+        "location": "Mumbai(Andheri)",
+        "punePreferred": false,
+        "experience": "1 - 6 Yrs",
+        "salary": "rs 10-20 Lacs",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 3,
+        "matchedSkills": [
+          "Python",
+          "Django",
+          "React"
+        ],
+        "jdSnippet": "Software Development Engineer - Fullstack Fatakpay Digital 3.0 30 Reviews 1-6 Yrs 10-20 Lacs PA Mumbai(Andheri) We are looking for a motivated Software Development Engineer I (SDE 1) to join our full... DjangoMySQLFast APIReact.jsPythonSoftware engineeringSoftware developmentDevelopment 2 weeks ago Save"
+      },
+      {
+        "keyword": "Software Development Engineer (SDE) - Python",
+        "title": "PC - SDE - North",
+        "company": "CavinKare",
+        "link": "https://www.naukri.com/job-listings-pc-sde-north-cavinkare-pvt-ltd-aligarh-0-to-5-years-310826504459",
+        "location": "Aligarh",
+        "punePreferred": false,
+        "experience": "0 - 5 Yrs",
+        "salary": "",
+        "postedDays": 14,
+        "postedText": "2 weeks ago",
+        "score": 1,
+        "matchedSkills": [
+          "Python"
+        ],
+        "jdSnippet": "PC - SDE - North CavinKare 3.9 1776 Reviews 0-5 Yrs Aligarh Design, develop, and test software applications using various programming languages an... c#algorithmsrestcsspythonc++software developmentdbms 2 weeks ago Save"
+      }
+    ]
+  },
+  "punePreferred": [
+    {
+      "keyword": "Python Developer",
+      "title": "Python Developer",
+      "company": "Tata Consultancy Services",
+      "link": "https://www.naukri.com/job-listings-python-developer-tata-consultancy-services-pune-chennai-mumbai-all-areas-4-to-8-years-070926031993",
+      "location": "Mumbai (All Areas), Pune, Chennai",
+      "experience": "4 - 8 Yrs",
+      "salary": "rs 10-20 Lacs",
+      "postedDays": 6,
+      "postedText": "6 days ago",
+      "bucket": 2,
+      "score": 7,
+      "matchedSkills": [
+        "Python",
+        "Django",
+        "PostgreSQL",
+        "CI/CD"
+      ]
+    },
+    {
+      "keyword": "Software Development Engineer (SDE) - Python",
+      "title": "SDE AI Engineer Generative AI AWS Bedrock RAG Python",
+      "company": "Quess Corp",
+      "link": "https://www.naukri.com/job-listings-sde-ai-engineer-generative-ai-aws-bedrock-rag-python-quess-hyderabad-pune-bengaluru-6-to-10-years-280826004131",
+      "location": "Hyderabad, Bengaluru, Pune",
+      "experience": "6 - 10 Yrs",
+      "salary": "",
+      "postedDays": 14,
+      "postedText": "2 weeks ago",
+      "bucket": 3,
+      "score": 7,
+      "matchedSkills": [
+        "Python",
+        "RAG",
+        "AWS",
+        "Backend"
+      ]
+    },
+    {
+      "keyword": "Python Developer",
+      "title": "Python developer (Female's Preferred)",
+      "company": "Infosys",
+      "link": "https://www.naukri.com/job-listings-python-developer-female-s-preferred-infosys-hyderabad-pune-bengaluru-2-to-5-years-240826031542",
+      "location": "Hyderabad, Bengaluru, Pune",
+      "experience": "2 - 5 Yrs",
+      "salary": "",
+      "postedDays": 2,
+      "postedText": "2 days ago",
+      "bucket": 1,
+      "score": 5,
+      "matchedSkills": [
+        "Python",
+        "Django"
+      ]
+    },
+    {
+      "keyword": "Python Backend Engineer",
+      "title": "Backend AI Engineer",
+      "company": "Cirruslabs",
+      "link": "https://www.naukri.com/job-listings-backend-ai-engineer-cirruslabs-hyderabad-pune-bengaluru-6-to-11-years-010926014630",
+      "location": "Hybrid - Hyderabad, Bengaluru, Pune",
+      "experience": "6 - 11 Yrs",
+      "salary": "rs 20-35 Lacs",
+      "postedDays": 7,
+      "postedText": "1 week ago",
+      "bucket": 2,
+      "score": 5,
+      "matchedSkills": [
+        "Python",
+        "LLM",
+        "Azure",
+        "Backend"
+      ]
+    },
+    {
+      "keyword": "Python Developer",
+      "title": "Analyst Python Developer",
+      "company": "Hackajob",
+      "link": "https://www.naukri.com/job-listings-analyst-python-developer-hackajob-pune-bengaluru-mumbai-all-areas-4-to-9-years-310826014378",
+      "location": "Hybrid - Mumbai (All Areas), Bengaluru, Pune",
+      "experience": "4 - 9 Yrs",
+      "salary": "rs 15-30 Lacs",
+      "postedDays": 14,
+      "postedText": "2 weeks ago",
+      "bucket": 3,
+      "score": 5,
+      "matchedSkills": [
+        "Python",
+        "CI/CD"
+      ]
+    },
+    {
+      "keyword": "Django REST Framework Developer",
+      "title": "Python Fullstack Developer",
+      "company": "Infosys",
+      "link": "https://www.naukri.com/job-listings-python-fullstack-developer-infosys-hyderabad-pune-bengaluru-5-to-8-years-130926004220",
+      "location": "Hyderabad, Bengaluru, Pune",
+      "experience": "5 - 8 Yrs",
+      "salary": "rs . ",
+      "postedDays": 1,
+      "postedText": "1 day ago",
+      "bucket": 1,
+      "score": 4,
+      "matchedSkills": [
+        "Python",
+        "PostgreSQL",
+        "CI/CD"
+      ]
+    },
+    {
+      "keyword": "Software Development Engineer (SDE) - Python",
+      "title": "Software Development Engineer + AI",
+      "company": "Futran Tech Solutions",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-ai-futran-tech-solutions-pune-5-to-14-years-010926015345",
+      "location": "Pune",
+      "experience": "5 - 14 Yrs",
+      "salary": "rs 20-28 Lacs",
+      "postedDays": 7,
+      "postedText": "1 week ago",
+      "bucket": 2,
+      "score": 2,
+      "matchedSkills": [
+        "Python",
+        "CI/CD"
+      ]
+    }
+  ],
+  "ignored": [
+    {
+      "title": "Python Developer",
+      "company": "Makro Group",
+      "link": "https://www.naukri.com/job-listings-python-developer-makro-group-hyderabad-madhapur-2-to-5-years-140926905214",
+      "location": "Hyderabad, Madhapur",
+      "postedText": "",
+      "reason": "age unknown"
+    },
+    {
+      "title": "Python/Django Developer",
+      "company": "Swan Softweb",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-swansoftwebsolutions-ahmedabad-0-to-3-years-160623501777",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python / Django Developer",
+      "company": "Ghrix Technologies",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-ghrix-technologies-pvt-ltd-mohali-1-to-4-years-110826507577",
+      "location": "Mohali",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Django Developer- PAN INDIA",
+      "company": "Infosys",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-pan-india-infosys-hyderabad-chennai-bengaluru-2-to-3-years-110826038659",
+      "location": "Hyderabad, Bengaluru, Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python / Django Developer",
+      "company": "Jujubee Digital",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-jujubee-digital-madurai-2-to-4-years-300425508300",
+      "location": "Madurai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Developer (Django)",
+      "company": "Rentokil Initial",
+      "link": "https://www.naukri.com/job-listings-python-developer-django-rentokil-initial-mumbai-3-to-8-years-270426500824",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python / Django Developer",
+      "company": "Nauticalinfo Solutions",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-nauticalinfo-solutions-mumbai-2-to-8-years-151025503622",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python-Django Developer",
+      "company": "Sudofire",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-sudofire-gurugram-3-to-5-years-150524501344",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Django Developer- PAN INDIA",
+      "company": "Infosys",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-pan-india-infosys-hyderabad-chennai-bengaluru-3-to-5-years-110826038693",
+      "location": "Hyderabad, Bengaluru, Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python / Django Developer",
+      "company": "Cybernexa",
+      "link": "https://www.naukri.com/job-listings-python-django-developer-cybernexa-chennai-3-to-8-years-100826504629",
+      "location": "Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Developer (Django)",
+      "company": "Rentokil Initial",
+      "link": "https://www.naukri.com/job-listings-python-developer-django-rentokil-initial-mumbai-3-to-9-years-110526504590",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Developer (Django)",
+      "company": "Rentokil Initial",
+      "link": "https://www.naukri.com/job-listings-python-developer-django-rentokil-initial-mumbai-4-to-9-years-050626501128",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Developer - Flask API Django",
+      "company": "Ztek Consulting",
+      "link": "https://www.naukri.com/job-listings-python-developer-flask-api-django-ztek-consulting-pvt-ltd-mumbai-nagpur-thane-nashik-pune-aurangabad-4-to-9-years-090126503896",
+      "location": "Mumbai, Pune, Nagpur, Thane, Nashik, Chhatrapati Sambhajinagar",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Developer",
+      "company": "Virtue Software Technologies",
+      "link": "https://www.naukri.com/job-listings-python-developer-virtue-software-technologies-private-limited-hyderabad-0-to-4-years-140725503018",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "AWS Bedrock Developer-Terraform-Python",
+      "company": "Infosys",
+      "link": "https://www.naukri.com/job-listings-aws-bedrock-developer-terraform-python-infosys-limited-hyderabad-1-to-5-years-180826942605",
+      "location": "Hyderabad",
+      "postedText": "3 weeks ago",
+      "reason": "older than 15d (3 weeks ago)"
+    },
+    {
+      "title": "Web Development",
+      "company": "Kotharitech",
+      "link": "https://www.naukri.com/job-listings-web-development-kothari-tech-mumbai-1-to-3-years-290224502454",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Senior Full Stack Developer (Python)",
+      "company": "Smaac Net Solutions",
+      "link": "https://www.naukri.com/job-listings-senior-full-stack-developer-python-smaac-net-solutions-gurugram-2-to-6-years-191125502719",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Vue.js + Django Developer",
+      "company": "Nexucon Consultancy Services",
+      "link": "https://www.naukri.com/job-listings-vue-js-django-developer-nexucon-consultancy-services-private-limited-kolkata-2-to-7-years-190226503427",
+      "location": "Kolkata",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Web Developer",
+      "company": "Emastersindia.net",
+      "link": "https://www.naukri.com/job-listings-web-developer-emastersindia-net-kolkata-1-to-3-years-160524502689",
+      "location": "Kolkata",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "WeblineIndia Senior Full Stack Developer (Python + React. JS )",
+      "company": "Weblineindia",
+      "link": "https://www.naukri.com/job-listings-weblineindia-senior-full-stack-developer-python-react-js-weblineindia-ahmedabad-3-to-8-years-281125502783",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Senior Backend Python Developer",
+      "company": "Luxoft",
+      "link": "https://www.naukri.com/job-listings-senior-backend-python-developer-luxoft-india-llp-hyderabad-3-to-8-years-140926913433",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "age unknown"
+    },
+    {
+      "title": "Senior Python Engineer",
+      "company": "Micro1",
+      "link": "https://www.naukri.com/job-listings-senior-python-engineer-micro1-hyderabad-3-to-6-years-200625502563",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "AWS Engineer",
+      "company": "Ahaclouds",
+      "link": "https://www.naukri.com/job-listings-aws-engineer-ahaclouds-kolkata-mumbai-new-delhi-hyderabad-pune-chennai-bengaluru-3-to-6-years-180723500302",
+      "location": "Kolkata, Mumbai, Hyderabad, Bengaluru, Pune, New Delhi, Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Django Rest Framework Developer",
+      "company": "Ramognee Technologies",
+      "link": "https://www.naukri.com/job-listings-django-rest-framework-developer-ramognee-technologies-pvt-ltd-gurugram-6-to-11-years-251025504234",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Frontend & Backend Developer",
+      "company": "Styilit",
+      "link": "https://www.naukri.com/job-listings-frontend-backend-developer-styilit-mumbai-1-to-3-years-170325500898",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Altaneo Finance",
+      "link": "https://www.naukri.com/job-listings-backend-developer-altaneo-fin-gurugram-3-to-4-years-010725502886",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Rejolut",
+      "link": "https://www.naukri.com/job-listings-backend-developer-rejolut-a-genai-web-30-company-navi-mumbai-1-to-3-years-280526502143",
+      "location": "Navi Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Rejolut",
+      "link": "https://www.naukri.com/job-listings-backend-developer-rejolut-a-genai-web-30-company-mumbai-1-to-3-years-271221500820",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Fleetronix Systems",
+      "link": "https://www.naukri.com/job-listings-backend-developer-fleetronix-systems-hyderabad-1-to-3-years-270924502786",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "BackEnd Developer",
+      "company": "Clikipedia",
+      "link": "https://www.naukri.com/job-listings-backend-developer-clickipedia-kolkata-1-to-3-years-050225504068",
+      "location": "Kolkata",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Tarrina Health",
+      "link": "https://www.naukri.com/job-listings-backend-developer-tarrina-health-pvt-ltd-ahmedabad-3-to-6-years-241225500399",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Flying Lion Media",
+      "link": "https://www.naukri.com/job-listings-backend-developer-flying-lion-media-ahmedabad-0-to-2-years-111125502500",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Mocktheta",
+      "link": "https://www.naukri.com/job-listings-backend-developer-mocktheta-hyderabad-2-to-3-years-230821501056",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Back - End Developer",
+      "company": "Digital Glyde",
+      "link": "https://www.naukri.com/job-listings-back-end-developer-digital-glyde-kolkata-mumbai-new-delhi-hyderabad-pune-chennai-bengaluru-0-to-3-years-170524500932",
+      "location": "Kolkata, Mumbai, Hyderabad, Bengaluru, Pune, New Delhi, Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Techuz",
+      "link": "https://www.naukri.com/job-listings-backend-developer-techuz-it-outsourcing-ahmedabad-2-to-3-years-031125504890",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Digi Opera",
+      "link": "https://www.naukri.com/job-listings-backend-developer-digi-opera-gurugram-2-to-5-years-090726503711",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "iii Consultig",
+      "link": "https://www.naukri.com/job-listings-backend-developer-iii-consulting-private-limited-hyderabad-2-to-5-years-290126501051",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Back-End Developer",
+      "company": "Fashion Tv",
+      "link": "https://www.naukri.com/job-listings-back-end-developer-fashion-tv-india-mumbai-2-to-4-years-060426501330",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "First Track Solution Technologies",
+      "link": "https://www.naukri.com/job-listings-backend-developer-first-track-solution-technologies-kolkata-3-to-5-years-160626503371",
+      "location": "Kolkata",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer",
+      "company": "Photon",
+      "link": "https://www.naukri.com/job-listings-backend-developer-photon-infotech-p-ltd-kolkata-mumbai-new-delhi-hyderabad-pune-chennai-bengaluru-3-to-6-years-121124506331",
+      "location": "Kolkata, Mumbai, Hyderabad, Bengaluru, Pune, New Delhi, Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Full Stack/Back End Developer",
+      "company": "Avion Software Technologies India",
+      "link": "https://www.naukri.com/job-listings-full-stack-back-end-developer-avion-software-tecnologies-mumbai-3-to-5-years-191125504797",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "backend developer",
+      "company": "iii Consultig",
+      "link": "https://www.naukri.com/job-listings-backend-developer-iii-consulting-private-limited-hyderabad-2-to-5-years-290126501136",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Developer/Lead",
+      "company": "Advaitha Information Technology Services Private L",
+      "link": "https://www.naukri.com/job-listings-backend-developer-lead-advaitha-information-technology-services-private-limited-hyderabad-4-to-12-years-290626504953",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Fullstack Developer",
+      "company": "Earthscapes Consultancy Private Limited",
+      "link": "https://www.naukri.com/job-listings-fullstack-developer-earthscapes-consultancy-private-limited-mumbai-3-to-5-years-170826021917",
+      "location": "Mumbai(Thane West)",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "WebRTC Full-Stack Developer",
+      "company": "Celloip Technologies",
+      "link": "https://www.naukri.com/job-listings-webrtc-full-stack-developer-celloip-technologies-ahmedabad-3-to-6-years-030726501193",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Full Stack Developer (Mid-Level)",
+      "company": "Datamaze Solutions",
+      "link": "https://www.naukri.com/job-listings-full-stack-developer-mid-level-datamaze-solutions-hyderabad-3-to-5-years-171225503627",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Full-Stack Developer",
+      "company": "Decipher Consultancy Services",
+      "link": "https://www.naukri.com/job-listings-full-stack-developer-decipher-consultancy-services-gurugram-3-to-5-years-300426501261",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Full Stack Developer",
+      "company": "Tilicho Labs",
+      "link": "https://www.naukri.com/job-listings-full-stack-developer-tilicho-hyderabad-3-to-5-years-110826502536",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Full Stack Developer",
+      "company": "E2M Solutions",
+      "link": "https://www.naukri.com/job-listings-full-stack-developer-e2m-solutions-ahmedabad-3-to-5-years-030626501601",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "SDE- ThreeJs",
+      "company": "Unify Technologies",
+      "link": "https://www.naukri.com/job-listings-sde-threejs-unify-technologies-gurugram-1-to-4-years-070126503083",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "SDE (Automation & Quality Focus)",
+      "company": "Drivetrain",
+      "link": "https://www.naukri.com/job-listings-sde-automation-quality-focus-drivetrain-kolkata-mumbai-new-delhi-hyderabad-pune-chennai-bengaluru-2-to-6-years-290724502201",
+      "location": "Kolkata, Mumbai, Hyderabad, Bengaluru, Pune, New Delhi, Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Software Development Engineer",
+      "company": "Applied Research Works India",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-applied-research-works-india-kolkata-2-to-6-years-210826019725",
+      "location": "Hybrid - Kolkata",
+      "postedText": "3 weeks ago",
+      "reason": "older than 15d (3 weeks ago)"
+    },
+    {
+      "title": "Software Development Engineer - Backend [Java/Kotlin]",
+      "company": "Clickpost",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-backend-java-kotlin-clickpost-bengaluru-3-to-5-years-240826500922",
+      "location": "Bengaluru",
+      "postedText": "3 weeks ago",
+      "reason": "older than 15d (3 weeks ago)"
+    },
+    {
+      "title": "Software Development Engineer",
+      "company": "Bahwan CyberTek",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-bct-consulting-bengaluru-2-to-3-years-110826025348",
+      "location": "Bengaluru",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Software Development Engineer",
+      "company": "Inspiration Manpower Consultancy",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-inspiration-manpower-consultancy-hyderabad-3-to-5-years-040325503555",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Software Development Engineer",
+      "company": "Connecting Dot Consultancy",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-connecting-dot-consultancy-kolkata-3-to-5-years-080925502942",
+      "location": "Kolkata",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "SDE - Prompt Engineering",
+      "company": "Unify Technologies",
+      "link": "https://www.naukri.com/job-listings-sde-prompt-engineering-unify-technologies-gurugram-1-to-5-years-070126503082",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Software Development Engineer (PST Shift)",
+      "company": "Skypoint Cloud",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-pst-shift-skypoint-cloud-bengaluru-4-to-9-years-250626504930",
+      "location": "Bengaluru",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Java Developer IV",
+      "company": "Highradius",
+      "link": "https://www.naukri.com/job-listings-java-developer-iv-highradius-hyderabad-7-to-8-years-050226503688",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Software Development Engineer - IV",
+      "company": "Highradius",
+      "link": "https://www.naukri.com/job-listings-software-development-engineer-iv-highradius-hyderabad-7-to-12-years-040826502627",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Jetbro",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-jetbro-ahmedabad-0-to-4-years-300626504262",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Robonic Infotech",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-robonic-infotech-mumbai-0-to-2-years-240326503249",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Shipmnts",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-shipmnts-ahmedabad-1-to-3-years-150923501344",
+      "location": "Ahmedabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Csrhat",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-csrhat-mumbai-0-to-1-years-140926500237",
+      "location": "Mumbai",
+      "postedText": "",
+      "reason": "age unknown"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "HappyFox, Inc",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-happyfox-inc-chennai-1-to-5-years-271021500770",
+      "location": "Chennai",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Paypay Corporation",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-paypay-corporation-gurugram-3-to-5-years-200824500932",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Happyfox",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-happyfox-inc-hyderabad-3-to-4-years-110723501216",
+      "location": "Hyderabad",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Back End Engineer (PHP)",
+      "company": "Passion Gaming",
+      "link": "https://www.naukri.com/job-listings-back-end-engineer-php-passion-gaming-gurugram-3-to-8-years-270326506253",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer ( Founding Engineer )",
+      "company": "Shashwath Solution",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-founding-engineer-shashwath-solution-pune-2-to-5-years-200826932173",
+      "location": "Pune",
+      "postedText": "3 weeks ago",
+      "reason": "older than 15d (3 weeks ago)"
+    },
+    {
+      "title": "Backend Engineer ( Founding Engineer )",
+      "company": "Shashwath Solution",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-founding-engineer-shashwath-solution-noida-2-to-5-years-200826925907",
+      "location": "Noida",
+      "postedText": "3 weeks ago",
+      "reason": "older than 15d (3 weeks ago)"
+    },
+    {
+      "title": "Back-End Engineer",
+      "company": "Kalkey Solutions",
+      "link": "https://www.naukri.com/job-listings-back-end-engineer-kalkey-kolkata-1-to-4-years-071025502743",
+      "location": "Kolkata",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Python Backend Engineer (APIs & Cloud Deployment)",
+      "company": "Vyntrapro Innovations",
+      "link": "https://www.naukri.com/job-listings-python-backend-engineer-apis-cloud-deployment-vyntrapro-innovations-private-limited-gurugram-4-to-5-years-080626500595",
+      "location": "Gurugram",
+      "postedText": "",
+      "reason": "older than 15d (21d)"
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Deccan Ai",
+      "link": "https://www.naukri.com/job-listings-backend-engineer-deccan-ai-ahmedabad-4-to-9-years-240826503840",
+      "location": "Ahmedabad",
+      "postedText": "3 weeks ago",
+      "reason": "older than 15d (3 weeks ago)"
+    }
+  ]
+}

@@ -12,6 +12,9 @@ laptop (Windows). Written specifically for this setup.
    directly from Naukri's server.
 2. Optionally re-uploads the resume **once per day** with a dated filename
    (`resume_DD-MM-YYYY.pdf`) so Naukri always sees it as a new file.
+3. **Job Scout** (separate module): collects fresh Naukri job openings across your
+   role keywords, scores each against your skills, buckets by posting age and writes
+   a JSON report for you to scan and apply manually.
 
 All automation runs against a **dedicated, isolated Chrome** profile
 (`.naukri-chrome-profile/`) on `127.0.0.1:9222` — it never touches your normal
@@ -137,3 +140,52 @@ works (yours is fine); the date is added automatically.
   check it for diagnostics.
 - The dedicated Chrome does not need to be left open; the runner reopens it on
   demand.
+
+---
+
+## Job Scout (search + report, no auto-apply)
+
+Gathers job openings into a JSON report so you can sit down and apply manually.
+
+### Important files
+
+| File | Purpose |
+|------|---------|
+| `job-scout/keywords.txt` | **Edit anytime** — one role keyword per line |
+| `job-scout/skills.txt` | Skill catalog + aliases used for scoring |
+| `job-scout/resume.txt` | Optional — your resume as plain text; if present it filters which skills count |
+| `job-scout/naukri-scout.js` | The scout script |
+| `job-scout/run-scout-windows.ps1` | Runner (starts Chrome if needed) |
+| `job-scout/reports/job-openings-latest.json` | **The report to open** (regenerated every run) |
+| `job-scout/reports/job-openings-<timestamp>.json` | Backup of each run |
+| `scripts/install-scout-task.ps1` | Installs the `NaukriJobScout` scheduled task |
+
+### The report
+
+- Jobs grouped into buckets by posting age: **1 = 0–5 days, 2 = 6–10 days, 3 = 11–15 days**.
+- Each job has: keyword, title, company, **direct apply link**, location,
+  `punePreferred` flag, experience, salary, posted days, **score**, **matchedSkills**, JD snippet.
+- Sorted per bucket: Pune-preferred first, then higher score, then newer.
+- `summary` at the top shows totals; `ignored` lists jobs outside the 15-day window
+  (with reason).
+- Jobs older than 15 days are excluded.
+
+### Run it
+
+```
+.\job-scout\run-scout-windows.ps1          # one run now, writes the JSON report
+node job-scout\naukri-scout.js            # same thing without the wrapper
+Start-ScheduledTask -TaskName NaukriJobScout   # manual trigger of the scheduled task
+```
+
+The `NaukriJobScout` scheduled task regenerates the report every 3 hours (already
+installed). The old `NaukriJobApply` auto-apply task is **disabled** (auto-apply
+was unreliable across different job forms; manual applying from this report is
+the approach).
+
+### Tuning (edit anytime, no code change)
+
+- **Keywords** → `job-scout/keywords.txt`
+- **Scoring skills** → `job-scout/skills.txt` (+ optional `resume.txt` filter)
+- **Pune flag** → `PUNE_LOCATIONS` in `.env` (e.g. `PUNE_LOCATIONS=Pune, Pimpri-Chinchwad`)
+- **Limits** → `SCOUT_MAX_JOBS_PER_KEYWORD`, `SCOUT_MAX_DAYS_AGO`, `SCOUT_LOCATIONS` in `.env`

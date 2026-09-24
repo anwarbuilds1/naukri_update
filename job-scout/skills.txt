@@ -1,0 +1,35 @@
+Python | py
+JavaScript | JS
+Django
+Django REST Framework | DRF, Django Rest
+FastAPI
+Celery
+Node.js | Node, NodeJS
+Express.js | Express, ExpressJS
+React | React.js, ReactJS, React Js
+Redux | Redux Toolkit, Reduxjs
+HTML5 | HTML
+CSS3 | CSS
+PostgreSQL | Postgres
+MongoDB | Mongo
+Redis
+Apache Kafka | Kafka
+WebSocket | Socket.io, SocketIO, Websockets
+LLM | Large Language Model
+Text-to-SQL | text to sql
+RAG | Retrieval Augmented Generation
+Prompt Engineering | Prompts
+Docker
+Nginx
+Apache2 | Apache
+AWS | Amazon Web Services
+Azure
+DigitalOcean
+CI/CD | CI CD, Pipelines
+Git
+Postman
+SQL
+MERN | MERN Stack
+REST API | REST, Restful
+Backend | Back End
+Full Stack | Fullstack, Full-Stack, Full Stack Developer

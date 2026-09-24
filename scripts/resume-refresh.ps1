@@ -11,7 +11,7 @@ if (-not $isAdmin) {
 
 $ErrorActionPreference = 'Stop'
 
-$taskNames = @('NaukriProfileRefresh', 'NaukriJobApply')
+$taskNames = @('NaukriProfileRefresh', 'NaukriJobScout')
 
 foreach ($taskName in $taskNames) {
     $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue

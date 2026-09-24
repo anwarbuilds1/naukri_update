@@ -5,7 +5,7 @@
   "main": "naukri-profile-refresh.js",
   "scripts": {
     "refresh": "node naukri-profile-refresh.js",
-    "apply": "node job-auto-apply/naukri-apply.js"
+    "scout": "node job-scout/naukri-scout.js"
   },
   "author": "Ankit Baghel",
   "license": "ISC",

@@ -1,0 +1,53 @@
+Professional Summary
+Full-Stack Developer with 3 years of experience building scalable, production-grade web applications. Delivered a real-time
+vehicle telematics platform (2,000+ GPS events/sec) and contributed to enterprise compliance and AI-powered solutions.
+Skilled in Python, Django, React.js, PostgreSQL, Redis, and integrating LLM-powered capabilities into full-stack production
+systems.
+Professional Experience
+KPMG India Feb 2025 – Present
+Full Stack Developer | Compliance Management Tool, SOP Management Tool Gurgaon, India
+• Architected Django/DRF backend with a layered pattern (Controller → Service → Repository) and RBAC across 6 user
+roles (Super User, Company Admin, CXO, Legal Admin, Auditor, Owner/Approver chain) in multi-tenant compliance
+workflows.
+• Built async Excel report generation with Celery + Redis, returning HTTP 202 immediately while background workers
+process 50,000+ records.
+• Implemented immutable audit trail using PostgreSQL transactions — every compliance status change recorded
+atomically with actor, timestamp, and reason across a 3-stage approval chain (Owner → Approver → Auditor).
+• Designed a dual-source LLM-powered chatbot with intent-based routing — Text-to-SQL engine (multi-layer
+classification, dynamic schema injection, RBAC filters, SQL safety guardrails) for live compliance data queries, and a
+RAG pipeline for natural language queries over the tool’s internal knowledge base.
+• Automated nightly compliance deadline checks via Celery Beat and integrated E-sign functionality into document
+approval workflows; configured Apache2 as a reverse proxy for production deployment.
+AutoPeepal Technologies Pvt. Ltd Sep 2023 – Jan 2025
+MERN Stack Developer | Vehicle Telematics Platform (Wikitrac) Pune, India
+• Built real-time GPS ingestion pipeline processing 2,000+ events/sec using Apache Kafka with 3 independent consumers:
+alert detection, live dashboard, and trip logging.
+• Designed WebSocket live dashboard (Socket.io + Redis pub/sub) supporting 500+ concurrent users with sub-second
+location refresh.
+• Implemented geofence breach and speed alert system with Redis-cached geofence data, reducing PostgreSQL query load
+by 80%.
+• Containerised and deployed full stack on DigitalOcean with Docker and Nginx reverse proxy; tuned Kafka consumer
+parallelism for sustained high throughput.
+• Recognised as Outstanding Performer at AutoPeepal Technologies for contributions to the Wikitrac telematics
+platform.
+Technical Skills
+Languages: Python, JavaScript (ES6+)
+Backend: Django, Django REST Framework, FastAPI, Celery, Node.js, Express.js
+Frontend: React.js, Redux Toolkit, HTML5, CSS3
+Databases: PostgreSQL, MongoDB, Redis
+Messaging & Realtime: Apache Kafka, WebSocket (Socket.io)
+AI & LLM: LLM Integration, Text-to-SQL, RAG Pipelines, Prompt Engineering
+DevOps & Cloud: Docker, Nginx, Apache2, AWS, Azure, DigitalOcean, CI/CD (Azure Pipelines)
+Tools: Git, Postman, VS Code
+Projects
+Digital SOP Management Tool | FastAPI, React.js, PostgreSQL, Redis, Celery KPMG India
+• Built end-to-end solo — a production-grade platform to author, version, and distribute Standard Operating Procedures
+digitally, replacing manual paper-based workflows.
+• Implemented multi-stage approval chains with role-based access, user request management, and version control —
+ensuring every SOP change is tracked and auditable.
+• Built RACI matrix tracking and reader acknowledgement system — ensuring accountability across process owners,
+contributors, and readers.
+• Async background processing via Celery + Redis for notifications and approval triggers;
+Education
+Bachelor of Science (BSc) — Mathematics & Computer Application Nov 2020 – Jun 2023
+Shiv Harsh Kisan Degree College Basti Basti, India
